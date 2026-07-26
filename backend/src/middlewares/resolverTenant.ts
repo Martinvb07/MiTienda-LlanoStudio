@@ -65,8 +65,10 @@ export async function resolverTenant(
   req.trafico = clasificacion
 
   switch (clasificacion.tipo) {
+    case 'sitio':
     case 'panel':
-      // El panel sirve a todos los tenants; cuál se toca lo dice el token.
+      // Ni la web comercial ni el panel están atados a un tenant concreto:
+      // en el panel, cuál se toca lo dice el token de sesión.
       next()
       return
 

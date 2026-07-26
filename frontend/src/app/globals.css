@@ -13,6 +13,28 @@
   --color-superficie: var(--superficie);
   --color-tinta: var(--tinta);
   --radius-marca: var(--radio);
+
+  --font-sans: var(--fuente-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--fuente-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+ * Paleta de la web comercial de Llano Studio. Va con prefijo `sitio-` para no
+ * pisar los tokens de tematización de las tiendas, que son otra cosa.
+ *
+ * Los bordes y el fondo crema son cálidos a propósito (tiran a beige, no a
+ * gris): es lo que separa el conjunto del look por defecto de Tailwind.
+ */
+@theme {
+  --color-sitio-tinta: #0a0f1c;
+  --color-sitio-suave: #545c70;
+  --color-sitio-tenue: #8b93a5;
+  --color-sitio-azul: #2563eb;
+  --color-sitio-azul-fuerte: #1d4ed8;
+  --color-sitio-profundo: #0f2159;
+  --color-sitio-crema: #f7f5f0;
+  --color-sitio-borde: #e7e3da;
+  --color-sitio-borde-fuerte: #d6d0c3;
 }
 
 :root {
@@ -27,4 +49,22 @@ body {
   background-color: var(--superficie);
   color: var(--tinta);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Respeta a quien pidió menos movimiento en su sistema operativo. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Trama de puntos para los fondos de sección. */
+.trama-puntos {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 22px 22px;
 }

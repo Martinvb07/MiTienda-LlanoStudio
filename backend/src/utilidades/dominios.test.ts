@@ -22,6 +22,11 @@ describe('clasificarHost', () => {
     expect(clasificarHost('mitienda.llanostudio.co', opciones).tipo).toBe('panel')
   })
 
+  it('trata el dominio pelado y el www como la web comercial', () => {
+    expect(clasificarHost('llanostudio.co', opciones).tipo).toBe('sitio')
+    expect(clasificarHost('www.llanostudio.co', opciones).tipo).toBe('sitio')
+  })
+
   it('extrae el subdominio de una tienda', () => {
     expect(clasificarHost('ropa.llanostudio.co', opciones)).toMatchObject({
       tipo: 'tienda',
@@ -49,7 +54,8 @@ describe('clasificarHost', () => {
       tipo: 'tienda',
       subdominio: 'ropa',
     })
-    expect(clasificarHost('localhost:3000', opciones).tipo).toBe('panel')
+    expect(clasificarHost('localhost:3000', opciones).tipo).toBe('sitio')
+    expect(clasificarHost('mitienda.localhost:3000', opciones).tipo).toBe('panel')
   })
 
   it('marca como desconocido un Host vacío', () => {

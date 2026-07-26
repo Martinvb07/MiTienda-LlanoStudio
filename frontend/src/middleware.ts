@@ -7,6 +7,7 @@ export const CABECERA_HOST = 'x-mitienda-host'
 /**
  * Resolución de tenant por dominio de entrada.
  *
+ *   llanostudio.co           -> web comercial (se sirve tal cual)
  *   mitienda.llanostudio.co  -> panel        (/  se reescribe a /panel)
  *   ropa.llanostudio.co      -> tienda       (/x se reescribe a /ropa/x)
  *   www.miropa.com           -> dominio propio (/x se reescribe a /www.miropa.com/x)
@@ -31,6 +32,10 @@ export function middleware(peticion: NextRequest) {
   const ruta = url.pathname
 
   switch (clasificacion.tipo) {
+    case 'sitio':
+      // La web comercial vive en las rutas reales de (sitio): nada que reescribir.
+      return NextResponse.next({ request: { headers: cabeceras } })
+
     case 'panel': {
       if (ruta === '/') {
         url.pathname = '/panel'

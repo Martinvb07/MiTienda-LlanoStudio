@@ -8,7 +8,7 @@
  * también frontend/src/utilidades/dominios.ts.
  */
 
-export type TipoTrafico = 'panel' | 'tienda' | 'dominio-propio' | 'desconocido'
+export type TipoTrafico = 'sitio' | 'panel' | 'tienda' | 'dominio-propio' | 'desconocido'
 
 export interface ClasificacionHost {
   tipo: TipoTrafico
@@ -86,11 +86,11 @@ export function clasificarHost(
   // funcionen mitienda.localhost:3000 y ropa.localhost:3000 sin tocar nada.
   const basesConocidas = Array.from(new Set([dominioBase, 'localhost'].filter(Boolean)))
 
-  // Acceso plano por IP o localhost sin subdominio: es el panel.
-  if (HOSTS_LOCALES.has(host)) return { tipo: 'panel', host }
+  // El dominio pelado es la web comercial de Llano Studio, no el panel.
+  if (HOSTS_LOCALES.has(host)) return { tipo: 'sitio', host }
 
   for (const base of basesConocidas) {
-    if (host === base || host === `www.${base}`) return { tipo: 'panel', host }
+    if (host === base || host === `www.${base}`) return { tipo: 'sitio', host }
 
     if (host.endsWith(`.${base}`)) {
       const etiqueta = host.slice(0, host.length - base.length - 1)

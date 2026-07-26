@@ -6,7 +6,7 @@
  * cámbialas en el otro — hay tests en ambos que fijan el comportamiento.
  */
 
-export type TipoTrafico = 'panel' | 'tienda' | 'dominio-propio' | 'desconocido'
+export type TipoTrafico = 'sitio' | 'panel' | 'tienda' | 'dominio-propio' | 'desconocido'
 
 export interface ClasificacionHost {
   tipo: TipoTrafico
@@ -72,10 +72,11 @@ export function clasificarHost(
   const subdominioPanel = opciones.subdominioPanel.toLowerCase()
   const basesConocidas = Array.from(new Set([dominioBase, 'localhost'].filter(Boolean)))
 
-  if (HOSTS_LOCALES.has(host)) return { tipo: 'panel', host }
+  // El dominio pelado es la web comercial de Llano Studio, no el panel.
+  if (HOSTS_LOCALES.has(host)) return { tipo: 'sitio', host }
 
   for (const base of basesConocidas) {
-    if (host === base || host === `www.${base}`) return { tipo: 'panel', host }
+    if (host === base || host === `www.${base}`) return { tipo: 'sitio', host }
 
     if (host.endsWith(`.${base}`)) {
       const etiqueta = host.slice(0, host.length - base.length - 1)

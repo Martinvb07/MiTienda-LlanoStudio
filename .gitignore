@@ -18,6 +18,9 @@ backend/src/generado/
 .env.*.local
 !.env.ejemplo
 
+# Volcado que Redis deja en el directorio desde el que se lanzó
+dump.rdb
+
 # Logs
 logs/
 *.log

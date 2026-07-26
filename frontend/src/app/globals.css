@@ -29,9 +29,11 @@
   --color-sitio-tinta: #0a0f1c;
   --color-sitio-suave: #545c70;
   --color-sitio-tenue: #8b93a5;
-  --color-sitio-azul: #2563eb;
-  --color-sitio-azul-fuerte: #1d4ed8;
-  --color-sitio-profundo: #0f2159;
+  /* Azul tomado del propio logotipo de Llano Studio, para que la web y la
+     marca no vayan cada una por su lado. */
+  --color-sitio-azul: #3b60ff;
+  --color-sitio-azul-fuerte: #2a4ae8;
+  --color-sitio-profundo: #101a4d;
   --color-sitio-crema: #f7f5f0;
   --color-sitio-borde: #e7e3da;
   --color-sitio-borde-fuerte: #d6d0c3;

@@ -34,9 +34,12 @@ export function Encabezado() {
         <div className="flex h-16 items-center justify-between gap-8">
           <Link
             href="/"
-            className="font-display text-lg font-bold tracking-tight text-sitio-tinta"
+            className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-sitio-tinta"
           >
-            Llano<span className="text-sitio-azul">Studio</span>
+            {/* Cuadro azul: el mismo detalle que remata el logotipo de Llano
+                Studio, para que ambas marcas se lean como de la misma casa. */}
+            <span className="h-5 w-5 rounded-[6px] bg-sitio-azul" />
+            MiTienda
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">

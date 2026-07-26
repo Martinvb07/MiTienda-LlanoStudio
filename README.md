@@ -97,13 +97,29 @@ coincidir.
 
 ### Probar el multi-tenant en local
 
-Los navegadores resuelven `*.localhost` sin tocar el archivo hosts:
+Los navegadores resuelven `*.localhost` por su cuenta (RFC 6761), así que en
+Chrome, Edge o Firefox basta con abrir:
 
 | URL | Qué sale |
 | --- | --- |
 | `http://localhost:3000` | panel |
 | `http://mitienda.localhost:3000` | panel |
 | `http://ropa.localhost:3000` | tienda con subdominio `ropa` |
+
+Ojo: eso vale **solo para navegadores**. El resolvedor de Windows no conoce los
+subdominios de `localhost`, así que `curl`, `Invoke-WebRequest` o Postman fallan
+con "host desconocido". Desde esas herramientas hay que apuntar a la IP y mandar
+el Host a mano:
+
+```powershell
+Invoke-WebRequest "http://127.0.0.1:3000/" -Headers @{Host="ropa.localhost"}
+```
+
+```bash
+curl -H "Host: ropa.localhost" http://127.0.0.1:3000/
+```
+
+Lo mismo contra la API en el puerto 4000, que resuelve el tenant por ese header.
 
 ---
 

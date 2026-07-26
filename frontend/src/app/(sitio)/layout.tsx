@@ -3,7 +3,9 @@ import { Encabezado } from '@/componentes/sitio/Encabezado'
 import { PieSitio } from '@/componentes/sitio/PieSitio'
 
 export const metadata: Metadata = {
-  title: 'Crea tu tienda online profesional en minutos',
+  // `absolute` salta la plantilla del layout raíz: sin esto la pestaña diría
+  // "MiTienda.com · MiTienda".
+  title: { absolute: 'MiTienda.com' },
   description:
     'Diseña, personaliza y publica una tienda moderna sin escribir código. Arrastra bloques, sube tus productos y vende desde tu propio dominio. Hecho para Colombia.',
   openGraph: {

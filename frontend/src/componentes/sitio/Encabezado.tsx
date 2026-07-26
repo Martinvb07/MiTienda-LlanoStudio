@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/react'
 import { Boton } from './Boton'
@@ -34,11 +35,18 @@ export function Encabezado() {
         <div className="flex h-16 items-center justify-between gap-8">
           <Link
             href="/"
-            className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-sitio-tinta"
+            className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight text-sitio-tinta"
           >
-            {/* Cuadro azul: el mismo detalle que remata el logotipo de Llano
-                Studio, para que ambas marcas se lean como de la misma casa. */}
-            <span className="h-5 w-5 rounded-[6px] bg-sitio-azul" />
+            {/* Versión oscura del monograma: la clara del pie desaparecería
+                sobre esta cabecera blanca. */}
+            <Image
+              src="/llanostudio-marca-oscura.png"
+              alt="Llano Studio"
+              width={220}
+              height={194}
+              priority
+              className="h-7 w-auto"
+            />
             MiTienda
           </Link>
 

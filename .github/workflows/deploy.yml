@@ -12,9 +12,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # El despliegue sólo tiene sentido cuando ya existe un VPS con sus secretos
+  # cargados. Sin esta comprobación, cada push a main dejaba el workflow en rojo
+  # al intentar un ssh-keyscan contra un host vacío.
+  comprobar:
+    name: ¿Hay VPS configurado?
+    runs-on: ubuntu-latest
+    outputs:
+      configurado: ${{ steps.revisar.outputs.configurado }}
+    steps:
+      - id: revisar
+        run: |
+          if [ -n "${{ secrets.SSH_HOST }}" ] && [ -n "${{ secrets.SSH_LLAVE_PRIVADA }}" ]; then
+            echo "configurado=si" >> "$GITHUB_OUTPUT"
+            echo "Secretos presentes: se procede con el despliegue."
+          else
+            echo "configurado=no" >> "$GITHUB_OUTPUT"
+            echo "Faltan SSH_HOST o SSH_LLAVE_PRIVADA: se omite el despliegue."
+            echo "Cárgalos en Settings → Secrets and variables → Actions cuando el VPS esté listo."
+          fi
+
   desplegar:
     name: Desplegar al VPS
     runs-on: ubuntu-latest
+    needs: comprobar
+    if: needs.comprobar.outputs.configurado == 'si'
     environment: produccion
 
     steps:

@@ -1,0 +1,127 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # Permite relanzar un despliegue a mano desde la pestaña Actions.
+  workflow_dispatch:
+
+# Nunca dos despliegues a la vez sobre el mismo VPS.
+concurrency:
+  group: deploy-produccion
+  cancel-in-progress: false
+
+jobs:
+  desplegar:
+    name: Desplegar al VPS
+    runs-on: ubuntu-latest
+    environment: produccion
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # ── Construcción en el runner ─────────────────────────────────────────
+      # Se compila aquí y no en el VPS para no competir por CPU y RAM con las
+      # tiendas que están sirviendo tráfico.
+
+      - name: Instalar y construir backend
+        working-directory: backend
+        run: |
+          npm ci
+          npx prisma generate
+          npx tsc -p tsconfig.build.json
+        env:
+          DATABASE_URL: postgresql://build:build@localhost:5432/build
+
+      - name: Instalar y construir frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+        env:
+          NEXT_PUBLIC_DOMINIO_BASE: ${{ vars.DOMINIO_BASE }}
+          NEXT_PUBLIC_SUBDOMINIO_PANEL: ${{ vars.SUBDOMINIO_PANEL }}
+          URL_API: ${{ vars.URL_API }}
+
+      # ── Envío al VPS ──────────────────────────────────────────────────────
+
+      - name: Preparar clave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_LLAVE_PRIVADA }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${{ secrets.SSH_PUERTO || 22 }}" -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Sincronizar archivos
+        # --delete mantiene el servidor igual que el repo. Se excluyen los .env
+        # del servidor y el .next/cache, que es de la máquina.
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PUERTO || 22 }}" \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude '.env' \
+            --exclude '.env.local' \
+            --exclude 'frontend/.next/cache' \
+            ./ "${{ secrets.SSH_USUARIO }}@${{ secrets.SSH_HOST }}:${{ secrets.RUTA_DESPLIEGUE }}/"
+
+      - name: Instalar dependencias de producción y recargar PM2
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.SSH_PUERTO || 22 }}" \
+            "${{ secrets.SSH_USUARIO }}@${{ secrets.SSH_HOST }}" \
+            'bash -se' <<'GUION'
+          set -euo pipefail
+
+          cd "${{ secrets.RUTA_DESPLIEGUE }}"
+
+          echo "→ Dependencias del backend"
+          cd backend
+          npm ci --omit=dev
+          # El cliente de Prisma es código generado: se rehace en el servidor
+          # porque no viaja en el repo.
+          npx prisma generate
+          cd ..
+
+          echo "→ Dependencias del frontend"
+          cd frontend
+          npm ci --omit=dev
+          cd ..
+
+          echo "→ Recargando procesos"
+          # reload = cero downtime: PM2 levanta el proceso nuevo antes de
+          # tumbar el viejo.
+          pm2 reload ecosystem.config.cjs --update-env
+          pm2 save
+
+          pm2 list
+          GUION
+
+      # ── Comprobación posterior ────────────────────────────────────────────
+
+      - name: Verificar que la API responde
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.SSH_PUERTO || 22 }}" \
+            "${{ secrets.SSH_USUARIO }}@${{ secrets.SSH_HOST }}" \
+            'curl -fsS http://127.0.0.1:4000/api/salud/detallada || (echo "La API no responde tras el despliegue" && exit 1)'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MIGRACIONES DE PRISMA — PASO MANUAL, A PROPÓSITO
+#
+# Este workflow NO ejecuta `prisma migrate deploy`. Una migración mal probada
+# sobre datos de tenants reales no se deshace con un rollback del despliegue.
+#
+# Cuando una migración esté lista y revisada, se aplica a mano:
+#
+#   ssh usuario@vps
+#   cd /ruta/del/despliegue/backend
+#   npx prisma migrate status      # ver qué falta por aplicar
+#   pg_dump ... > respaldo.sql     # respaldo antes de tocar nada
+#   npx prisma migrate deploy
+#
+# Orden recomendado para cambios que rompen compatibilidad: desplegar primero
+# el código que tolera ambos esquemas, luego migrar, y por último limpiar.
+# ─────────────────────────────────────────────────────────────────────────────

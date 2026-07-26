@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+
+/*
+ * Tematización por tienda.
+ *
+ * Los tokens de marca son variables CSS con un valor por defecto aquí; el
+ * layout de cada tienda las sobrescribe en línea con lo que haya en
+ * Tienda.tema. Así un mismo build sirve a todos los tenants sin CSS por cliente.
+ */
+@theme inline {
+  --color-marca: var(--marca);
+  --color-marca-contraste: var(--marca-contraste);
+  --color-superficie: var(--superficie);
+  --color-tinta: var(--tinta);
+  --radius-marca: var(--radio);
+}
+
+:root {
+  --marca: #0f172a;
+  --marca-contraste: #ffffff;
+  --superficie: #ffffff;
+  --tinta: #0f172a;
+  --radio: 0.75rem;
+}
+
+body {
+  background-color: var(--superficie);
+  color: var(--tinta);
+  -webkit-font-smoothing: antialiased;
+}

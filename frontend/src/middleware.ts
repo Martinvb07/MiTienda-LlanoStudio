@@ -1,0 +1,64 @@
+import { NextResponse, type NextRequest } from 'next/server'
+import { clasificarHost, configuracionDominios } from '@/utilidades/dominios'
+
+/** Header con el que el middleware le pasa el Host original a los layouts. */
+export const CABECERA_HOST = 'x-mitienda-host'
+
+/**
+ * Resolución de tenant por dominio de entrada.
+ *
+ *   mitienda.llanostudio.co  -> panel        (/  se reescribe a /panel)
+ *   ropa.llanostudio.co      -> tienda       (/x se reescribe a /ropa/x)
+ *   www.miropa.com           -> dominio propio (/x se reescribe a /www.miropa.com/x)
+ *
+ * Se reescribe a una ruta con el identificador de tienda dentro en vez de
+ * resolverlo sólo por header, porque así cada tienda tiene su propia entrada en
+ * la caché de rutas y puede usar ISR. La URL que ve el visitante no cambia.
+ *
+ * El identificador que viaja en la ruta es la etiqueta del subdominio o, para
+ * dominios propios, el host completo (contiene puntos, y por eso se distinguen).
+ */
+export function middleware(peticion: NextRequest) {
+  const clasificacion = clasificarHost(
+    peticion.headers.get('host'),
+    configuracionDominios,
+  )
+
+  const cabeceras = new Headers(peticion.headers)
+  cabeceras.set(CABECERA_HOST, clasificacion.host)
+
+  const url = peticion.nextUrl.clone()
+  const ruta = url.pathname
+
+  switch (clasificacion.tipo) {
+    case 'panel': {
+      if (ruta === '/') {
+        url.pathname = '/panel'
+        return NextResponse.rewrite(url, { request: { headers: cabeceras } })
+      }
+      return NextResponse.next({ request: { headers: cabeceras } })
+    }
+
+    case 'tienda':
+    case 'dominio-propio': {
+      const identificador =
+        clasificacion.tipo === 'tienda' ? clasificacion.subdominio! : clasificacion.host
+
+      url.pathname = `/${identificador}${ruta === '/' ? '' : ruta}`
+      return NextResponse.rewrite(url, { request: { headers: cabeceras } })
+    }
+
+    default: {
+      url.pathname = '/tienda-no-encontrada'
+      return NextResponse.rewrite(url, { request: { headers: cabeceras } })
+    }
+  }
+}
+
+export const config = {
+  /*
+   * Se excluyen las rutas internas de Next y cualquier archivo con extensión,
+   * para no reescribir estáticos ni imágenes.
+   */
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+}

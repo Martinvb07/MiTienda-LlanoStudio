@@ -1,0 +1,38 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Builds
+frontend/.next/
+frontend/out/
+backend/dist/
+*.tsbuildinfo
+
+# Cliente generado por Prisma
+backend/src/generado/
+
+# Entorno
+.env
+.env.local
+.env.*.local
+!.env.ejemplo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.pm2/
+
+# Editores / SO
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Cobertura y cachés
+coverage/
+.eslintcache
+.turbo/

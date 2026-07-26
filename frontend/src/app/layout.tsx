@@ -18,7 +18,7 @@ const texto = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'MiTienda.com',
+    default: 'MiTienda',
     template: '%s · MiTienda',
   },
   description: 'Crea tu tienda en línea sin escribir una sola línea de código.',

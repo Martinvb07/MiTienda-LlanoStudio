@@ -4,8 +4,8 @@ import { PieSitio } from '@/componentes/sitio/PieSitio'
 
 export const metadata: Metadata = {
   // `absolute` salta la plantilla del layout raíz: sin esto la pestaña diría
-  // "MiTienda.com · MiTienda".
-  title: { absolute: 'MiTienda.com' },
+  // "MiTienda · MiTienda".
+  title: { absolute: 'MiTienda' },
   description:
     'Diseña, personaliza y publica una tienda moderna sin escribir código. Arrastra bloques, sube tus productos y vende desde tu propio dominio. Hecho para Colombia.',
   openGraph: {

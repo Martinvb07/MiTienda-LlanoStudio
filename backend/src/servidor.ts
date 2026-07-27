@@ -10,7 +10,7 @@ const app = crearApp()
 const servidor = app.listen(entorno.PUERTO, () => {
   registro.info(
     { puerto: entorno.PUERTO, entorno: entorno.NODE_ENV, dominioBase: entorno.DOMINIO_BASE },
-    'API de MiTienda escuchando',
+    'API de Mi Tienda escuchando',
   )
 })
 

@@ -18,8 +18,8 @@ const texto = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'MiTienda',
-    template: '%s · MiTienda',
+    default: 'Mi Tienda',
+    template: '%s · Mi Tienda',
   },
   description: 'Crea tu tienda en línea sin escribir una sola línea de código.',
 }
@@ -31,7 +31,14 @@ export const metadata: Metadata = {
 export default function LayoutRaiz({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${display.variable} ${texto.variable}`}>
-      <body>{children}</body>
+      {/*
+        suppressHydrationWarning por las extensiones del navegador: varias
+        (ColorZilla, Grammarly y compañía) añaden atributos al <body> antes de
+        que React arranque, y eso dispara un aviso de hidratación que no viene
+        del código. Sólo afecta a los atributos de este elemento; cualquier
+        desajuste real dentro del árbol se sigue reportando igual.
+      */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }

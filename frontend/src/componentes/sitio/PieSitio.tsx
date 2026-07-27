@@ -6,31 +6,31 @@ const COLUMNAS = [
   {
     titulo: 'Producto',
     enlaces: [
-      { etiqueta: 'Características', href: '#producto' },
-      { etiqueta: 'Plantillas', href: '#plantillas' },
-      { etiqueta: 'Precios', href: '#precios' },
+      { etiqueta: 'Características', href: '/caracteristicas' },
+      { etiqueta: 'Plantillas', href: '/plantillas' },
+      { etiqueta: 'Precios', href: '/precios' },
     ],
   },
   {
     titulo: 'Empresa',
     enlaces: [
-      { etiqueta: 'Sobre nosotros', href: '#recursos' },
-      { etiqueta: 'Blog', href: '#recursos' },
-      { etiqueta: 'Contacto', href: '#recursos' },
+      { etiqueta: 'Sobre nosotros', href: '/sobre-nosotros' },
+      { etiqueta: 'Blog', href: '/blog' },
+      { etiqueta: 'Contacto', href: '/contacto' },
     ],
   },
   {
     titulo: 'Cuenta',
     enlaces: [
       { etiqueta: 'Ingresar', href: '/panel/ingresar' },
-      { etiqueta: 'Crear tienda', href: '/panel/ingresar' },
+      { etiqueta: 'Crear tienda', href: '/panel/crear-cuenta' },
     ],
   },
   {
     titulo: 'Legal',
     enlaces: [
-      { etiqueta: 'Términos', href: '#recursos' },
-      { etiqueta: 'Privacidad', href: '#recursos' },
+      { etiqueta: 'Términos', href: '/terminos' },
+      { etiqueta: 'Privacidad', href: '/privacidad' },
     ],
   },
 ]
@@ -51,7 +51,7 @@ export function PieSitio() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_repeat(4,minmax(0,1fr))]">
           <div>
             <Link href="/" className="font-display text-xl font-bold tracking-tight text-white">
-              MiTienda
+              Mi Tienda
             </Link>
 
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/55">
@@ -104,12 +104,12 @@ export function PieSitio() {
               <ul className="mt-4 space-y-3">
                 {columna.enlaces.map((enlace) => (
                   <li key={enlace.etiqueta}>
-                    <a
+                    <Link
                       href={enlace.href}
                       className="text-sm text-white/55 transition-colors hover:text-sitio-azul"
                     >
                       {enlace.etiqueta}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -119,7 +119,7 @@ export function PieSitio() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
           <p className="text-xs text-white/40">
-            © {anio} MiTienda. Todos los derechos reservados.
+            © {anio} Mi Tienda. Todos los derechos reservados.
           </p>
 
           <a

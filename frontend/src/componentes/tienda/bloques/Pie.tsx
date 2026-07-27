@@ -33,7 +33,7 @@ export function Pie({ texto, mostrarRedes, instagram, whatsapp }: PropsPie) {
       </div>
 
       <p className="mt-6 text-center text-xs text-tinta/40">
-        Hecho con MiTienda de Llano Studio
+        Hecho con Mi Tienda de Llano Studio
       </p>
     </footer>
   )

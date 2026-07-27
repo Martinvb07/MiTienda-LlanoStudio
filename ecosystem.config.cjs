@@ -1,5 +1,5 @@
 /**
- * Procesos de MiTienda en el VPS, gestionados por PM2.
+ * Procesos de Mi Tienda en el VPS, gestionados por PM2.
  *
  *   pm2 start ecosystem.config.cjs      primera vez
  *   pm2 reload ecosystem.config.cjs     despliegue sin caída (lo usa deploy.yml)

@@ -9,10 +9,10 @@ import { Contenedor } from './Contenedor'
 import { cn } from '@/utilidades/clases'
 
 const ENLACES = [
-  { href: '#producto', etiqueta: 'Producto' },
-  { href: '#plantillas', etiqueta: 'Plantillas' },
-  { href: '#precios', etiqueta: 'Precios' },
-  { href: '#recursos', etiqueta: 'Recursos' },
+  { href: '/caracteristicas', etiqueta: 'Producto' },
+  { href: '/plantillas', etiqueta: 'Plantillas' },
+  { href: '/precios', etiqueta: 'Precios' },
+  { href: '/blog', etiqueta: 'Recursos' },
 ] as const
 
 export function Encabezado() {
@@ -47,18 +47,18 @@ export function Encabezado() {
               priority
               className="h-7 w-auto"
             />
-            MiTienda
+            Mi Tienda
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
             {ENLACES.map((enlace) => (
-              <a
+              <Link
                 key={enlace.href}
                 href={enlace.href}
                 className="relative text-sm text-sitio-suave transition-colors hover:text-sitio-tinta"
               >
                 {enlace.etiqueta}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -69,7 +69,7 @@ export function Encabezado() {
             >
               Ingresar
             </Link>
-            <Boton href="/panel/ingresar">Empezar gratis</Boton>
+            <Boton href="/panel/crear-cuenta">Empezar gratis</Boton>
           </div>
 
           <button
@@ -111,20 +111,20 @@ export function Encabezado() {
           >
             <Contenedor className="flex flex-col gap-1 py-4">
               {ENLACES.map((enlace) => (
-                <a
+                <Link
                   key={enlace.href}
                   href={enlace.href}
                   onClick={() => setMenuAbierto(false)}
                   className="rounded-lg px-2 py-2.5 text-sitio-suave transition-colors hover:bg-sitio-crema hover:text-sitio-tinta"
                 >
                   {enlace.etiqueta}
-                </a>
+                </Link>
               ))}
               <div className="mt-3 flex flex-col gap-2">
                 <Boton href="/panel/ingresar" variante="secundario">
                   Ingresar
                 </Boton>
-                <Boton href="/panel/ingresar">Empezar gratis</Boton>
+                <Boton href="/panel/crear-cuenta">Empezar gratis</Boton>
               </div>
             </Contenedor>
           </motion.div>

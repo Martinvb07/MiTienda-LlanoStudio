@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Boton } from './Boton'
 import { Contenedor } from './Contenedor'
 import { Revelar } from './Revelar'
@@ -29,15 +30,15 @@ export function LlamadoFinal() {
               </p>
 
               <div className="mt-9 flex flex-wrap justify-center gap-3">
-                <Boton href="/panel/ingresar" variante="claro" tamano="grande" flecha>
+                <Boton href="/panel/crear-cuenta" variante="claro" tamano="grande" flecha>
                   Comenzar gratis hoy
                 </Boton>
-                <a
-                  href="#producto"
+                <Link
+                  href="/caracteristicas"
                   className="inline-flex items-center rounded-full border border-white/25 px-7 py-3.5 text-base font-medium text-white transition-colors hover:border-white/60"
                 >
                   Ver cómo funciona
-                </a>
+                </Link>
               </div>
             </div>
           </div>

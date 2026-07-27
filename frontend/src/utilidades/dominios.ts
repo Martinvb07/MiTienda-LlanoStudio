@@ -92,6 +92,17 @@ export function clasificarHost(
   return { tipo: 'dominio-propio', host, dominio: host }
 }
 
+/**
+ * Valida una etiqueta de subdominio antes de proponerla al crear una tienda.
+ * Réplica de la misma función del backend, que es quien decide de verdad.
+ */
+export function esSubdominioValido(valor: string): boolean {
+  const etiqueta = valor.trim().toLowerCase()
+  if (etiqueta.length < 3 || etiqueta.length > 63) return false
+  if (SUBDOMINIOS_RESERVADOS.has(etiqueta)) return false
+  return /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(etiqueta)
+}
+
 /** Configuración de dominios leída del entorno, con valores por defecto. */
 export const configuracionDominios: OpcionesDominio = {
   dominioBase: process.env.NEXT_PUBLIC_DOMINIO_BASE ?? 'llanostudio.co',

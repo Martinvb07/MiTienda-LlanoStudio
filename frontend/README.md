@@ -1,6 +1,6 @@
 <div align="center">
 
-# MiTienda — Frontend
+# Mi Tienda — Frontend
 
 **Todo lo que se ve: el panel del dueño y la tienda que visita el comprador**
 

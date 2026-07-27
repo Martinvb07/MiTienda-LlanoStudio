@@ -80,10 +80,10 @@ export function Hero() {
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
               className="mt-9 flex flex-wrap items-center gap-3"
             >
-              <Boton href="/panel/ingresar" tamano="grande" flecha>
+              <Boton href="/panel/crear-cuenta" tamano="grande" flecha>
                 Comenzar gratis
               </Boton>
-              <Boton href="#plantillas" variante="secundario" tamano="grande">
+              <Boton href="/plantillas" variante="secundario" tamano="grande">
                 Ver ejemplos
               </Boton>
             </motion.div>

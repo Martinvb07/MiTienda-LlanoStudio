@@ -1,4 +1,4 @@
-// Esquema de datos de MiTienda — SaaS multi-tenant de e-commerce (Llano Studio)
+// Esquema de datos de Mi Tienda — SaaS multi-tenant de e-commerce (Llano Studio)
 //
 // Estrategia de aislamiento: base de datos y esquema únicos, con separación por
 // fila. Todo registro cuelga de un Tenant, ya sea de forma directa (tenantId) o

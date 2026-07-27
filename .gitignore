@@ -4,7 +4,7 @@ node_modules/
 .pnp.js
 
 # Builds
-frontend/.next/
+frontend/.next*/
 frontend/out/
 backend/dist/
 *.tsbuildinfo

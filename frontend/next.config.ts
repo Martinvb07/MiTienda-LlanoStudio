@@ -4,6 +4,17 @@ import type { NextConfig } from 'next'
 const configuracion: NextConfig = {
   reactStrictMode: true,
 
+  /*
+   * Dos procesos de Next que compartan carpeta de compilación se corrompen el
+   * uno al otro: el segundo deja a medias lo que el primero estaba sirviendo y
+   * el servidor empieza a responder 500.
+   *
+   * Con esto, una comprobación puntual puede escribir en otro sitio sin tocar
+   * el servidor que ya esté levantado:
+   *   $env:NEXT_DIST_DIR='.next-verificacion'; npx next build
+   */
+  distDir: process.env.NEXT_DIST_DIR ?? '.next',
+
   // Sin esto Next busca el lockfile hacia arriba y puede elegir uno ajeno al
   // proyecto, arrastrando archivos de más al empaquetar para el despliegue.
   outputFileTracingRoot: path.join(import.meta.dirname, '..'),

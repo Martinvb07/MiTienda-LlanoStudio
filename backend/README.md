@@ -1,6 +1,6 @@
 <div align="center">
 
-# MiTienda — Backend
+# Mi Tienda — Backend
 
 **El servidor que atiende al panel y sirve el contenido de todas las tiendas**
 

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function TiendaNoEncontrada() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-      <p className="text-sm font-medium tracking-widest text-slate-400 uppercase">MiTienda</p>
+      <p className="text-sm font-medium tracking-widest text-slate-400 uppercase">Mi Tienda</p>
       <h1 className="text-3xl font-semibold text-slate-900">Aquí todavía no hay una tienda</h1>
       <p className="max-w-md text-slate-500">
         Este dominio no está conectado a ninguna tienda publicada. Si es tuyo, revisa la

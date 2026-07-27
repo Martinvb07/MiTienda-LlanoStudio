@@ -8,7 +8,9 @@ const rutaDirectorio = dirname(rutaArchivo)
 const compat = new FlatCompat({ baseDirectory: rutaDirectorio })
 
 const configuracion = [
-  { ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts'] },
+  // El comodín cubre también las carpetas de compilación alternativas que se
+  // usan para verificar sin pisar al servidor de desarrollo.
+  { ignores: ['.next*/**', 'node_modules/**', 'next-env.d.ts'] },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
 ]
 

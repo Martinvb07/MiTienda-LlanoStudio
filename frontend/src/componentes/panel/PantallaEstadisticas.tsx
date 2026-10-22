@@ -203,11 +203,18 @@ export function PantallaEstadisticas() {
                   type="button"
                   onClick={() => setSerie(opcion.clave)}
                   className={cn(
-                    'h-7 rounded-md px-3 text-[12px] transition-colors',
-                    serie === opcion.clave ? 'bg-white/12 text-white' : 'text-sitio-tenue hover:text-sitio-suave',
+                    'relative h-7 rounded-md px-3 text-[12px] outline-none transition-colors duration-300',
+                    serie === opcion.clave ? 'text-black' : 'text-sitio-tenue hover:text-sitio-suave',
                   )}
                 >
-                  {opcion.etiqueta}
+                  {serie === opcion.clave && (
+                    <motion.span
+                      layoutId="serie-metricas"
+                      transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.8 }}
+                      className="absolute inset-0 rounded-md bg-white shadow-[0_1px_3px_rgba(0,0,0,0.3)]"
+                    />
+                  )}
+                  <span className="relative">{opcion.etiqueta}</span>
                 </button>
               ))}
             </div>

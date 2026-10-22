@@ -330,20 +330,29 @@ export function Interruptor({
   children: ReactNode
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-3 text-[13.5px]">
+    <label className="group flex cursor-pointer items-center gap-3 text-[13.5px]">
       <input
         type="checkbox"
         checked={activo}
         onChange={(evento) => alCambiar(evento.target.checked)}
         className="peer sr-only"
       />
-      <i
+      <span
         className={cn(
-          'relative h-[22px] w-10 shrink-0 rounded-full transition-colors duration-300 peer-focus-visible:shadow-[0_0_0_3px_rgba(255,255,255,0.2)]',
-          'after:absolute after:top-[3px] after:left-[3px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform after:duration-[350ms] after:ease-salida',
-          activo ? 'bg-sitio-verde after:translate-x-[18px]' : 'bg-white/15',
+          'relative flex h-[22px] w-10 shrink-0 items-center rounded-full p-[3px] transition-colors duration-300 peer-focus-visible:shadow-[0_0_0_3px_rgba(107,141,255,0.35)]',
+          activo ? 'justify-end bg-white' : 'justify-start bg-white/15',
         )}
-      />
+      >
+        {/* La perilla viaja con resorte y se estira un poco mientras se presiona. */}
+        <motion.span
+          layout
+          transition={{ type: 'spring', stiffness: 600, damping: 32 }}
+          className={cn(
+            'h-4 w-4 rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.35)] transition-[width,background-color] duration-200 group-active:w-5',
+            activo ? 'bg-black' : 'bg-[#fff]',
+          )}
+        />
+      </span>
       <span>{children}</span>
     </label>
   )
@@ -360,25 +369,39 @@ export function Segmentado<T extends string>({
   alCambiar: (valor: T) => void
   chico?: boolean
 }) {
+  // Cada selector necesita su propio layoutId, si no las píldoras de dos
+  // selectores distintos saltarían de uno a otro.
+  const grupo = useId()
+
   return (
     <div className="inline-flex rounded-[9px] border border-sitio-borde bg-white/5 p-[3px]">
-      {opciones.map((opcion) => (
-        <button
-          key={opcion.valor}
-          type="button"
-          title={opcion.titulo}
-          aria-label={opcion.titulo}
-          aria-pressed={valor === opcion.valor}
-          onClick={() => alCambiar(opcion.valor)}
-          className={cn(
-            'grid place-items-center rounded-md px-[11px] text-xs transition-colors',
-            chico ? 'h-[26px] text-[11.5px]' : 'h-7',
-            valor === opcion.valor ? 'bg-white/12 text-white' : 'text-sitio-tenue hover:text-sitio-suave',
-          )}
-        >
-          {opcion.etiqueta}
-        </button>
-      ))}
+      {opciones.map((opcion) => {
+        const activo = valor === opcion.valor
+        return (
+          <button
+            key={opcion.valor}
+            type="button"
+            title={opcion.titulo}
+            aria-label={opcion.titulo}
+            aria-pressed={activo}
+            onClick={() => alCambiar(opcion.valor)}
+            className={cn(
+              'relative grid place-items-center rounded-md px-[11px] text-xs outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-sitio-azul-claro/60',
+              chico ? 'h-[26px] text-[11.5px]' : 'h-7',
+              activo ? 'text-black' : 'text-sitio-tenue hover:text-sitio-suave',
+            )}
+          >
+            {activo && (
+              <motion.span
+                layoutId={`segmentado-${grupo}`}
+                transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.8 }}
+                className="absolute inset-0 rounded-md bg-white shadow-[0_1px_3px_rgba(0,0,0,0.3)]"
+              />
+            )}
+            <span className="relative">{opcion.etiqueta}</span>
+          </button>
+        )
+      })}
     </div>
   )
 }

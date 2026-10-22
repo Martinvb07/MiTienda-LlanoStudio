@@ -24,6 +24,8 @@ export interface LimitesPlan {
   opcionesVariantes: number
   accionesLote: boolean
   importarProductos: boolean
+  diasMetricas: number
+  metricasAvanzadas: boolean
 }
 
 const BLOQUES_EMPRENDE = [
@@ -60,6 +62,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     opcionesVariantes: 0,
     accionesLote: false,
     importarProductos: false,
+    diasMetricas: 7,
+    metricasAvanzadas: false,
   },
   EMPRENDE: {
     nombre: 'Emprende',
@@ -73,6 +77,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     opcionesVariantes: 1,
     accionesLote: true,
     importarProductos: false,
+    diasMetricas: 30,
+    metricasAvanzadas: false,
   },
   NEGOCIO: {
     nombre: 'Negocio',
@@ -86,6 +92,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     opcionesVariantes: 2,
     accionesLote: true,
     importarProductos: true,
+    diasMetricas: 90,
+    metricasAvanzadas: true,
   },
   PRO: {
     nombre: 'Pro',
@@ -99,6 +107,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     opcionesVariantes: 3,
     accionesLote: true,
     importarProductos: true,
+    diasMetricas: 365,
+    metricasAvanzadas: true,
   },
 }
 

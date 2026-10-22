@@ -162,6 +162,7 @@ model Tienda {
   productos Producto[]
   pedidos   Pedido[]
   cupones   Cupon[]
+  visitas   VisitaDiaria[]
 
   @@map("tiendas")
 }
@@ -355,4 +356,28 @@ model Cupon {
 
   @@unique([tiendaId, codigo])
   @@map("cupones")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Estadísticas
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Un renglón por tienda y día: cuántas visitas tuvo y a qué productos.
+/// Agregado, sin datos de quién visitó: no hace falta pedir consentimiento.
+model VisitaDiaria {
+  id       String   @id @default(cuid())
+  tiendaId String
+  fecha    DateTime @db.Date
+
+  visitas        Int  @default(0)
+  /// Primera página de cada visitante en el día (aprox. visitantes únicos).
+  visitantes     Int  @default(0)
+  clicsWhatsapp  Int  @default(0)
+  /// { [productoId]: vistas }
+  vistasProducto Json @default("{}")
+
+  tienda Tienda @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+
+  @@unique([tiendaId, fecha])
+  @@map("visitas_diarias")
 }

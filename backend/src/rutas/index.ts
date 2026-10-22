@@ -4,6 +4,7 @@ import rutasSalud from './salud.rutas.js'
 import rutasTiendas from './tiendas.rutas.js'
 import rutasProductos from './productos.rutas.js'
 import rutasPedidos from './pedidos.rutas.js'
+import rutasVisitas from './visitas.rutas.js'
 import rutasPanel from './panel.rutas.js'
 import rutasAdmin from './admin.rutas.js'
 import rutasPlanes from './planes.rutas.js'
@@ -26,5 +27,6 @@ enrutador.use(resolverTenant)
 enrutador.use('/tienda', rutasTiendas)
 enrutador.use('/productos', rutasProductos)
 enrutador.use('/pedidos', rutasPedidos)
+enrutador.use('/visitas', rutasVisitas)
 
 export default enrutador

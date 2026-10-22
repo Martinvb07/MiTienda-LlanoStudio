@@ -43,6 +43,10 @@ export interface LimitesPlan {
   accionesLote: boolean
   importarProductos: boolean
   exportarPedidos: boolean
+  /** Días hacia atrás que muestran las estadísticas. */
+  diasMetricas: number
+  /** Productos más vistos y vendidos, conversión y clics a WhatsApp. */
+  metricasAvanzadas: boolean
 }
 
 /**
@@ -104,6 +108,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     opcionesVariantes: 0,
     accionesLote: false,
     importarProductos: false,
+    diasMetricas: 7,
+    metricasAvanzadas: false,
     exportarPedidos: false,
   },
   EMPRENDE: {
@@ -128,6 +134,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     opcionesVariantes: 1,
     accionesLote: true,
     importarProductos: false,
+    diasMetricas: 30,
+    metricasAvanzadas: false,
     exportarPedidos: true,
   },
   NEGOCIO: {
@@ -152,6 +160,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     opcionesVariantes: 2,
     accionesLote: true,
     importarProductos: true,
+    diasMetricas: 90,
+    metricasAvanzadas: true,
     exportarPedidos: true,
   },
   PRO: {
@@ -176,6 +186,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     opcionesVariantes: 3,
     accionesLote: true,
     importarProductos: true,
+    diasMetricas: 365,
+    metricasAvanzadas: true,
     exportarPedidos: true,
   },
 }

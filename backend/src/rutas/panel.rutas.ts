@@ -22,6 +22,7 @@ import {
   registrar,
   subirMedioPanel,
 } from '../controladores/panel.controlador.js'
+import { obtenerAvisos, obtenerMetricas } from '../controladores/metricas.controlador.js'
 import {
   actualizarCupon,
   crearCupon,
@@ -71,6 +72,9 @@ enrutador.post('/productos/importar', validar(esquemaImportar), importarProducto
 enrutador.put('/categorias', validar(esquemaCategoria), renombrarCategoria)
 enrutador.put('/productos/:id', validar(esquemaProducto), actualizarProductoPanel)
 enrutador.delete('/productos/:id', eliminarProductoPanel)
+
+enrutador.get('/metricas', obtenerMetricas)
+enrutador.get('/avisos', obtenerAvisos)
 
 enrutador.get('/cupones', listarCupones)
 enrutador.post('/cupones', validar(esquemaCupon), crearCupon)

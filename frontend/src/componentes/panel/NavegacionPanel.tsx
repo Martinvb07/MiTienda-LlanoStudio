@@ -3,15 +3,19 @@
 /* eslint-disable @next/next/no-img-element -- logo de la tienda subido por el usuario */
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import {
   ArrowUpRight,
+  BarChart3,
   LayoutGrid,
   LogOut,
+  Menu,
   Package,
   Paintbrush,
   Receipt,
+  Search,
   Settings,
   Sparkles,
   Ticket,
@@ -22,6 +26,8 @@ import { limitesDe } from '@/utilidades/planes'
 import { cn } from '@/utilidades/clases'
 import { useSesion } from './SesionPanel'
 import { SALIDA } from './ui/movimiento'
+import { CampanaAvisos, useAvisos } from './Avisos'
+import { useAbrirBuscador } from './BuscadorRapido'
 
 interface Enlace {
   href: string
@@ -47,6 +53,7 @@ const GRUPOS: { titulo: string; enlaces: Enlace[] }[] = [
     enlaces: [
       { href: '/panel/pedidos', etiqueta: 'Pedidos', corta: 'Pedidos', Icono: Receipt },
       { href: '/panel/descuentos', etiqueta: 'Descuentos', corta: 'Cupones', Icono: Ticket, movil: false },
+      { href: '/panel/estadisticas', etiqueta: 'Estadísticas', corta: 'Datos', Icono: BarChart3, movil: false },
     ],
   },
   {
@@ -103,18 +110,27 @@ export function NavegacionPanel() {
   const publicada = sesion.tienda?.publicada ?? false
   const plan = limitesDe(sesion.tenant.plan)
   const esPro = sesion.tenant.plan === 'PRO'
+  const { avisos } = useAvisos()
+  const abrirBuscador = useAbrirBuscador()
+  const [mas, setMas] = useState(false)
+  const pedidosNuevos = avisos?.pedidosNuevos ?? 0
+
+  useEffect(() => setMas(false), [ruta])
 
   return (
     <>
       {/* ── Escritorio ── */}
       <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 flex-col border-r border-sitio-borde bg-[#070707] md:flex">
-        <Link href="/panel" className="flex items-center gap-[11px] px-6 pt-7">
-          <Image src="/llanostudio-marca.png" alt="Llano Studio" width={232} height={205} className="h-7 w-auto" />
-          <span className="flex flex-col">
-            <span className="text-[15px] leading-none font-semibold tracking-[-0.02em]">Mi Tienda</span>
-            <span className="mt-1 text-[9.5px] tracking-[0.24em] text-sitio-tenue uppercase">Panel</span>
-          </span>
-        </Link>
+        <div className="flex items-center justify-between gap-3 px-5 pt-6">
+          <Link href="/panel" className="flex items-center gap-[11px] pl-1">
+            <Image src="/llanostudio-marca.png" alt="Llano Studio" width={232} height={205} className="h-7 w-auto" />
+            <span className="flex flex-col">
+              <span className="text-[15px] leading-none font-semibold tracking-[-0.02em]">Mi Tienda</span>
+              <span className="mt-1 text-[9.5px] tracking-[0.24em] text-sitio-tenue uppercase">Panel</span>
+            </span>
+          </Link>
+          <CampanaAvisos />
+        </div>
 
         <a
           href={urlTienda(sesion.tenant.subdominio)}
@@ -143,7 +159,17 @@ export function NavegacionPanel() {
           />
         </a>
 
-        <nav className="mt-6 flex flex-col gap-6 px-3">
+        <button
+          type="button"
+          onClick={abrirBuscador}
+          className="mx-4 mt-3 flex h-9 items-center gap-2 rounded-lg border border-sitio-borde px-3 text-[12.5px] text-sitio-tenue transition-colors hover:border-white/20 hover:text-sitio-suave"
+        >
+          <Search aria-hidden="true" className="h-3.5 w-3.5" />
+          Buscar…
+          <kbd className="ml-auto rounded border border-white/12 px-1.5 text-[10px]">Ctrl K</kbd>
+        </button>
+
+        <nav className="mt-5 flex flex-col gap-5 overflow-y-auto px-3">
           {GRUPOS.map((grupo) => (
             <div key={grupo.titulo}>
               <p className="px-3 pb-2 text-[10px] tracking-[0.18em] text-sitio-tenue uppercase">{grupo.titulo}</p>
@@ -173,6 +199,11 @@ export function NavegacionPanel() {
                           className="relative h-4 w-4 shrink-0 transition-transform duration-500 ease-salida group-hover:scale-110"
                         />
                         <span className="relative">{enlace.etiqueta}</span>
+                        {enlace.href === '/panel/pedidos' && pedidosNuevos > 0 && (
+                          <span className="relative ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-sitio-azul px-1.5 text-[10.5px] font-semibold text-white">
+                            {pedidosNuevos}
+                          </span>
+                        )}
                       </Link>
                     </li>
                   )
@@ -240,6 +271,15 @@ export function NavegacionPanel() {
           </span>
         </Link>
         <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={abrirBuscador}
+            aria-label="Buscar"
+            className="grid h-9 w-9 place-items-center rounded-lg border border-sitio-borde text-sitio-suave"
+          >
+            <Search aria-hidden="true" className="h-4 w-4" />
+          </button>
+          <CampanaAvisos abajo />
           <a
             href={urlTienda(sesion.tenant.subdominio)}
             target="_blank"
@@ -249,14 +289,6 @@ export function NavegacionPanel() {
           >
             <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
           </a>
-          <button
-            type="button"
-            onClick={salir}
-            aria-label="Cerrar sesión"
-            className="grid h-9 w-9 place-items-center rounded-lg border border-sitio-borde text-sitio-suave"
-          >
-            <LogOut aria-hidden="true" className="h-4 w-4" />
-          </button>
         </div>
       </header>
 
@@ -266,7 +298,7 @@ export function NavegacionPanel() {
         className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-2xl border border-white/10 bg-[#0e0e0f]/90 p-1.5 shadow-[0_20px_60px_-10px_rgba(0,0,0,1)] backdrop-blur-xl md:hidden"
         style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {TODOS.map((enlace) => {
+        {TODOS.filter((enlace) => enlace.href !== '/panel/configuracion').map((enlace) => {
           const activo = esActivo(enlace.href, ruta)
           return (
             <Link
@@ -287,10 +319,74 @@ export function NavegacionPanel() {
               )}
               <enlace.Icono aria-hidden="true" strokeWidth={1.7} className="relative h-[18px] w-[18px]" />
               <span className="relative">{enlace.corta}</span>
+              {enlace.href === '/panel/pedidos' && pedidosNuevos > 0 && (
+                <span className="absolute top-1 right-[22%] h-2 w-2 rounded-full bg-sitio-azul-claro" />
+              )}
             </Link>
           )
         })}
+        <button
+          type="button"
+          onClick={() => setMas(true)}
+          className={cn(
+            'relative flex flex-col items-center gap-1 rounded-xl py-2 text-[10.5px] transition-colors duration-300',
+            ['/panel/configuracion', '/panel/descuentos', '/panel/estadisticas'].some((href) => ruta.startsWith(href))
+              ? 'text-white'
+              : 'text-sitio-tenue',
+          )}
+        >
+          <Menu aria-hidden="true" strokeWidth={1.7} className="h-[18px] w-[18px]" />
+          Más
+        </button>
       </nav>
+
+      {/* ── Celular: hoja "Más" ── */}
+      <AnimatePresence>
+        {mas && (
+          <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Más secciones">
+            <motion.div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMas(false)}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ duration: 0.45, ease: SALIDA }}
+              className="absolute inset-x-0 bottom-0 rounded-t-[22px] border-t border-white/10 bg-[#0e0e0f] px-4 pt-3 pb-8"
+            >
+              <span className="mx-auto mb-4 block h-1 w-10 rounded-full bg-white/20" />
+              <ul className="flex flex-col gap-1">
+                {GRUPOS.flatMap((grupo) => grupo.enlaces)
+                  .filter((enlace) => enlace.movil === false || enlace.href === '/panel/configuracion')
+                  .map((enlace) => (
+                    <li key={enlace.href}>
+                      <Link
+                        href={enlace.href}
+                        className={cn(
+                          'flex items-center gap-3 rounded-xl px-3 py-3.5 text-[15px]',
+                          esActivo(enlace.href, ruta) ? 'bg-white/[0.08] text-white' : 'text-sitio-suave',
+                        )}
+                      >
+                        <enlace.Icono aria-hidden="true" className="h-5 w-5" strokeWidth={1.6} />
+                        {enlace.etiqueta}
+                      </Link>
+                    </li>
+                  ))}
+                <li className="mt-2 border-t border-sitio-borde pt-2">
+                  <button type="button" onClick={salir} className="flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-[15px] text-sitio-suave">
+                    <LogOut aria-hidden="true" className="h-5 w-5" strokeWidth={1.6} />
+                    Cerrar sesión
+                  </button>
+                </li>
+              </ul>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   )
 }

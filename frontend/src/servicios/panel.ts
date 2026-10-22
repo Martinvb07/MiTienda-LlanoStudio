@@ -191,6 +191,49 @@ export const actualizarPedido = (id: string, cambios: { estado?: EstadoPedido; n
     (respuesta) => respuesta.pedido,
   )
 
+// ── Estadísticas ──
+
+export interface DiaMetricas {
+  fecha: string
+  visitas: number
+  visitantes: number
+  pedidos: number
+  ventas: number
+}
+
+export interface Metricas {
+  dias: number
+  maximoDias: number
+  serie: DiaMetricas[]
+  totales: {
+    visitas: number
+    visitantes: number
+    pedidos: number
+    ventas: number
+    visitasAntes: number
+    pedidosAntes: number
+    ventasAntes: number
+  }
+  avanzadas: {
+    masVistos: { slug: string; nombre: string; foto: string | null; vistas: number }[]
+    masVendidos: { nombre: string; unidades: number; ventas: number }[]
+    clicsWhatsapp: number
+    conversion: number
+  } | null
+}
+
+export const obtenerMetricas = (dias: number) => pedir<Metricas>(`/metricas?dias=${dias}`)
+
+export interface Avisos {
+  pedidosNuevos: number
+  ultimos: { id: string; numero: number; clienteNombre: string; total: string; creadoEn: string }[]
+  agotados: number
+  stockBajo: { id: string; nombre: string; stock: number }[]
+  cuponesPorVencer: { id: string; codigo: string; venceEn: string }[]
+}
+
+export const obtenerAvisos = () => pedir<Avisos>('/avisos')
+
 // ── Cupones ──
 
 export const listarCupones = () => pedir<{ cupones: Cupon[] }>('/cupones').then((respuesta) => respuesta.cupones)

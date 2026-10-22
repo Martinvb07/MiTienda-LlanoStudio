@@ -6,6 +6,7 @@ import { atributosTema, variablesTema } from '@/utilidades/tema'
 import { FuentesTema } from '@/componentes/tienda/FuentesTema'
 import { BotonWhatsapp } from '@/componentes/tienda/BotonWhatsapp'
 import { ProveedorCarrito } from '@/componentes/tienda/carrito/Carrito'
+import { ContadorVisitas } from '@/componentes/tienda/ContadorVisitas'
 
 /** Revalidación ISR: las tiendas se sirven de caché y se refrescan solas. */
 export const revalidate = 60
@@ -65,6 +66,7 @@ export default async function LayoutTienda({ children, params }: Props) {
       <ProveedorCarrito clave={subdominio} moneda={tienda.moneda} ajustes={tienda.ajustes}>
         {children}
       </ProveedorCarrito>
+      <ContadorVisitas />
       {tienda.ajustes.whatsappFlotante && tienda.ajustes.whatsapp && (
         <BotonWhatsapp numero={tienda.ajustes.whatsapp} tienda={tienda.nombre} />
       )}

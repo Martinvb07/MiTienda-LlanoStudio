@@ -1,7 +1,7 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { Instagram, MapPin } from 'lucide-react'
 import { Contenedor } from './Contenedor'
+import { LogoMarca } from '@/componentes/comunes/LogoMarca'
 
 const COLUMNAS = [
   {
@@ -46,7 +46,7 @@ export function PieSitio() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_repeat(4,minmax(0,1fr))]">
           <div>
             <Link href="/" className="flex items-center gap-[11px]">
-              <Image src="/llanostudio-marca.png" alt="" width={232} height={205} className="h-7 w-auto" />
+              <LogoMarca alt="" className="h-7 w-auto" />
               <span className="text-base font-semibold tracking-[-0.02em] text-white">Mi Tienda</span>
             </Link>
 
@@ -107,13 +107,7 @@ export function PieSitio() {
             Un producto de
             {/* La versión clara del logotipo es la que corresponde sobre fondo
                 oscuro; la oscura viviría en public/llanostudio-logo.png. */}
-            <Image
-              src="/llanostudio-marca.png"
-              alt=""
-              width={232}
-              height={205}
-              className="h-5 w-auto opacity-80 transition-opacity group-hover:opacity-100"
-            />
+            <LogoMarca alt="" className="h-5 w-auto opacity-80 transition-opacity group-hover:opacity-100" />
             <span className="font-bold text-white/70 transition-colors group-hover:text-white">
               Llano Studio
             </span>

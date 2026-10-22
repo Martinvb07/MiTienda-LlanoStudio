@@ -208,7 +208,7 @@ function Buscador({ alCerrar }: { alCerrar: () => void }) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.15 } }}
         transition={{ duration: 0.4, ease: CURVA }}
-        className="relative w-full max-w-[580px] overflow-hidden rounded-[14px] border border-white/12 bg-[#0e0e0f] shadow-[0_40px_100px_-20px_rgba(0,0,0,1)]"
+        className="relative w-full max-w-[580px] overflow-hidden rounded-[14px] border border-white/12 bg-sitio-modal shadow-[0_40px_100px_-20px_rgba(0,0,0,1)]"
       >
         <div className="flex items-center gap-3 border-b border-white/10 px-4">
           <Search aria-hidden="true" className="h-4 w-4 text-sitio-tenue" />

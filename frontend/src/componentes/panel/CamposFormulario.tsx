@@ -18,7 +18,7 @@ interface PropsCampo {
 }
 
 const CLASES_BASE =
-  'mt-1.5 w-full rounded-lg border bg-[#121214] px-3.5 py-2.5 text-[14px] text-white outline-none transition-[border-color,box-shadow] placeholder:text-sitio-tenue focus:shadow-[0_0_0_3px_rgba(255,255,255,0.06)]'
+  'mt-1.5 w-full rounded-lg border bg-sitio-campo px-3.5 py-2.5 text-[14px] text-white outline-none transition-[border-color,box-shadow] placeholder:text-sitio-tenue focus:shadow-[0_0_0_3px_rgba(255,255,255,0.06)]'
 
 export function CampoTexto({
   etiqueta,

@@ -51,7 +51,7 @@ function SelectorFuente({ etiqueta, valor, alCambiar }: { etiqueta: string; valo
           type="button"
           onClick={() => setAbierto((estado) => !estado)}
           aria-expanded={abierto}
-          className="flex w-full items-center justify-between rounded-lg border border-sitio-borde bg-[#121214] px-3 py-2.5 text-left transition-colors hover:border-white/25"
+          className="flex w-full items-center justify-between rounded-lg border border-sitio-borde bg-sitio-campo px-3 py-2.5 text-left transition-colors hover:border-white/25"
         >
           <span className="text-[17px] leading-none" style={{ fontFamily: actual.pila }}>
             {actual.nombre}
@@ -65,7 +65,7 @@ function SelectorFuente({ etiqueta, valor, alCambiar }: { etiqueta: string; valo
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3, ease: CURVA }}
-              className="absolute top-[calc(100%+6px)] right-0 left-0 z-50 max-h-80 overflow-y-auto rounded-[10px] border border-white/12 bg-[#141416] p-1 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)]"
+              className="absolute top-[calc(100%+6px)] right-0 left-0 z-50 max-h-80 overflow-y-auto rounded-[10px] border border-white/12 bg-sitio-elevado p-1 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)]"
             >
               {GRUPOS_FUENTES.map((grupo) => (
                 <div key={grupo}>
@@ -111,7 +111,7 @@ function EditorEsquemas({ tema, alCambiar }: Props) {
   return (
     <div className="flex flex-col gap-2">
       {esquemas.map((esquema) => (
-        <div key={esquema.id} className="rounded-[10px] border border-sitio-borde bg-[#121214]">
+        <div key={esquema.id} className="rounded-[10px] border border-sitio-borde bg-sitio-campo">
           <button
             type="button"
             onClick={() => setAbierto(abierto === esquema.id ? null : esquema.id)}

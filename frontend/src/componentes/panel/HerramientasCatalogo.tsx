@@ -14,6 +14,7 @@ import type { ProductoPanel } from '@/tipos/tienda'
 import { formatearPrecio } from '@/utilidades/formato'
 import { Aviso, BotonPanel, CURVA, Campo } from './ui/basicos'
 import { ModalPanel } from './ui/flotantes'
+import { confirmar } from './ui/confirmar'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Selección en grupo
@@ -38,7 +39,11 @@ export function BarraSeleccion({
   const [categoria, setCategoria] = useState('')
 
   async function aplicar(accion: AccionLote, valor?: string | null) {
-    if (accion === 'eliminar' && !confirm(`¿Eliminar ${ids.length} productos? No se puede deshacer.`)) return
+    if (
+      accion === 'eliminar' &&
+      !(await confirmar({ titulo: `¿Eliminar ${ids.length} productos?`, mensaje: 'No se puede deshacer.', confirmar: 'Eliminar', peligro: true }))
+    )
+      return
     setTrabajando(true)
     try {
       await loteProductos(ids, accion, valor)
@@ -65,7 +70,7 @@ export function BarraSeleccion({
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 80, opacity: 0 }}
         transition={{ duration: 0.5, ease: CURVA }}
-        className="fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-fit flex-wrap items-center justify-center gap-1 rounded-2xl border border-white/12 bg-[#141416]/95 p-1.5 shadow-[0_24px_60px_-12px_rgba(0,0,0,1)] backdrop-blur-xl md:bottom-6"
+        className="fixed inset-x-3 bottom-24 z-50 mx-auto flex max-w-fit flex-wrap items-center justify-center gap-1 rounded-2xl border border-white/12 bg-sitio-elevado/95 p-1.5 shadow-[0_24px_60px_-12px_rgba(0,0,0,1)] backdrop-blur-xl md:bottom-6"
       >
         <span className="px-3 text-[13px]">
           <strong className="font-medium">{ids.length}</strong> seleccionados
@@ -250,7 +255,7 @@ export function ModalImportar({ alTerminar, alCerrar }: { alTerminar: (creados: 
           onChange={(evento) => setTexto(evento.target.value)}
           rows={4}
           placeholder="…o pega aquí las filas, con la de títulos primero"
-          className="w-full resize-y rounded-lg border border-sitio-borde bg-[#121214] px-3 py-2.5 font-mono text-[12px] outline-none placeholder:text-sitio-tenue focus:border-white/40"
+          className="w-full resize-y rounded-lg border border-sitio-borde bg-sitio-campo px-3 py-2.5 font-mono text-[12px] outline-none placeholder:text-sitio-tenue focus:border-white/40"
         />
         <button type="button" onClick={descargarPlantilla} className="inline-flex items-center gap-1.5 self-start text-[12px] text-sitio-suave hover:text-white">
           <Download aria-hidden="true" className="h-3.5 w-3.5" />
@@ -311,7 +316,11 @@ export function ModalCategorias({
   const [trabajando, setTrabajando] = useState(false)
 
   async function cambiar(de: string, a: string | null) {
-    if (a === null && !confirm(`¿Quitar la categoría "${de}"? Los productos quedan sin categoría.`)) return
+    if (
+      a === null &&
+      !(await confirmar({ titulo: `¿Quitar la categoría "${de}"?`, mensaje: 'Sus productos quedan sin categoría.', confirmar: 'Quitar', peligro: true }))
+    )
+      return
     setTrabajando(true)
     setError('')
     try {
@@ -342,7 +351,7 @@ export function ModalCategorias({
                   value={nuevo}
                   onChange={(evento) => setNombres((actuales) => ({ ...actuales, [categoria]: evento.target.value.slice(0, 60) }))}
                   aria-label={`Nombre de ${categoria}`}
-                  className="min-w-0 flex-1 rounded-lg border border-sitio-borde bg-[#121214] px-3 py-2 text-[13px] outline-none focus:border-white/40"
+                  className="min-w-0 flex-1 rounded-lg border border-sitio-borde bg-sitio-campo px-3 py-2 text-[13px] outline-none focus:border-white/40"
                 />
                 <span className="w-10 shrink-0 text-right text-[11.5px] text-sitio-tenue">{cantidad}</span>
                 <BotonPanel

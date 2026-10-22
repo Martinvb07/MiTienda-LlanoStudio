@@ -1,7 +1,6 @@
 'use client'
 
 /* eslint-disable @next/next/no-img-element -- logo de la tienda subido por el usuario */
-import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
@@ -17,7 +16,6 @@ import {
   Receipt,
   Search,
   Settings,
-  Sparkles,
   Ticket,
 } from 'lucide-react'
 import { cerrarSesion } from '@/servicios/panel'
@@ -28,6 +26,8 @@ import { useSesion } from './SesionPanel'
 import { SALIDA } from './ui/movimiento'
 import { CampanaAvisos, useAvisos } from './Avisos'
 import { useAbrirBuscador } from './BuscadorRapido'
+import { LogoMarca } from '@/componentes/comunes/LogoMarca'
+import { BotonTema } from '@/componentes/comunes/BotonTema'
 
 interface Enlace {
   href: string
@@ -123,16 +123,19 @@ export function NavegacionPanel() {
   return (
     <>
       {/* ── Escritorio ── */}
-      <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 flex-col border-r border-sitio-borde bg-[#070707] md:flex">
+      <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 flex-col border-r border-sitio-borde bg-sitio-lateral md:flex">
         <div className="flex items-center justify-between gap-3 px-5 pt-6">
           <Link href="/panel" className="flex items-center gap-[11px] pl-1">
-            <Image src="/llanostudio-marca.png" alt="Llano Studio" width={232} height={205} className="h-7 w-auto" />
+            <LogoMarca className="h-7 w-auto" />
             <span className="flex flex-col">
               <span className="text-[15px] leading-none font-semibold tracking-[-0.02em]">Mi Tienda</span>
               <span className="mt-1 text-[9.5px] tracking-[0.24em] text-sitio-tenue uppercase">Panel</span>
             </span>
           </Link>
-          <CampanaAvisos />
+          <div className="flex items-center gap-1.5">
+            <BotonTema />
+            <CampanaAvisos />
+          </div>
         </div>
 
         <a
@@ -205,7 +208,7 @@ export function NavegacionPanel() {
                         />
                         <span className="relative">{enlace.etiqueta}</span>
                         {enlace.href === '/panel/pedidos' && pedidosNuevos > 0 && (
-                          <span className="relative ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-sitio-azul px-1.5 text-[10.5px] font-semibold text-white">
+                          <span className="relative ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-sitio-azul px-1.5 text-[10.5px] font-semibold text-[#fff]">
                             {pedidosNuevos}
                           </span>
                         )}
@@ -220,26 +223,18 @@ export function NavegacionPanel() {
 
         <div className="mt-auto p-4">
           {!esPro && (
-            <Link
-              href="/precios"
-              target="_blank"
-              className="group relative mb-4 block overflow-hidden rounded-xl border border-sitio-borde bg-[radial-gradient(120%_120%_at_0%_0%,rgba(59,96,255,0.22),transparent_60%)] p-4 transition-colors duration-300 hover:border-sitio-azul-claro/40"
-            >
-              <p className="flex items-center gap-1.5 text-[11px] tracking-[0.12em] text-sitio-azul-claro uppercase">
-                <Sparkles aria-hidden="true" className="h-3 w-3" />
-                Plan {plan.nombre}
-              </p>
-              <p className="mt-1.5 text-[12.5px] leading-snug text-sitio-suave">
-                Más productos, tus colores y quitar la marca.
-              </p>
-              <span className="mt-2.5 inline-flex items-center gap-1 text-[12px] text-white">
+            <div className="mb-4 rounded-[10px] border border-sitio-borde p-4">
+              <span className="antetitulo !text-[10px]">Tu plan</span>
+              <p className="mt-1.5 text-[22px] leading-none tracking-[-0.04em]">{plan.nombre}</p>
+              <p className="mt-2 text-[12px] leading-snug text-sitio-tenue">Más productos, tus colores y sin la marca de Mi Tienda.</p>
+              <Link href="/precios" target="_blank" className="group boton boton-primario boton-chico mt-4 !h-9 w-full">
                 Mejorar plan
                 <ArrowUpRight
                   aria-hidden="true"
                   className="h-3.5 w-3.5 transition-transform duration-500 ease-salida group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                 />
-              </span>
-            </Link>
+              </Link>
+            </div>
           )}
 
           <div className="flex items-center gap-3 border-t border-sitio-borde pt-4">
@@ -284,6 +279,7 @@ export function NavegacionPanel() {
           >
             <Search aria-hidden="true" className="h-4 w-4" />
           </button>
+          <BotonTema />
           <CampanaAvisos abajo />
           <a
             href={urlTienda(sesion.tenant.subdominio)}
@@ -300,7 +296,7 @@ export function NavegacionPanel() {
       {/* ── Celular: pestañas abajo ── */}
       <nav
         aria-label="Secciones del panel"
-        className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-2xl border border-white/10 bg-[#0e0e0f]/90 p-1.5 shadow-[0_20px_60px_-10px_rgba(0,0,0,1)] backdrop-blur-xl md:hidden"
+        className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-2xl border border-white/10 bg-sitio-modal/90 p-1.5 shadow-[0_20px_60px_-10px_rgba(0,0,0,1)] backdrop-blur-xl md:hidden"
         style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
       >
         {TODOS.filter((enlace) => enlace.href !== '/panel/configuracion').map((enlace) => {
@@ -361,7 +357,7 @@ export function NavegacionPanel() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ duration: 0.45, ease: SALIDA }}
-              className="absolute inset-x-0 bottom-0 rounded-t-[22px] border-t border-white/10 bg-[#0e0e0f] px-4 pt-3 pb-8"
+              className="absolute inset-x-0 bottom-0 rounded-t-[22px] border-t border-white/10 bg-sitio-modal px-4 pt-3 pb-8"
             >
               <span className="mx-auto mb-4 block h-1 w-10 rounded-full bg-white/20" />
               <ul className="flex flex-col gap-1">

@@ -85,7 +85,7 @@ export function Caracteristicas() {
           </Baldosa>
 
           <Baldosa retardo={0.04} titulo="Perfecta en el celular" texto="Así compra la mayoría de tus clientes. Todas las plantillas se adaptan solas.">
-            <div className="absolute top-0 left-1/2 w-[200px] -translate-x-1/2 overflow-hidden rounded-t-[26px] border-[6px] border-b-0 border-[#1b1b1e] transition-transform duration-[1.2s] ease-salida group-hover:-translate-y-2">
+            <div className="absolute top-0 left-1/2 w-[200px] -translate-x-1/2 overflow-hidden rounded-t-[26px] border-[6px] border-b-0 border-sitio-elevado transition-transform duration-[1.2s] ease-salida group-hover:-translate-y-2">
               <Image src="/ejemplos/orbita-movil.webp" alt="" width={560} height={1212} sizes="200px" className="h-auto w-full" />
             </div>
           </Baldosa>

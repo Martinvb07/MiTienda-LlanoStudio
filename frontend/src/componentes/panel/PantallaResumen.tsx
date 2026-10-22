@@ -502,7 +502,7 @@ export function PantallaResumen() {
               target={acceso.externo ? '_blank' : undefined}
               className={cn(
                 TARJETA,
-                'group flex h-full flex-col gap-6 p-5 transition-[border-color,background,transform] duration-500 ease-salida hover:-translate-y-0.5 hover:border-white/20 hover:bg-[#121214]',
+                'group flex h-full flex-col gap-6 p-5 transition-[border-color,background,transform] duration-500 ease-salida hover:-translate-y-0.5 hover:border-white/20 hover:bg-sitio-campo',
               )}
             >
               <span className="flex items-center justify-between">

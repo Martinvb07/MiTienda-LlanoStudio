@@ -23,6 +23,7 @@ import { CamposVentas } from './CamposVentas'
 import { ListaBloques } from './ListaBloques'
 import { MarcoEditor, useAtajosEditor } from './MarcoEditor'
 import { VistaPrevia, type Dispositivo } from './VistaPrevia'
+import { SALIR_SIN_GUARDAR, confirmar } from '../ui/confirmar'
 
 const TEMA_BASE = ESTILOS_PREDEFINIDOS[0]!.tema
 
@@ -202,9 +203,13 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
           copia[indice] = { ...bloque, visible: false }
           break
         case 'eliminar':
-          if (!confirm('¿Eliminar esta sección? Puedes deshacerlo con Ctrl+Z.')) return
-          copia.splice(indice, 1)
-          break
+          void confirmar({
+            titulo: '¿Eliminar esta sección?',
+            mensaje: 'Puedes recuperarla con Ctrl+Z mientras no cierres el editor.',
+            confirmar: 'Eliminar',
+            peligro: true,
+          }).then((si) => si && cambiar({ configuracionBloques: bloques.filter((otro) => otro.id !== id) }))
+          return
       }
       cambiar({ configuracionBloques: copia })
     },
@@ -244,10 +249,13 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
 
   useAtajosEditor(sucio, () => void guardar())
 
-  function aplicarPlantilla(plantilla: PlantillaTienda) {
-    if (!confirm(`¿Usar la plantilla "${plantilla.nombre}"? Reemplaza las secciones y el estilo de tu página. Tus productos no cambian.`)) {
-      return
-    }
+  async function aplicarPlantilla(plantilla: PlantillaTienda) {
+    const si = await confirmar({
+      titulo: `¿Usar la plantilla ${plantilla.nombre}?`,
+      mensaje: 'Reemplaza las secciones y el estilo de tu página. Tus productos no cambian, y puedes deshacerlo con Ctrl+Z.',
+      confirmar: 'Usar plantilla',
+    })
+    if (!si) return
     cambiar({
       tema: { ...plantilla.tema },
       plantilla: plantilla.estilo,
@@ -256,8 +264,8 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     setAbierto(null)
   }
 
-  function cerrar() {
-    if (sucio && !confirm('Tienes cambios sin guardar. ¿Salir sin guardar?')) return
+  async function cerrar() {
+    if (sucio && !(await confirmar(SALIR_SIN_GUARDAR))) return
     alCerrar()
   }
 
@@ -336,7 +344,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       }
       lateral={
         <>
-          <div className="sticky -top-3.5 z-20 -mx-3.5 -mt-3.5 mb-1 border-b border-sitio-borde bg-[#0a0a0b]/95 px-3.5 pt-3.5 pb-3 backdrop-blur">
+          <div className="sticky -top-3.5 z-20 -mx-3.5 -mt-3.5 mb-1 border-b border-sitio-borde bg-sitio-lateral/95 px-3.5 pt-3.5 pb-3 backdrop-blur">
             <div className="grid grid-cols-3 gap-1 rounded-[10px] border border-sitio-borde bg-white/[0.03] p-1">
               {PESTANAS.map((opcion) => (
                 <button
@@ -423,9 +431,9 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
                         key={plantilla.clave}
                         type="button"
                         disabled={!incluida}
-                        onClick={() => aplicarPlantilla(plantilla)}
+                        onClick={() => void aplicarPlantilla(plantilla)}
                         title={incluida ? `Usar ${plantilla.nombre}` : `Desde el plan ${PLANES[plantilla.plan].nombre}`}
-                        className="group flex flex-col gap-2 rounded-[10px] border border-sitio-borde bg-[#121214] p-2 text-left transition-colors enabled:hover:border-white/30 disabled:cursor-not-allowed"
+                        className="group flex flex-col gap-2 rounded-[10px] border border-sitio-borde bg-sitio-campo p-2 text-left transition-colors enabled:hover:border-white/30 disabled:cursor-not-allowed"
                       >
                         <span
                           className={cn(

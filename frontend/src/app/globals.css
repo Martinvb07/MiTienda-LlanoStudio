@@ -41,6 +41,13 @@
   --color-sitio-verde: #3ddc84;
   --color-sitio-ambar: #f5b207;
   --color-sitio-rojo: #f87171;
+  /* Capas del panel, de la más honda a la más alta. */
+  --color-sitio-lateral: #0a0a0b;
+  --color-sitio-modal: #0e0e0f;
+  --color-sitio-campo: #121214;
+  --color-sitio-elevado: #141416;
+  --color-sitio-lienzo: #0e0e10;
+  --color-sitio-hover-primario: #d9d9d9;
 
   --ease-salida: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -60,57 +67,117 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Sitio y panel: el marco oscuro lo pone esta clase, no el body, porque las
-   tiendas comparten el mismo documento raíz y tienen su propio tema. */
+/* Sitio y panel: el marco lo pone esta clase, no el body, porque las tiendas
+   comparten el mismo documento raíz y tienen su propio tema. */
 .marco-oscuro {
-  background: #000;
-  color: #fff;
+  background: var(--color-black);
+  color: var(--color-white);
   color-scheme: dark;
 }
 .marco-oscuro ::selection {
   background: var(--color-sitio-azul);
   color: #fff;
 }
-/* Barras de scroll del sitio y el panel: finas, grafito sobre negro y azul
-   del logotipo al agarrarlas. Incluye la del documento (html), que es la
-   que se ve al bajar por la página, sólo cuando hay marco oscuro. */
 html:has(.marco-oscuro) {
   background: #000;
   color-scheme: dark;
 }
+
+/*
+ * Modo claro del sitio, el panel y el admin (data-tema en <html>, lo pone
+ * BotonTema). El diseño está escrito en blanco sobre negro con las utilidades
+ * de Tailwind, que leen --color-white y --color-black: aquí sólo se invierten
+ * esas dos y los tokens del sitio. Las tiendas no tienen .marco-oscuro, así
+ * que su tema no cambia.
+ */
+html[data-tema='claro']:has(.marco-oscuro) {
+  background: #f6f6f3;
+  color-scheme: light;
+}
+html[data-tema='claro'] .marco-oscuro {
+  --color-white: #0b0b0c;
+  --color-black: #f6f6f3;
+  --color-sitio-fondo: #f6f6f3;
+  --color-sitio-superficie: #ffffff;
+  --color-sitio-superficie-2: #ececea;
+  --color-sitio-tinta: #0b0b0c;
+  --color-sitio-suave: #4f4f52;
+  --color-sitio-tenue: #8a8a8e;
+  --color-sitio-azul-claro: #3b60ff;
+  --color-sitio-crema: #efefec;
+  --color-sitio-borde: rgb(0 0 0 / 0.09);
+  --color-sitio-borde-fuerte: rgb(0 0 0 / 0.16);
+  --color-sitio-verde: #12a150;
+  --color-sitio-ambar: #c27c00;
+  --color-sitio-rojo: #dc2626;
+  --color-sitio-lateral: #fbfbf9;
+  --color-sitio-modal: #ffffff;
+  --color-sitio-campo: #f3f3f0;
+  --color-sitio-elevado: #ffffff;
+  --color-sitio-lienzo: #e9e9e6;
+  --color-sitio-hover-primario: #2b2b2e;
+  color-scheme: light;
+}
+/* Las sombras están pensadas para fondo negro: en claro se suavizan. */
+html[data-tema='claro'] .marco-oscuro * {
+  --tw-shadow-color: rgb(0 0 0 / 0.1);
+}
+/* Logo: el blanco en oscuro, el negro en claro. */
+html[data-tema='claro'] .solo-oscuro,
+html:not([data-tema='claro']) .solo-claro {
+  display: none !important;
+}
+/* Transición circular al cambiar de tema (View Transitions). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/*
+ * Barras de scroll de toda la web: finas, redondeadas y sin carril, también en
+ * las tiendas y en la vista previa del editor. En el sitio y el panel siguen
+ * el tema y se ponen azules al agarrarlas.
+ */
+:root {
+  --barra: rgb(128 128 128 / 0.38);
+  --barra-encima: rgb(128 128 128 / 0.6);
+  --barra-activa: rgb(128 128 128 / 0.75);
+}
+.marco-oscuro,
+html:has(.marco-oscuro) {
+  --barra: color-mix(in srgb, var(--color-white) 18%, transparent);
+  --barra-encima: color-mix(in srgb, var(--color-white) 38%, transparent);
+  --barra-activa: var(--color-sitio-azul);
+}
+html[data-tema='claro']:has(.marco-oscuro) {
+  --barra: rgb(0 0 0 / 0.2);
+  --barra-encima: rgb(0 0 0 / 0.38);
+}
 @supports not selector(::-webkit-scrollbar) {
-  html:has(.marco-oscuro),
-  .marco-oscuro * {
+  * {
     scrollbar-width: thin;
-    scrollbar-color: rgb(255 255 255 / 0.22) #000;
+    scrollbar-color: var(--barra) transparent;
   }
 }
-html:has(.marco-oscuro)::-webkit-scrollbar,
-.marco-oscuro ::-webkit-scrollbar {
+::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
-html:has(.marco-oscuro)::-webkit-scrollbar-track,
-.marco-oscuro ::-webkit-scrollbar-track {
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
   background: transparent;
 }
-html:has(.marco-oscuro)::-webkit-scrollbar-thumb,
-.marco-oscuro ::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.18) padding-box;
+  background: var(--barra) padding-box;
 }
-html:has(.marco-oscuro)::-webkit-scrollbar-thumb:hover,
-.marco-oscuro ::-webkit-scrollbar-thumb:hover {
-  background: rgb(255 255 255 / 0.4) padding-box;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--barra-encima) padding-box;
 }
-html:has(.marco-oscuro)::-webkit-scrollbar-thumb:active,
-.marco-oscuro ::-webkit-scrollbar-thumb:active {
-  background: var(--color-sitio-azul) padding-box;
-}
-html:has(.marco-oscuro)::-webkit-scrollbar-corner,
-.marco-oscuro ::-webkit-scrollbar-corner {
-  background: transparent;
+::-webkit-scrollbar-thumb:active {
+  background: var(--barra-activa) padding-box;
 }
 
 @layer components {
@@ -145,20 +212,20 @@ html:has(.marco-oscuro)::-webkit-scrollbar-corner,
     cursor: not-allowed;
   }
   .boton-primario {
-    background: #fff;
-    color: #000;
+    background: var(--color-white);
+    color: var(--color-black);
   }
   .boton-primario:hover:not(:disabled) {
-    background: #d9d9d9;
+    background: var(--color-sitio-hover-primario);
   }
   .boton-contorno {
     background: transparent;
-    border-color: rgb(255 255 255 / 0.28);
-    color: #fff;
+    border-color: color-mix(in srgb, var(--color-white) 28%, transparent);
+    color: var(--color-white);
   }
   .boton-contorno:hover:not(:disabled) {
-    border-color: #fff;
-    background: rgb(255 255 255 / 0.06);
+    border-color: var(--color-white);
+    background: color-mix(in srgb, var(--color-white) 6%, transparent);
   }
   .boton-chico {
     height: 40px;
@@ -173,7 +240,7 @@ html:has(.marco-oscuro)::-webkit-scrollbar-corner,
     font-family: var(--font-display);
     font-weight: 400;
     letter-spacing: -0.045em;
-    color: #fff;
+    color: var(--color-white);
     text-wrap: balance;
   }
   .titulo-1 {
@@ -193,7 +260,7 @@ html:has(.marco-oscuro)::-webkit-scrollbar-corner,
     max-width: 46ch;
     font-size: 15px;
     line-height: 1.6;
-    color: rgb(255 255 255 / 0.62);
+    color: color-mix(in srgb, var(--color-white) 62%, transparent);
     text-wrap: pretty;
   }
   .antetitulo {
@@ -201,18 +268,18 @@ html:has(.marco-oscuro)::-webkit-scrollbar-corner,
     font-size: 11.5px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgb(255 255 255 / 0.5);
+    color: color-mix(in srgb, var(--color-white) 50%, transparent);
   }
 
   /* ── Tarjeta base y luz que sigue al cursor ── */
   .baldosa {
     border-radius: 8px;
-    background: #0b0b0c;
-    border: 1px solid rgb(255 255 255 / 0.07);
+    background: var(--color-sitio-superficie);
+    border: 1px solid color-mix(in srgb, var(--color-white) 7%, transparent);
     transition: border-color 0.5s var(--ease-salida);
   }
   .baldosa:hover {
-    border-color: rgb(255 255 255 / 0.16);
+    border-color: color-mix(in srgb, var(--color-white) 16%, transparent);
   }
   .foco {
     position: relative;
@@ -228,7 +295,7 @@ html:has(.marco-oscuro)::-webkit-scrollbar-corner,
     opacity: 0;
     background: radial-gradient(
       420px circle at var(--mx, 50%) var(--my, 50%),
-      rgb(255 255 255 / 0.07),
+      color-mix(in srgb, var(--color-white) 7%, transparent),
       transparent 60%
     );
     transition: opacity 0.5s var(--ease-salida);
@@ -245,7 +312,7 @@ html:has(.marco-oscuro)::-webkit-scrollbar-corner,
     font-size: 12px;
     letter-spacing: 0.09em;
     text-transform: uppercase;
-    color: #fff;
+    color: var(--color-white);
   }
   .enlace-flecha svg {
     width: 15px;
@@ -260,7 +327,7 @@ html:has(.marco-oscuro)::-webkit-scrollbar-corner,
   .divisor {
     height: 1px;
     border: 0;
-    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.12) 50%, transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-white) 12%, transparent) 50%, transparent);
   }
 
 
@@ -269,14 +336,14 @@ html:has(.marco-oscuro)::-webkit-scrollbar-corner,
   .brillo {
     position: relative;
     overflow: hidden;
-    background: #141417;
+    background: var(--color-sitio-campo);
   }
   .brillo::after {
     content: '';
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.08), transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-white) 8%, transparent), transparent);
     animation: brillo 1.2s ease-in-out infinite;
   }
 }

@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/react'
 import { Contenedor } from './Contenedor'
 import { Flecha } from './Boton'
 import { cn } from '@/utilidades/clases'
+import { LogoMarca } from '@/componentes/comunes/LogoMarca'
+import { BotonTema } from '@/componentes/comunes/BotonTema'
 
 const ENLACES = [
   { href: '/caracteristicas', etiqueta: 'Producto' },
@@ -41,14 +42,7 @@ export function Encabezado() {
       <Contenedor>
         <div className="flex h-[72px] items-center justify-between gap-6 md:grid md:grid-cols-[1fr_auto_1fr]">
           <Link href="/" className="flex items-center gap-[11px] justify-self-start">
-            <Image
-              src="/llanostudio-marca.png"
-              alt="Llano Studio"
-              width={232}
-              height={205}
-              priority
-              className="h-7 w-auto"
-            />
+            <LogoMarca prioridad className="h-7 w-auto" />
             <span className="flex flex-col justify-center">
               <span className="text-base leading-none font-semibold tracking-[-0.02em]">Mi Tienda</span>
               <span className="mt-1 text-[9.5px] tracking-[0.24em] text-sitio-tenue uppercase">
@@ -73,6 +67,7 @@ export function Encabezado() {
           </nav>
 
           <div className="hidden items-center gap-5 justify-self-end md:flex">
+            <BotonTema />
             <Link
               href="/panel/ingresar"
               className="text-[11.5px] font-medium tracking-[0.1em] text-white/60 uppercase transition-colors hover:text-white"
@@ -85,6 +80,8 @@ export function Encabezado() {
             </Link>
           </div>
 
+          <div className="flex items-center gap-2 md:hidden">
+          <BotonTema className="h-[42px] w-[42px] rounded-[9px]" />
           <button
             type="button"
             onClick={() => setMenuAbierto((abierto) => !abierto)}
@@ -110,6 +107,7 @@ export function Encabezado() {
               />
             </div>
           </button>
+          </div>
         </div>
       </Contenedor>
 

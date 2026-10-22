@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { HostConfirmaciones } from '@/componentes/panel/ui/confirmar'
 
 export const metadata: Metadata = {
   title: { default: 'Panel', template: '%s · Panel de Mi Tienda' },
@@ -12,5 +13,10 @@ export const metadata: Metadata = {
  * distintos —un login con barra lateral de administración no tendría sentido.
  */
 export default function LayoutPanel({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  return (
+    <>
+      {children}
+      <HostConfirmaciones />
+    </>
+  )
 }

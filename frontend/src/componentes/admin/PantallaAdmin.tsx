@@ -2,7 +2,6 @@
 
 /* eslint-disable @next/next/no-img-element -- logos de tiendas en la lista */
 import { useCallback, useEffect, useState } from 'react'
-import Image from 'next/image'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowUpRight, KeyRound, LogOut, MoreHorizontal, Power, Search } from 'lucide-react'
 import {
@@ -22,6 +21,9 @@ import { cn } from '@/utilidades/clases'
 import { Aviso, CLASES_ENTRADA, Campo } from '../panel/ui/basicos'
 import { MenuAcciones, ModalPanel, Selector } from '../panel/ui/flotantes'
 import { EditorPlanes } from './EditorPlanes'
+import { confirmar } from '../panel/ui/confirmar'
+import { LogoMarca } from '@/componentes/comunes/LogoMarca'
+import { BotonTema } from '@/componentes/comunes/BotonTema'
 
 const SALIDA = [0.16, 1, 0.3, 1] as const
 const OPCIONES_PLAN = ORDEN_PLANES.map((plan) => ({ valor: plan, etiqueta: PLANES[plan].nombre }))
@@ -81,7 +83,10 @@ function Ingreso({ alEntrar }: { alEntrar: () => void }) {
         transition={{ duration: 1.1, ease: SALIDA }}
         className="w-full max-w-[380px]"
       >
-        <Image src="/llanostudio-marca.png" alt="Llano Studio" width={232} height={205} className="h-8 w-auto" />
+        <div className="flex items-center justify-between">
+          <LogoMarca className="h-8 w-auto" />
+          <BotonTema />
+        </div>
         <p className="antetitulo mt-8">Mi Tienda · Plataforma</p>
         <h1 className="mt-3 text-[40px] leading-none tracking-[-0.045em]">Administración</h1>
         <div className="mt-9 flex flex-col gap-4">
@@ -115,7 +120,7 @@ function Tablero({ alSalir }: { alSalir: () => void }) {
     <div className="mx-auto max-w-[1200px] px-5 pb-20 md:px-8">
       <header className="sticky top-0 z-40 -mx-5 flex h-[72px] items-center justify-between gap-4 border-b border-white/[0.06] bg-black/80 px-5 backdrop-blur-xl md:-mx-8 md:px-8">
         <div className="flex items-center gap-[11px]">
-          <Image src="/llanostudio-marca.png" alt="Llano Studio" width={232} height={205} className="h-7 w-auto" />
+          <LogoMarca className="h-7 w-auto" />
           <span className="flex flex-col">
             <span className="text-[15px] leading-none font-semibold tracking-[-0.02em]">Mi Tienda</span>
             <span className="mt-1 text-[9.5px] tracking-[0.24em] text-sitio-tenue uppercase">Plataforma</span>
@@ -145,14 +150,17 @@ function Tablero({ alSalir }: { alSalir: () => void }) {
           ))}
         </nav>
 
-        <button
-          type="button"
-          onClick={alSalir}
-          className="inline-flex items-center gap-2 text-[11px] tracking-[0.1em] text-white/50 uppercase transition-colors hover:text-white"
-        >
-          <LogOut aria-hidden="true" className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Salir</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <BotonTema />
+          <button
+            type="button"
+            onClick={alSalir}
+            className="inline-flex items-center gap-2 text-[11px] tracking-[0.1em] text-white/50 uppercase transition-colors hover:text-white"
+          >
+            <LogOut aria-hidden="true" className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Salir</span>
+          </button>
+        </div>
       </header>
 
       <AnimatePresence mode="wait">
@@ -202,7 +210,16 @@ function Tiendas({
   }, [buscar, alSalir])
 
   async function cambiar(tienda: TiendaAdmin, cambios: { plan?: string; activo?: boolean }) {
-    if (cambios.activo === false && !confirm(`¿Suspender "${tienda.nombre}"? Deja de verse y su dueño no podrá entrar.`)) return
+    if (
+      cambios.activo === false &&
+      !(await confirmar({
+        titulo: `¿Suspender "${tienda.nombre}"?`,
+        mensaje: 'Deja de verse y su dueño no podrá entrar.',
+        confirmar: 'Suspender',
+        peligro: true,
+      }))
+    )
+      return
     setCambiando(tienda.id)
     try {
       const actualizado = await cambiarTienda(tienda.id, cambios)

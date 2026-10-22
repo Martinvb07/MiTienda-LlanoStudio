@@ -24,6 +24,7 @@ import { Aviso, BotonPanel, CURVA, Candado, Etiqueta, Segmentado } from './ui/ba
 import { MenuAcciones } from './ui/flotantes'
 import { BarraSeleccion, ModalCategorias, ModalImportar } from './HerramientasCatalogo'
 import { Aparecer } from './ui/movimiento'
+import { confirmar } from './ui/confirmar'
 
 const FILTROS = [
   { valor: 'todos', etiqueta: 'Todos', cumple: () => true },
@@ -171,7 +172,7 @@ export function PantallaProductos() {
   }
 
   async function eliminar(producto: ProductoPanel) {
-    if (!confirm(`¿Eliminar "${producto.nombre}"? No se puede deshacer.`)) return
+    if (!(await confirmar({ titulo: `¿Eliminar "${producto.nombre}"?`, mensaje: 'No se puede deshacer.', confirmar: 'Eliminar', peligro: true }))) return
     try {
       await eliminarProducto(producto.id)
       setProductos((lista) => (lista ?? []).filter((otro) => otro.id !== producto.id))
@@ -267,7 +268,7 @@ export function PantallaProductos() {
             })}
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <label className="flex h-[36px] min-w-0 flex-1 items-center gap-2 rounded-lg border border-sitio-borde bg-[#121214] px-3 transition-colors focus-within:border-white/40 lg:w-64 lg:flex-none">
+            <label className="flex h-[36px] min-w-0 flex-1 items-center gap-2 rounded-lg border border-sitio-borde bg-sitio-campo px-3 transition-colors focus-within:border-white/40 lg:w-64 lg:flex-none">
               <Search aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-sitio-tenue" />
               <input
                 value={busqueda}
@@ -335,7 +336,7 @@ export function PantallaProductos() {
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
                 exit={{ opacity: 0, scale: 0.94, transition: { duration: 0.25 } }}
                 transition={{ duration: 0.7, delay: Math.min(indice, 8) * 0.04, ease: CURVA }}
-                className="group/tarjeta relative flex flex-col overflow-hidden rounded-xl border border-white/[0.06] bg-[#070707] transition-colors duration-300 hover:border-white/20"
+                className="group/tarjeta relative flex flex-col overflow-hidden rounded-xl border border-white/[0.06] bg-sitio-lateral transition-colors duration-300 hover:border-white/20"
               >
                 <button
                   type="button"

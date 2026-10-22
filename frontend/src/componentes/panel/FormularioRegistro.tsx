@@ -168,7 +168,7 @@ export function FormularioRegistro() {
           {/* El dominio va pegado al campo, no debajo: así se lee de corrido
               como la dirección completa que va a quedar. */}
           <div
-            className={`mt-1.5 flex items-stretch overflow-hidden rounded-lg border bg-[#121214] transition-colors focus-within:border-white/40 ${
+            className={`mt-1.5 flex items-stretch overflow-hidden rounded-lg border bg-sitio-campo transition-colors focus-within:border-white/40 ${
               errores.subdominio ? 'border-red-400/60' : 'border-sitio-borde'
             }`}
           >

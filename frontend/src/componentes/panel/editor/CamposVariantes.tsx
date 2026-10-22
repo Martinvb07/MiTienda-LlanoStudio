@@ -42,7 +42,7 @@ function EntradaValores({ valores, alCambiar }: { valores: string[]; alCambiar: 
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-sitio-borde bg-[#121214] p-1.5 focus-within:border-white/40">
+    <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-sitio-borde bg-sitio-campo p-1.5 focus-within:border-white/40">
       {valores.map((valor) => (
         <span key={valor} className="flex items-center gap-1 rounded-md bg-white/[0.08] py-1 pr-1 pl-2 text-[12.5px]">
           {valor}

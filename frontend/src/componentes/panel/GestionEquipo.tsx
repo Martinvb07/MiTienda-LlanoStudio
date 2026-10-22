@@ -22,6 +22,7 @@ import { useSesion } from './SesionPanel'
 import { iniciales } from './NavegacionPanel'
 import { Aviso, BotonPanel, CURVA, Campo, Candado, Etiqueta, Segmentado } from './ui/basicos'
 import { ModalPanel } from './ui/flotantes'
+import { confirmar } from './ui/confirmar'
 
 const ROLES = {
   PROPIETARIO: { etiqueta: 'Dueña', detalle: 'Todo, incluida la cuenta' },
@@ -59,7 +60,7 @@ export function GestionEquipo() {
   }
 
   async function quitar(miembro: Miembro) {
-    if (!confirm(`¿Quitarle el acceso a ${miembro.nombre}?`)) return
+    if (!(await confirmar({ titulo: `¿Quitarle el acceso a ${miembro.nombre}?`, mensaje: 'Ya no podrá entrar al panel.', confirmar: 'Quitar acceso', peligro: true }))) return
     try {
       await quitarMiembro(miembro.id)
       setMiembros((lista) => (lista ?? []).filter((otro) => otro.id !== miembro.id))
@@ -184,7 +185,7 @@ function FormularioMiembro({ alCerrar, alAgregar }: { alCerrar: () => void; alAg
       {creado ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: CURVA }} className="flex flex-col gap-3">
           <CheckCircle2 aria-hidden="true" className="h-8 w-8 text-sitio-verde" />
-          <pre className="rounded-lg border border-sitio-borde bg-[#121214] p-3 font-mono text-[12px] whitespace-pre-wrap text-sitio-suave">{mensaje}</pre>
+          <pre className="rounded-lg border border-sitio-borde bg-sitio-campo p-3 font-mono text-[12px] whitespace-pre-wrap text-sitio-suave">{mensaje}</pre>
           <BotonPanel
             variante="primario"
             className="h-10"
@@ -281,7 +282,7 @@ export function GestionDominio() {
   }
 
   async function quitar(dominio: DominioPropio) {
-    if (!confirm(`¿Desconectar ${dominio.dominio}?`)) return
+    if (!(await confirmar({ titulo: `¿Desconectar ${dominio.dominio}?`, mensaje: 'Tu tienda dejará de abrir en ese dominio.', confirmar: 'Desconectar', peligro: true }))) return
     await quitarDominio(dominio.id).catch(() => undefined)
     setDatos((actual) => actual && { ...actual, dominios: actual.dominios.filter((otro) => otro.id !== dominio.id) })
   }

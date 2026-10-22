@@ -99,7 +99,7 @@ export function VistaPrevia({
   return (
     <main
       ref={panel}
-      className="relative grid h-full min-h-[420px] min-w-0 place-items-center overflow-hidden bg-[radial-gradient(circle_at_50%_0%,#17171a,#0b0b0c_70%)]"
+      className="relative grid h-full min-h-[420px] min-w-0 place-items-center overflow-hidden bg-sitio-lienzo"
     >
       {medidas.ancho > 0 &&
         (efectivo === 'escritorio' ? (
@@ -115,7 +115,7 @@ export function VistaPrevia({
           </div>
         ) : (
           <div
-            className="relative rounded-[44px] bg-[#1b1b1e] p-2.5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.12)]"
+            className="relative rounded-[44px] bg-sitio-elevado p-2.5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.12)]"
             style={{
               width: TELEFONO.ancho * escalaTelefono + 20,
               height: TELEFONO.alto * escalaTelefono + 20,

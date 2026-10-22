@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowLeft } from 'lucide-react'
+import { LogoMarca } from '@/componentes/comunes/LogoMarca'
+import { BotonTema } from '@/componentes/comunes/BotonTema'
 
 const SALIDA = [0.16, 1, 0.3, 1] as const
 
@@ -34,7 +36,7 @@ export function MarcoSesion({ children }: { children: React.ReactNode }) {
   return (
     <div className="marco-oscuro grid min-h-dvh font-sans lg:grid-cols-[1.05fr_1fr]">
       {/* Tienda real de un lado */}
-      <aside className="relative hidden overflow-hidden border-r border-white/10 bg-[#070707] lg:block">
+      <aside className="relative hidden overflow-hidden border-r border-white/10 bg-sitio-lateral lg:block">
         <AnimatePresence mode="wait">
           <motion.div
             key={lado.imagen}
@@ -45,7 +47,7 @@ export function MarcoSesion({ children }: { children: React.ReactNode }) {
             className="absolute inset-0"
           >
             <div className="absolute top-[14%] left-[10%] w-[115%] overflow-hidden rounded-[10px] shadow-[0_40px_120px_-30px_rgba(0,0,0,1)] ring-1 ring-white/10">
-              <div className="flex h-7 items-center gap-1.5 border-b border-white/10 bg-[#141416] px-3">
+              <div className="flex h-7 items-center gap-1.5 border-b border-white/10 bg-sitio-elevado px-3">
                 <span className="h-2 w-2 rounded-full bg-white/20" />
                 <span className="h-2 w-2 rounded-full bg-white/20" />
                 <span className="h-2 w-2 rounded-full bg-white/20" />
@@ -54,7 +56,7 @@ export function MarcoSesion({ children }: { children: React.ReactNode }) {
             </div>
           </motion.div>
         </AnimatePresence>
-        <div className="absolute inset-0 bg-[linear-gradient(to_top,#070707_8%,rgba(7,7,7,0.2)_55%,rgba(7,7,7,0.6))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_top,var(--color-sitio-lateral)_8%,color-mix(in_srgb,var(--color-sitio-lateral)_20%,transparent)_55%,color-mix(in_srgb,var(--color-sitio-lateral)_60%,transparent))]" />
         <div className="absolute right-12 bottom-12 left-12">
           <p className="max-w-[18ch] text-[clamp(28px,2.6vw,40px)] leading-[1.05] tracking-[-0.04em]">{lado.frase}</p>
           <p className="mt-4 text-[12px] tracking-[0.14em] text-white/45 uppercase">
@@ -73,10 +75,13 @@ export function MarcoSesion({ children }: { children: React.ReactNode }) {
             <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5 transition-transform duration-500 ease-salida group-hover:-translate-x-1" />
             Volver al inicio
           </Link>
-          <Link href="/" className="flex items-center gap-[10px]">
-            <Image src="/llanostudio-marca.png" alt="Llano Studio" width={232} height={205} className="h-6 w-auto" />
-            <span className="text-[14px] font-semibold tracking-[-0.02em]">Mi Tienda</span>
-          </Link>
+          <div className="flex items-center gap-4">
+            <BotonTema />
+            <Link href="/" className="flex items-center gap-[10px]">
+              <LogoMarca className="h-6 w-auto" />
+              <span className="text-[14px] font-semibold tracking-[-0.02em]">Mi Tienda</span>
+            </Link>
+          </div>
         </div>
 
         <motion.div

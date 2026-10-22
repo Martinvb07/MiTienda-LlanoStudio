@@ -59,7 +59,7 @@ export function Selector<T extends string>({
         aria-label={etiqueta}
         onClick={() => setAbierto((estado) => !estado)}
         className={cn(
-          'flex h-[34px] w-full items-center justify-between gap-3 rounded-lg border bg-[#121214] pr-2.5 pl-3 text-[13px] text-white transition-colors disabled:opacity-50',
+          'flex h-[34px] w-full items-center justify-between gap-3 rounded-lg border bg-sitio-campo pr-2.5 pl-3 text-[13px] text-white transition-colors disabled:opacity-50',
           abierto ? 'border-white/35' : 'border-sitio-borde hover:border-white/20',
         )}
       >
@@ -79,7 +79,7 @@ export function Selector<T extends string>({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.15 } }}
             transition={{ duration: 0.35, ease: SALIDA }}
-            className="absolute top-[calc(100%+6px)] right-0 z-50 min-w-full origin-top overflow-hidden rounded-[10px] border border-white/12 bg-[#141416]/95 p-1 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-xl"
+            className="absolute top-[calc(100%+6px)] right-0 z-50 min-w-full origin-top overflow-hidden rounded-[10px] border border-white/12 bg-sitio-elevado/95 p-1 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-xl"
           >
             {opciones.map((opcion, indice) => {
               const elegida = opcion.valor === valor
@@ -150,7 +150,7 @@ export function MenuAcciones({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.15 } }}
             transition={{ duration: 0.35, ease: SALIDA }}
-            className="absolute top-[calc(100%+6px)] right-0 z-50 w-56 origin-top-right overflow-hidden rounded-[10px] border border-white/12 bg-[#141416]/95 p-1 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-xl"
+            className="absolute top-[calc(100%+6px)] right-0 z-50 w-56 origin-top-right overflow-hidden rounded-[10px] border border-white/12 bg-sitio-elevado/95 p-1 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-xl"
           >
             {acciones.map((accion) => (
               <button
@@ -212,7 +212,7 @@ export function ModalPanel({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 16, transition: { duration: 0.25, ease: [0.4, 0, 1, 1] } }}
         transition={{ duration: 0.6, ease: SALIDA }}
-        className="relative w-full max-w-[440px] rounded-[14px] border border-white/10 bg-[#0e0e0f] p-7 shadow-[0_40px_100px_-20px_rgba(0,0,0,1)]"
+        className="relative w-full max-w-[440px] rounded-[14px] border border-white/10 bg-sitio-modal p-7 shadow-[0_40px_100px_-20px_rgba(0,0,0,1)]"
       >
         <button
           type="button"

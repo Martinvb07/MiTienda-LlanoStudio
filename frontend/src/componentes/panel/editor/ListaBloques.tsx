@@ -259,7 +259,7 @@ export function ListaBloques({
 
       <DragOverlay dropAnimation={{ duration: 300, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }}>
         {nuevoEnCurso && arrastrando ? (
-          <div className="w-44 rotate-2 rounded-[10px] border border-white/40 bg-[#1a1a1d] px-3 py-2.5 text-[12.5px] shadow-[0_24px_50px_-12px_rgba(0,0,0,0.95)]">
+          <div className="w-44 rotate-2 rounded-[10px] border border-white/40 bg-sitio-elevado px-3 py-2.5 text-[12.5px] shadow-[0_24px_50px_-12px_rgba(0,0,0,0.95)]">
             {ETIQUETAS_BLOQUE[arrastrando.slice(PREFIJO_NUEVO.length) as TipoBloque]}
           </div>
         ) : null}
@@ -310,7 +310,7 @@ function FichaPaleta({
       onClick={alElegir}
       title={DESCRIPCIONES_BLOQUE[tipo]}
       className={cn(
-        'flex min-h-[58px] flex-col justify-between gap-1 rounded-[10px] border border-sitio-borde bg-[#121214] px-2.5 py-2 text-left transition-[border-color,opacity,transform] duration-300 enabled:cursor-grab enabled:hover:-translate-y-px enabled:hover:border-white/30 disabled:cursor-not-allowed',
+        'flex min-h-[58px] flex-col justify-between gap-1 rounded-[10px] border border-sitio-borde bg-sitio-campo px-2.5 py-2 text-left transition-[border-color,opacity,transform] duration-300 enabled:cursor-grab enabled:hover:-translate-y-px enabled:hover:border-white/30 disabled:cursor-not-allowed',
         isDragging && 'opacity-30',
         !incluido && 'opacity-55',
       )}
@@ -376,7 +376,7 @@ function FilaBloque({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        'relative rounded-[10px] border bg-[#121214] transition-[border-color,box-shadow]',
+        'relative rounded-[10px] border bg-sitio-campo transition-[border-color,box-shadow]',
         abierto ? 'border-white/30' : 'border-sitio-borde hover:border-white/15',
         isDragging && 'z-10 scale-[1.02] border-white/30 shadow-[0_24px_50px_-12px_rgba(0,0,0,0.95)]',
       )}

@@ -94,7 +94,7 @@ export default function PaginaContacto() {
                 <button
                   type="submit"
                   disabled
-                  className="w-full rounded-full bg-sitio-azul px-6 py-3 font-medium text-white transition-colors hover:bg-sitio-azul-claro disabled:opacity-40 sm:w-auto"
+                  className="w-full rounded-full bg-sitio-azul px-6 py-3 font-medium text-[#fff] transition-colors hover:bg-sitio-azul-claro disabled:opacity-40 sm:w-auto"
                 >
                   Enviar mensaje
                 </button>

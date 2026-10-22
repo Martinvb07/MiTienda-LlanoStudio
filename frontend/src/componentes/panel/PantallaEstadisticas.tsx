@@ -100,7 +100,7 @@ function Grafica({ serie, clave }: { serie: DiaMetricas[]; clave: ClaveSerie }) 
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="pointer-events-none absolute top-2 rounded-lg border border-white/12 bg-[#141416] px-3 py-2 text-[12px] shadow-xl"
+            className="pointer-events-none absolute top-2 rounded-lg border border-white/12 bg-sitio-elevado px-3 py-2 text-[12px] shadow-xl"
             style={{ left: `clamp(0px, calc(${(x(sobre) / ancho) * 100}% - 70px), calc(100% - 140px))` }}
           >
             <p className="text-sitio-tenue">

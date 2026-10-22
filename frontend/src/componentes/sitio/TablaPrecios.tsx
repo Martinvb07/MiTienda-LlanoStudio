@@ -21,7 +21,7 @@ export async function TablaPrecios() {
               <article
                 className={cn(
                   'baldosa flex h-full flex-col p-7',
-                  plan.destacado && '!border-white/35 bg-[#101012]',
+                  plan.destacado && '!border-white/35 bg-sitio-modal',
                 )}
               >
                 <div className="flex items-baseline justify-between gap-3">

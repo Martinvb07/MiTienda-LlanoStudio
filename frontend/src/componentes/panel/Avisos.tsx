@@ -147,7 +147,7 @@ export function CampanaAvisos({ abajo = false }: { abajo?: boolean }) {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              className="absolute -top-1.5 -right-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-sitio-azul px-1 text-[10px] font-semibold text-white"
+              className="absolute -top-1.5 -right-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-sitio-azul px-1 text-[10px] font-semibold text-[#fff]"
             >
               {total > 9 ? '9+' : total}
             </motion.span>
@@ -162,7 +162,7 @@ export function CampanaAvisos({ abajo = false }: { abajo?: boolean }) {
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.35, ease: CURVA }}
             className={cn(
-              'absolute z-50 w-[320px] overflow-hidden rounded-[12px] border border-white/12 bg-[#141416]/95 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-xl',
+              'absolute z-50 w-[320px] overflow-hidden rounded-[12px] border border-white/12 bg-sitio-elevado/95 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-xl',
               abajo ? 'top-[calc(100%+8px)] right-0' : 'top-[calc(100%+8px)] left-0',
             )}
           >

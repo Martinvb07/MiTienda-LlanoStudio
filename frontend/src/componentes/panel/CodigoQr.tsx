@@ -44,7 +44,7 @@ export function ModalCodigoQr({ url, nombre, alCerrar }: { url: string; nombre: 
           <a
             href={png || undefined}
             download={`qr-${nombre.toLowerCase().replace(/\s+/g, '-')}.png`}
-            className="flex h-10 items-center justify-center gap-2 rounded-lg bg-white text-[13px] font-medium text-black transition-colors hover:bg-[#d9d9d9]"
+            className="flex h-10 items-center justify-center gap-2 rounded-lg bg-white text-[13px] font-medium text-black transition-colors hover:bg-sitio-hover-primario"
           >
             <Download aria-hidden="true" className="h-4 w-4" />
             Descargar PNG

@@ -33,7 +33,7 @@ function Pieza({ id, visible, alAlternar }: { id: BloqueFicha; visible: boolean;
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        'flex items-center gap-1 rounded-[10px] border border-sitio-borde bg-[#121214] py-1 pr-1.5 pl-1',
+        'flex items-center gap-1 rounded-[10px] border border-sitio-borde bg-sitio-campo py-1 pr-1.5 pl-1',
         isDragging && 'relative z-10 border-white/30 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.9)]',
       )}
     >

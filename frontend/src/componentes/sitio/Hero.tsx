@@ -63,7 +63,7 @@ export function Hero() {
           transition={{ duration: 1.5, delay: 0.25, ease: SALIDA }}
           className="absolute top-0 left-1/2 z-10 w-[86vw] -translate-x-1/2 md:w-[min(64vw,880px)] overflow-hidden rounded-[10px] bg-black shadow-[0_40px_120px_-30px_rgba(0,0,0,1)] ring-1 ring-white/10"
         >
-          <div className="flex h-7 items-center gap-1.5 border-b border-white/10 bg-[#141416] px-3">
+          <div className="flex h-7 items-center gap-1.5 border-b border-white/10 bg-sitio-elevado px-3">
             <span className="h-2 w-2 rounded-full bg-white/20" />
             <span className="h-2 w-2 rounded-full bg-white/20" />
             <span className="h-2 w-2 rounded-full bg-white/20" />
@@ -134,7 +134,7 @@ function TarjetaVitrina({
       className={
         tipo === 'escritorio'
           ? 'absolute top-[7%] left-1/2 w-[62vw] overflow-hidden rounded-[8px] bg-black opacity-70 shadow-[0_30px_80px_-20px_rgba(0,0,0,1)] ring-1 ring-white/10 md:w-[min(40vw,560px)]'
-          : 'absolute top-[12%] left-1/2 hidden w-[min(13vw,190px)] overflow-hidden rounded-[22px] border-[5px] border-[#1b1b1e] bg-black shadow-[0_30px_80px_-20px_rgba(0,0,0,1)] lg:block'
+          : 'absolute top-[12%] left-1/2 hidden w-[min(13vw,190px)] overflow-hidden rounded-[22px] border-[5px] border-sitio-elevado bg-black shadow-[0_30px_80px_-20px_rgba(0,0,0,1)] lg:block'
       }
     >
       <Image src={src} alt={alt} width={tipo === 'escritorio' ? 1440 : 560} height={tipo === 'escritorio' ? 900 : 1212} sizes="(max-width: 768px) 62vw, 40vw" className="h-auto w-full brightness-[0.8]" />

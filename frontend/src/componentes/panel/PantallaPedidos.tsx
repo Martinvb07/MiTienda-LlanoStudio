@@ -14,6 +14,7 @@ import { CabeceraPanel } from './CabeceraPanel'
 import { useSesion } from './SesionPanel'
 import { Aviso, BotonPanel, CURVA, Etiqueta } from './ui/basicos'
 import { Aparecer, Contador } from './ui/movimiento'
+import { confirmar } from './ui/confirmar'
 
 export const ESTADOS: { valor: EstadoPedido; etiqueta: string; tono: 'neutro' | 'verde' | 'ambar' | 'azul' }[] = [
   { valor: 'PENDIENTE', etiqueta: 'Nuevo', tono: 'ambar' },
@@ -207,7 +208,7 @@ export function PantallaPedidos() {
                 )
               })}
             </div>
-            <label className="flex h-[36px] items-center gap-2 rounded-lg border border-sitio-borde bg-[#121214] px-3 focus-within:border-white/40 lg:w-72">
+            <label className="flex h-[36px] items-center gap-2 rounded-lg border border-sitio-borde bg-sitio-campo px-3 focus-within:border-white/40 lg:w-72">
               <Search aria-hidden="true" className="h-3.5 w-3.5 text-sitio-tenue" />
               <input
                 value={busqueda}
@@ -338,7 +339,7 @@ function DetallePedido({
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ duration: 0.55, ease: CURVA }}
-        className="marco-oscuro absolute inset-y-0 right-0 flex w-full max-w-[520px] flex-col border-l border-sitio-borde bg-[#0a0a0b] font-sans"
+        className="marco-oscuro absolute inset-y-0 right-0 flex w-full max-w-[520px] flex-col border-l border-sitio-borde bg-sitio-lateral font-sans"
       >
         <header className="flex items-start justify-between gap-4 border-b border-sitio-borde px-6 py-5">
           <div>
@@ -383,8 +384,15 @@ function DetallePedido({
               <BotonPanel
                 variante="peligro"
                 disabled={guardando}
-                onClick={() => {
-                  if (confirm('¿Cancelar el pedido? Las unidades vuelven a tu inventario.')) void cambiar({ estado: 'CANCELADO' })
+                onClick={async () => {
+                  const si = await confirmar({
+                    titulo: `¿Cancelar el pedido #${pedido.numero}?`,
+                    mensaje: 'Las unidades vuelven a tu inventario. Puedes reactivarlo después.',
+                    confirmar: 'Cancelar pedido',
+                    cancelar: 'Volver',
+                    peligro: true,
+                  })
+                  if (si) void cambiar({ estado: 'CANCELADO' })
                 }}
               >
                 Cancelar pedido
@@ -482,7 +490,7 @@ function DetallePedido({
             rows={3}
             maxLength={1000}
             placeholder="Sólo la ves tú: número de guía, acuerdos con el cliente…"
-            className="mt-3 w-full resize-y rounded-lg border border-sitio-borde bg-[#121214] px-3 py-2.5 text-[13px] outline-none placeholder:text-sitio-tenue focus:border-white/40"
+            className="mt-3 w-full resize-y rounded-lg border border-sitio-borde bg-sitio-campo px-3 py-2.5 text-[13px] outline-none placeholder:text-sitio-tenue focus:border-white/40"
           />
         </div>
       </motion.aside>

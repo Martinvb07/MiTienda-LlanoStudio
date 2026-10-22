@@ -17,7 +17,7 @@ type VarianteBoton = 'normal' | 'primario' | 'suave' | 'fantasma' | 'peligro'
 
 const VARIANTES: Record<VarianteBoton, string> = {
   normal: 'border-sitio-borde bg-white/[0.04] text-sitio-suave hover:bg-white/[0.09] hover:text-white',
-  primario: 'border-white bg-white text-black hover:bg-[#d9d9d9]',
+  primario: 'border-white bg-white text-black hover:bg-sitio-hover-primario',
   suave: 'border-sitio-borde bg-white/[0.04] text-white hover:bg-white/[0.09]',
   fantasma: 'border-sitio-borde bg-transparent text-sitio-suave hover:bg-white/[0.06] hover:text-white',
   peligro: 'border-red-500/25 bg-red-500/[0.06] text-sitio-rojo hover:bg-red-500/[0.14] hover:text-red-300',
@@ -134,7 +134,7 @@ export function Seccion({
 }
 
 export const CLASES_ENTRADA =
-  'w-full rounded-lg border border-sitio-borde bg-[#121214] px-[11px] py-[9px] text-[13.5px] text-white transition-[border-color,box-shadow] duration-200 outline-none placeholder:text-sitio-tenue focus:border-white/40 focus:shadow-[0_0_0_3px_rgba(255,255,255,0.06)] read-only:text-sitio-tenue'
+  'w-full rounded-lg border border-sitio-borde bg-sitio-campo px-[11px] py-[9px] text-[13.5px] text-white transition-[border-color,box-shadow] duration-200 outline-none placeholder:text-sitio-tenue focus:border-white/40 focus:shadow-[0_0_0_3px_rgba(255,255,255,0.06)] read-only:text-sitio-tenue'
 
 interface PropsCampo {
   etiqueta: string
@@ -197,7 +197,7 @@ export function Campo({
       {prefijo ? (
         <div
           className={cn(
-            'flex items-center overflow-hidden rounded-lg border bg-[#121214] focus-within:border-white/40',
+            'flex items-center overflow-hidden rounded-lg border bg-sitio-campo focus-within:border-white/40',
             error ? 'border-red-400/60' : 'border-sitio-borde',
           )}
         >
@@ -301,7 +301,7 @@ export function CampoColor({
           value={valor}
           onChange={(evento) => alCambiar(evento.target.value)}
           aria-label={`Elegir ${etiqueta.toLowerCase()}`}
-          className="h-[34px] w-[38px] shrink-0 cursor-pointer rounded-lg border border-sitio-borde bg-[#121214] p-0.5"
+          className="h-[34px] w-[38px] shrink-0 cursor-pointer rounded-lg border border-sitio-borde bg-sitio-campo p-0.5"
         />
         <input
           value={texto}

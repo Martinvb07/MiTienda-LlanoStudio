@@ -75,7 +75,7 @@ export function ZonaImagen({
         className={cn(
           'group relative grid cursor-pointer place-items-center overflow-hidden rounded-[10px] border border-dashed transition-colors',
           proporcion,
-          encima ? 'border-white/55 bg-[#151518]' : 'border-white/[0.18] bg-[#0f0f11] hover:border-white/55 hover:bg-[#151518]',
+          encima ? 'border-white/55 bg-sitio-elevado' : 'border-white/[0.18] bg-sitio-modal hover:border-white/55 hover:bg-sitio-elevado',
         )}
       >
         {url ? (
@@ -231,7 +231,7 @@ export function Galeria({
           onDrop={(evento) => soltar(evento, urls.length - 1)}
           className={cn(
             'relative grid aspect-square cursor-pointer place-items-center rounded-lg border border-dashed transition-colors',
-            encima ? 'border-white/55 bg-[#151518]' : 'border-white/[0.18] bg-[#0f0f11] hover:border-white/55',
+            encima ? 'border-white/55 bg-sitio-elevado' : 'border-white/[0.18] bg-sitio-modal hover:border-white/55',
           )}
         >
           <span className="flex flex-col items-center gap-1 text-sitio-suave">

@@ -41,7 +41,7 @@ export function GaleriaPlantillas({ limite }: { limite?: number }) {
             <motion.div
               layoutId={`plantilla-${plantilla.clave}`}
               transition={{ duration: 0.7, ease: SALIDA }}
-              className="relative aspect-[16/10] overflow-hidden rounded-[8px] bg-[#0b0b0c]"
+              className="relative aspect-[16/10] overflow-hidden rounded-[8px] bg-sitio-lateral"
             >
               <Image
                 src={plantilla.captura}
@@ -102,7 +102,7 @@ function ModalPlantilla({ plantilla, alCerrar }: { plantilla: PlantillaTienda; a
       />
 
       <motion.div
-        className="relative flex max-h-[92dvh] w-full max-w-[1180px] flex-col overflow-hidden rounded-t-[14px] border border-white/10 bg-[#0a0a0b] md:rounded-[14px]"
+        className="relative flex max-h-[92dvh] w-full max-w-[1180px] flex-col overflow-hidden rounded-t-[14px] border border-white/10 bg-sitio-lateral md:rounded-[14px]"
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 30, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
@@ -120,13 +120,13 @@ function ModalPlantilla({ plantilla, alCerrar }: { plantilla: PlantillaTienda; a
         {/* En celular todo el modal desliza junto; en escritorio cada columna tiene su scroll */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain lg:grid lg:grid-cols-[1.45fr_1fr] lg:overflow-hidden">
           {/* La tienda completa */}
-          <div className="relative min-h-[300px] bg-[radial-gradient(circle_at_50%_0%,#17171a,#0b0b0c_70%)] p-4 md:p-6 lg:max-h-[92dvh] lg:overflow-y-auto lg:overscroll-contain">
+          <div className="relative min-h-[300px] bg-sitio-lienzo p-4 md:p-6 lg:max-h-[92dvh] lg:overflow-y-auto lg:overscroll-contain">
             <motion.div
               layoutId={`plantilla-${plantilla.clave}`}
               transition={{ duration: 0.7, ease: SALIDA }}
               className="overflow-hidden rounded-[8px] bg-black shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] ring-1 ring-white/10"
             >
-              <div className="flex h-8 items-center gap-1.5 border-b border-white/10 bg-[#141416] px-3">
+              <div className="flex h-8 items-center gap-1.5 border-b border-white/10 bg-sitio-elevado px-3">
                 <span className="h-2 w-2 rounded-full bg-white/20" />
                 <span className="h-2 w-2 rounded-full bg-white/20" />
                 <span className="h-2 w-2 rounded-full bg-white/20" />
@@ -162,7 +162,7 @@ function ModalPlantilla({ plantilla, alCerrar }: { plantilla: PlantillaTienda; a
             <p className="mt-5 text-[15px] leading-relaxed text-white/65">{plantilla.descripcion}</p>
 
             <div className="mt-7 flex items-end gap-5">
-              <div className="relative h-[230px] w-[112px] shrink-0 overflow-hidden rounded-[18px] border-[5px] border-[#1b1b1e] bg-black shadow-[0_20px_50px_-15px_rgba(0,0,0,0.9)]">
+              <div className="relative h-[230px] w-[112px] shrink-0 overflow-hidden rounded-[18px] border-[5px] border-sitio-elevado bg-black shadow-[0_20px_50px_-15px_rgba(0,0,0,0.9)]">
                 <Image src={plantilla.capturaMovil} alt="" fill sizes="112px" className="object-cover object-top" />
               </div>
               <div className="pb-1">

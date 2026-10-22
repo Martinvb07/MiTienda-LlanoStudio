@@ -17,6 +17,7 @@ import { CamposVariantes } from './CamposVariantes'
 import { Galeria } from '../ui/imagenes'
 import { MarcoEditor, useAtajosEditor } from './MarcoEditor'
 import { VistaPrevia, type Dispositivo } from './VistaPrevia'
+import { SALIR_SIN_GUARDAR, confirmar } from '../ui/confirmar'
 
 interface Borrador {
   nombre: string
@@ -181,8 +182,8 @@ export function EditorProducto({ producto, tienda, catalogo, alGuardar, alCerrar
 
   useAtajosEditor(sucio, () => void guardar())
 
-  function cerrar() {
-    if (sucio && !confirm('Tienes cambios sin guardar. ¿Salir sin guardar?')) return
+  async function cerrar() {
+    if (sucio && !(await confirmar(SALIR_SIN_GUARDAR))) return
     alCerrar()
   }
 

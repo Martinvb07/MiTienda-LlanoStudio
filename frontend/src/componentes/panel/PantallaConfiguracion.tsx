@@ -289,7 +289,7 @@ export function PantallaConfiguracion() {
         )}
 
         <Bloque titulo="Dirección de la tienda" descripcion="Viene incluida con tu cuenta." Icono={Globe} orden={4}>
-          <div className="flex items-center gap-2 rounded-lg border border-sitio-borde bg-[#121214] p-1.5 pl-3">
+          <div className="flex items-center gap-2 rounded-lg border border-sitio-borde bg-sitio-campo p-1.5 pl-3">
             <span className="min-w-0 flex-1 truncate font-mono text-[13px]">{direccion}</span>
             <BotonPanel onClick={() => void copiar()} aria-label="Copiar dirección">
               {copiado ? <Check aria-hidden="true" className="h-3.5 w-3.5 text-sitio-verde" /> : <Copy aria-hidden="true" className="h-3.5 w-3.5" />}

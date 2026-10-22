@@ -71,9 +71,9 @@ export function MarcoEditor(props: Props) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 24 }}
       transition={{ duration: 0.45, ease: CURVA }}
-      className="marco-oscuro fixed inset-0 z-[200] flex flex-col bg-[#050505] font-sans text-white"
+      className="marco-oscuro fixed inset-0 z-[200] flex flex-col bg-sitio-lateral font-sans text-white"
     >
-      <header className="flex h-[60px] shrink-0 items-center gap-2 border-b border-sitio-borde bg-[#0a0a0b] px-2.5 md:gap-3.5 md:px-4">
+      <header className="flex h-[60px] shrink-0 items-center gap-2 border-b border-sitio-borde bg-sitio-lateral px-2.5 md:gap-3.5 md:px-4">
         <BotonPanel variante="fantasma" onClick={props.alCerrar}>
           <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">{props.volver}</span>
@@ -155,7 +155,7 @@ export function MarcoEditor(props: Props) {
       <div className="grid min-h-0 flex-1 lg:grid-cols-[380px_1fr]">
         <aside
           className={cn(
-            'overflow-y-auto border-sitio-borde bg-[#0a0a0b] px-3.5 pt-3.5 pb-16 lg:block lg:border-r',
+            'overflow-y-auto border-sitio-borde bg-sitio-lateral px-3.5 pt-3.5 pb-16 lg:block lg:border-r',
             pestana === 'vista' && 'hidden',
           )}
         >

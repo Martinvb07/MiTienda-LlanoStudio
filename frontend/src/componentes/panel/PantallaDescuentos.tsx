@@ -13,6 +13,7 @@ import { useSesion } from './SesionPanel'
 import { Aviso, BotonPanel, CURVA, Campo, Candado, Etiqueta, Interruptor, Segmentado } from './ui/basicos'
 import { MenuAcciones, ModalPanel } from './ui/flotantes'
 import { Aparecer } from './ui/movimiento'
+import { confirmar } from './ui/confirmar'
 
 function describir(cupon: Pick<Cupon, 'tipo' | 'valor'>) {
   if (cupon.tipo === 'PORCENTAJE') return `${Number(cupon.valor)}% de descuento`
@@ -80,7 +81,7 @@ export function PantallaDescuentos() {
   }
 
   async function eliminar(cupon: Cupon) {
-    if (!confirm(`¿Eliminar el cupón ${cupon.codigo}?`)) return
+    if (!(await confirmar({ titulo: `¿Eliminar el cupón ${cupon.codigo}?`, mensaje: 'Quien lo tenga ya no podrá usarlo.', confirmar: 'Eliminar', peligro: true }))) return
     try {
       await eliminarCupon(cupon.id)
       setCupones((lista) => (lista ?? []).filter((otro) => otro.id !== cupon.id))
@@ -330,7 +331,7 @@ function FormularioCupon({
             type="date"
             value={vence}
             onChange={(evento) => setVence(evento.target.value)}
-            className="rounded-lg border border-sitio-borde bg-[#121214] px-[11px] py-[9px] text-[13.5px] text-white outline-none [color-scheme:dark] focus:border-white/40"
+            className="rounded-lg border border-sitio-borde bg-sitio-campo px-[11px] py-[9px] text-[13.5px] text-white outline-none [color-scheme:dark] focus:border-white/40"
           />
         </div>
         <Interruptor activo={activo} alCambiar={setActivo}>

@@ -1,5 +1,8 @@
-import { Check, Minus } from 'lucide-react'
-import type { ReactNode } from 'react'
+'use client'
+
+import { useState, type ReactNode } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { Check, Minus, Plus } from 'lucide-react'
 import { Contenedor, Rotulo } from './Contenedor'
 import { Revelar } from './Revelar'
 import { ORDEN_PLANES, PLANES, type LimitesPlan } from '@/utilidades/planes'
@@ -19,7 +22,7 @@ const GRUPOS: { titulo: string; filas: Fila[] }[] = [
       { etiqueta: 'Productos', valor: (l) => l.productos ?? 'Ilimitados' },
       { etiqueta: 'Fotos por producto', valor: (l) => l.fotosPorProducto },
       { etiqueta: 'Pedir por WhatsApp en cada producto', valor: () => true },
-      { etiqueta: 'Variantes (talla, color…) por producto', valor: (l) => (l.opcionesVariantes ? `${l.opcionesVariantes} opciones` : false) },
+      { etiqueta: 'Variantes (talla, color…) por producto', valor: (l) => (l.opcionesVariantes ? `${l.opcionesVariantes} ${l.opcionesVariantes === 1 ? 'opción' : 'opciones'}` : false) },
       { etiqueta: 'Acciones en grupo', valor: (l) => l.accionesLote },
       { etiqueta: 'Importar productos desde Excel', valor: (l) => l.importarProductos },
     ],
@@ -87,7 +90,24 @@ function Celda({ valor }: { valor: Valor }): ReactNode {
   return <span className="text-white/80">{valor}</span>
 }
 
+const COLUMNAS = 'grid grid-cols-[minmax(200px,1.6fr)_repeat(4,minmax(0,1fr))] items-center'
+
+/**
+ * Tabla comparativa por grupos que se despliegan, como las preguntas
+ * frecuentes: el primero abierto y los demás a pedido.
+ */
 export function ComparativaPlanes() {
+  const [abiertos, setAbiertos] = useState<Set<string>>(() => new Set([GRUPOS[0]!.titulo]))
+
+  function alternar(titulo: string) {
+    setAbiertos((actuales) => {
+      const nuevos = new Set(actuales)
+      if (nuevos.has(titulo)) nuevos.delete(titulo)
+      else nuevos.add(titulo)
+      return nuevos
+    })
+  }
+
   return (
     <section className="pb-[110px] md:pb-[150px]">
       <Contenedor>
@@ -97,40 +117,66 @@ export function ComparativaPlanes() {
         </Revelar>
 
         <Revelar className="mt-12 overflow-x-auto">
-          <table className="w-full min-w-[640px] border-collapse text-[13.5px]">
-            <thead>
-              <tr className="border-b border-white/15">
-                <th className="py-4 text-left font-normal text-white/40" />
-                {ORDEN_PLANES.map((plan) => (
-                  <th key={plan} className="w-[15%] py-4 text-center text-[15px] font-normal tracking-[-0.01em]">
-                    {PLANES[plan].nombre}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            {GRUPOS.map((grupo) => (
-              <tbody key={grupo.titulo}>
-                <tr>
-                  <th
-                    colSpan={ORDEN_PLANES.length + 1}
-                    className="pt-9 pb-3 text-left text-[11px] font-normal tracking-[0.14em] text-white/40 uppercase"
+          <div className="min-w-[640px] text-[13.5px]" role="table" aria-label="Comparación de planes">
+            <div className={`${COLUMNAS} border-b border-white/15`} role="row">
+              <span role="columnheader" />
+              {ORDEN_PLANES.map((plan) => (
+                <span key={plan} role="columnheader" className="py-4 text-center text-[15px] tracking-[-0.01em]">
+                  {PLANES[plan].nombre}
+                </span>
+              ))}
+            </div>
+
+            {GRUPOS.map((grupo) => {
+              const abierto = abiertos.has(grupo.titulo)
+              return (
+                <div key={grupo.titulo} className="border-b border-white/12" role="rowgroup">
+                  <button
+                    type="button"
+                    aria-expanded={abierto}
+                    onClick={() => alternar(grupo.titulo)}
+                    className="group flex w-full items-center justify-between gap-6 py-6 text-left"
                   >
-                    {grupo.titulo}
-                  </th>
-                </tr>
-                {grupo.filas.map((fila) => (
-                  <tr key={fila.etiqueta} className="border-t border-white/10">
-                    <td className="py-3.5 pr-4 text-white/70">{fila.etiqueta}</td>
-                    {ORDEN_PLANES.map((plan) => (
-                      <td key={plan} className="py-3.5 text-center">
-                        <Celda valor={fila.valor(PLANES[plan])} />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            ))}
-          </table>
+                    <span className="text-[11px] tracking-[0.14em] text-white/50 uppercase transition-colors duration-500 group-hover:text-white">
+                      {grupo.titulo}
+                      <span className="ml-2 text-white/30 normal-case">· {grupo.filas.length}</span>
+                    </span>
+                    <Plus
+                      aria-hidden="true"
+                      strokeWidth={1.4}
+                      className={`h-5 w-5 shrink-0 text-white/50 transition-transform duration-700 ease-salida ${abierto ? 'rotate-45 text-white' : ''}`}
+                    />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {abierto && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pb-4">
+                          {grupo.filas.map((fila) => (
+                            <div key={fila.etiqueta} className={`${COLUMNAS} border-t border-white/10`} role="row">
+                              <span role="rowheader" className="py-3.5 pr-4 text-white/70">
+                                {fila.etiqueta}
+                              </span>
+                              {ORDEN_PLANES.map((plan) => (
+                                <span key={plan} role="cell" className="py-3.5 text-center">
+                                  <Celda valor={fila.valor(PLANES[plan])} />
+                                </span>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )
+            })}
+          </div>
         </Revelar>
       </Contenedor>
     </section>

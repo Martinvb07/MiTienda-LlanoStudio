@@ -4,7 +4,7 @@ import type { Producto, Tienda } from '@/tipos/tienda'
 export interface MensajeVistaPrevia {
   tipo: 'mt-vista'
   datos: {
-    tienda: Pick<Tienda, 'nombre' | 'logoUrl' | 'tema' | 'configuracionBloques' | 'moneda'> & {
+    tienda: Pick<Tienda, 'nombre' | 'logoUrl' | 'tema' | 'configuracionBloques' | 'moneda' | 'ajustes'> & {
       plan?: string
     }
     productos: Producto[]

@@ -20,7 +20,7 @@ export interface LimitesPlan {
   quitarMarca: boolean
 }
 
-const TODOS_LOS_BLOQUES = ['anuncio', 'hero', 'grilla-productos', 'imagen-texto', 'texto', 'pie'] as const
+const TODOS_LOS_BLOQUES = ['anuncio', 'hero', 'carrusel', 'categorias', 'grilla-productos', 'imagen-texto', 'texto', 'pie'] as const
 
 export const PLANES: Record<Plan, LimitesPlan> = {
   GRATIS: {
@@ -67,6 +67,8 @@ export const ETIQUETAS_BLOQUE_PLAN: Record<string, string> = {
   hero: 'Portada',
   'grilla-productos': 'Productos',
   'imagen-texto': 'Imagen con texto',
+  carrusel: 'Carrusel de banners',
+  categorias: 'Categorías',
   texto: 'Texto',
   pie: 'Pie de página',
 }

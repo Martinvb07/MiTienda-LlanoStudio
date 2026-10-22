@@ -44,8 +44,8 @@ export default async function PaginaProducto({ params }: Props) {
 
   return (
     <>
-      <CabeceraTienda nombre={tienda.nombre} logoUrl={tienda.logoUrl} />
-      <FichaProducto producto={producto} nombreTienda={tienda.nombre} moneda={tienda.moneda} />
+      <CabeceraTienda nombre={tienda.nombre} logoUrl={tienda.logoUrl} ajustes={tienda.ajustes} />
+      <FichaProducto producto={producto} nombreTienda={tienda.nombre} moneda={tienda.moneda} ajustes={tienda.ajustes} />
     </>
   )
 }

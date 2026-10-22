@@ -13,6 +13,29 @@ export interface TemaTienda {
   radio?: string
 }
 
+export interface EnlaceMenu {
+  texto: string
+  enlace: string
+}
+
+/** Cabecera, contacto y redes. Todo opcional: sin nada, la cabecera es la simple. */
+export interface AjustesTienda {
+  cabecera?: 'simple' | 'completa'
+  buscador?: boolean
+  /** Color de la barra de menú en la cabecera completa. */
+  colorBarra?: string
+  menu?: EnlaceMenu[]
+  botonDestacado?: EnlaceMenu
+  whatsapp?: string
+  whatsappFlotante?: boolean
+  direccion?: string
+  correo?: string
+  horario?: string
+  instagram?: string
+  facebook?: string
+  tiktok?: string
+}
+
 export interface Tienda {
   id: string
   nombre: string
@@ -22,6 +45,7 @@ export interface Tienda {
   plantilla: string
   tema: TemaTienda
   configuracionBloques: Bloque[]
+  ajustes: AjustesTienda
   moneda: string
   publicada: boolean
   /** Plan del tenant; la API pública lo manda para decidir la marca del pie. */
@@ -38,6 +62,9 @@ export interface Producto {
   precioComparacion: string | null
   stock: number
   fotos: string[]
+  categoria?: string | null
+  /** "500 gr", "Paquete x 10"… */
+  presentacion?: string | null
 }
 
 /** Producto tal como lo ve el panel: incluye los que están ocultos. */

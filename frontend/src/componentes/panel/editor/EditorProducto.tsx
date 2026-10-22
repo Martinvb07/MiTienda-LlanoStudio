@@ -25,12 +25,25 @@ interface Borrador {
   precioComparacion: string
   stock: string
   fotos: string[]
+  categoria: string
+  presentacion: string
   activo: boolean
 }
 
 function borradorDe(producto: ProductoPanel | null): Borrador {
   if (!producto) {
-    return { nombre: '', slug: '', descripcion: '', precio: '', precioComparacion: '', stock: '1', fotos: [], activo: true }
+    return {
+      nombre: '',
+      slug: '',
+      descripcion: '',
+      precio: '',
+      precioComparacion: '',
+      stock: '1',
+      fotos: [],
+      categoria: '',
+      presentacion: '',
+      activo: true,
+    }
   }
   return {
     nombre: producto.nombre,
@@ -41,6 +54,8 @@ function borradorDe(producto: ProductoPanel | null): Borrador {
     precioComparacion: producto.precioComparacion ? String(Number(producto.precioComparacion)) : '',
     stock: String(producto.stock),
     fotos: producto.fotos,
+    categoria: producto.categoria ?? '',
+    presentacion: producto.presentacion ?? '',
     activo: producto.activo,
   }
 }
@@ -86,6 +101,8 @@ export function EditorProducto({ producto, tienda, catalogo, alGuardar, alCerrar
       precioComparacion: borrador.precioComparacion || null,
       stock: Number(borrador.stock) || 0,
       fotos: borrador.fotos,
+      categoria: borrador.categoria.trim() || null,
+      presentacion: borrador.presentacion.trim() || null,
     }),
     [actual, borrador],
   )
@@ -110,6 +127,8 @@ export function EditorProducto({ producto, tienda, catalogo, alGuardar, alCerrar
       precioComparacion: borrador.precioComparacion || null,
       stock: Number(borrador.stock) || 0,
       fotos: borrador.fotos,
+      categoria: borrador.categoria.trim() || null,
+      presentacion: borrador.presentacion.trim() || null,
       activo: borrador.activo,
     }
 
@@ -149,6 +168,7 @@ export function EditorProducto({ producto, tienda, catalogo, alGuardar, alCerrar
         nombre: tienda.nombre,
         logoUrl: tienda.logoUrl,
         tema: tienda.tema,
+        ajustes: tienda.ajustes ?? {},
         moneda: tienda.moneda,
         plan,
         // En "En la tienda" sólo interesa la grilla: se omite lo demás.
@@ -162,6 +182,11 @@ export function EditorProducto({ producto, tienda, catalogo, alGuardar, alCerrar
       producto: comoProducto,
     }
   }, [borrador.activo, catalogo, comoProducto, plan, tienda, vista])
+
+  const categorias = useMemo(
+    () => [...new Set(catalogo.map((otro) => otro.categoria?.trim()).filter((c): c is string => Boolean(c)))],
+    [catalogo],
+  )
 
   const descuento =
     borrador.precioComparacion && Number(borrador.precioComparacion) > Number(borrador.precio)
@@ -215,6 +240,23 @@ export function EditorProducto({ producto, tienda, catalogo, alGuardar, alCerrar
               maximo={4000}
               marcador="Materiales, medidas, cuidados…"
             />
+            <div className="grid grid-cols-2 gap-2.5">
+              <Campo
+                etiqueta="Categoría"
+                valor={borrador.categoria}
+                alCambiar={(categoria) => cambiar({ categoria })}
+                lista={categorias}
+                marcador="Ej. Sombreros"
+                maximo={60}
+              />
+              <Campo
+                etiqueta="Presentación"
+                valor={borrador.presentacion}
+                alCambiar={(presentacion) => cambiar({ presentacion })}
+                marcador="Ej. 500 gr, talla M"
+                maximo={60}
+              />
+            </div>
             <Campo
               etiqueta="Dirección del producto"
               prefijo="/productos/"

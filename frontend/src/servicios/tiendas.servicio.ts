@@ -4,9 +4,10 @@ import { normalizarBloques } from '@/tipos/bloques'
 import type { Producto, Tienda } from '@/tipos/tienda'
 
 interface RespuestaTienda {
-  tienda: Omit<Tienda, 'configuracionBloques' | 'tema'> & {
+  tienda: Omit<Tienda, 'configuracionBloques' | 'tema' | 'ajustes'> & {
     configuracionBloques: unknown
     tema: unknown
+    ajustes?: unknown
   }
   subdominio: string
 }
@@ -25,6 +26,7 @@ export async function obtenerTienda(host: string): Promise<Tienda | null> {
     return {
       ...tienda,
       tema: (tienda.tema ?? {}) as Tienda['tema'],
+      ajustes: (tienda.ajustes ?? {}) as Tienda['ajustes'],
       configuracionBloques: normalizarBloques(tienda.configuracionBloques),
     }
   } catch (error) {

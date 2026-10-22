@@ -1,12 +1,15 @@
 import type { ReactNode } from 'react'
 import type { Bloque } from '@/tipos/bloques'
-import type { Producto } from '@/tipos/tienda'
+import type { AjustesTienda, Producto } from '@/tipos/tienda'
 import { Anuncio } from './bloques/Anuncio'
 import { Hero } from './bloques/Hero'
+import { Carrusel } from './bloques/Carrusel'
+import { Categorias } from './bloques/Categorias'
 import { GrillaProductos } from './bloques/GrillaProductos'
 import { ImagenTexto } from './bloques/ImagenTexto'
 import { Texto } from './bloques/Texto'
 import { Pie } from './bloques/Pie'
+import { categoriasDe } from './ListadoProductos'
 
 interface Props {
   bloques: Bloque[]
@@ -16,14 +19,28 @@ interface Props {
   cabecera?: ReactNode
   /** Si el plan permite quitar "Hecho con Mi Tienda" del pie. */
   quitarMarca?: boolean
+  /** Contacto y redes: el pie los usa para armar sus columnas. */
+  ajustes?: AjustesTienda
 }
 
-function pintar(bloque: Bloque, productos: Producto[], moneda: string, quitarMarca: boolean) {
+interface Contexto {
+  productos: Producto[]
+  moneda: string
+  quitarMarca: boolean
+  ajustes: AjustesTienda
+  categorias: string[]
+}
+
+function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categorias }: Contexto) {
   switch (bloque.tipo) {
     case 'anuncio':
       return <Anuncio {...bloque.props} />
     case 'hero':
       return <Hero {...bloque.props} />
+    case 'carrusel':
+      return <Carrusel {...bloque.props} />
+    case 'categorias':
+      return <Categorias {...bloque.props} />
     case 'grilla-productos':
       return <GrillaProductos {...bloque.props} productos={productos} moneda={moneda} />
     case 'imagen-texto':
@@ -31,7 +48,7 @@ function pintar(bloque: Bloque, productos: Producto[], moneda: string, quitarMar
     case 'texto':
       return <Texto {...bloque.props} />
     case 'pie':
-      return <Pie {...bloque.props} quitarMarcaPermitido={quitarMarca} />
+      return <Pie {...bloque.props} quitarMarcaPermitido={quitarMarca} ajustes={ajustes} categorias={categorias} />
     default:
       return null
   }
@@ -48,7 +65,16 @@ function pintar(bloque: Bloque, productos: Producto[], moneda: string, quitarMar
  * Cada bloque va envuelto con `data-bloque`: el editor lo usa para resaltar y
  * desplazarse hasta la sección que se está editando.
  */
-export function RenderizadorBloques({ bloques, productos, moneda, cabecera, quitarMarca = false }: Props) {
+export function RenderizadorBloques({
+  bloques,
+  productos,
+  moneda,
+  cabecera,
+  quitarMarca = false,
+  ajustes = {},
+}: Props) {
+  const categorias = categoriasDe(productos)
+  const contexto: Contexto = { productos, moneda, quitarMarca, ajustes, categorias }
   const visibles = bloques.filter((bloque) => bloque.visible !== false)
   const anunciosIniciales = visibles.findIndex((bloque) => bloque.tipo !== 'anuncio')
   const corte = anunciosIniciales === -1 ? visibles.length : anunciosIniciales
@@ -58,7 +84,7 @@ export function RenderizadorBloques({ bloques, productos, moneda, cabecera, quit
       {visibles.map((bloque, indice) => (
         <div key={bloque.id} data-bloque={bloque.id}>
           {indice === corte && cabecera}
-          {pintar(bloque, productos, moneda, quitarMarca)}
+          {pintar(bloque, contexto)}
         </div>
       ))}
       {corte === visibles.length && cabecera}

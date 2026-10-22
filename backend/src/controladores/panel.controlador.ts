@@ -54,6 +54,25 @@ const esquemaBloque = z.object({
 
 const urlMedio = z.string().max(600)
 
+const enlace = z.object({ texto: z.string().trim().max(40), enlace: z.string().trim().max(300) })
+
+/** Cabecera, contacto y redes de la tienda. Todo opcional. */
+const esquemaAjustes = z.object({
+  cabecera: z.enum(['simple', 'completa']).optional(),
+  buscador: z.boolean().optional(),
+  colorBarra: colorHex.optional(),
+  menu: z.array(enlace).max(8).optional(),
+  botonDestacado: enlace.optional(),
+  whatsapp: z.string().trim().max(20).optional(),
+  whatsappFlotante: z.boolean().optional(),
+  direccion: z.string().trim().max(160).optional(),
+  correo: z.string().trim().max(120).optional(),
+  horario: z.string().trim().max(120).optional(),
+  instagram: z.string().trim().max(60).optional(),
+  facebook: z.string().trim().max(120).optional(),
+  tiktok: z.string().trim().max(60).optional(),
+})
+
 export const esquemaTienda = z.object({
   nombre: z.string().trim().min(1, 'La tienda necesita un nombre').max(80),
   descripcion: z.string().trim().max(300).nullable(),
@@ -61,6 +80,7 @@ export const esquemaTienda = z.object({
   plantilla: z.string().max(40),
   tema: esquemaTema,
   configuracionBloques: z.array(esquemaBloque).max(40),
+  ajustes: esquemaAjustes.default({}),
   publicada: z.boolean(),
 })
 
@@ -79,6 +99,8 @@ export const esquemaProducto = z.object({
   precioComparacion: precio.nullable(),
   stock: z.coerce.number().int().min(0).max(1_000_000),
   fotos: z.array(urlMedio).max(10),
+  categoria: z.string().trim().max(60).nullable().optional(),
+  presentacion: z.string().trim().max(60).nullable().optional(),
   activo: z.boolean(),
 })
 
@@ -221,6 +243,7 @@ const camposTienda = {
   plantilla: true,
   tema: true,
   configuracionBloques: true,
+  ajustes: true,
   moneda: true,
   publicada: true,
 } as const
@@ -289,6 +312,7 @@ export async function actualizarTiendaPanel(req: Request, res: Response): Promis
       plantilla,
       tema,
       configuracionBloques: bloques as object[],
+      ajustes: datos.ajustes,
       publicada: datos.publicada,
     },
     select: camposTienda,
@@ -310,6 +334,8 @@ const camposProducto = {
   precioComparacion: true,
   stock: true,
   fotos: true,
+  categoria: true,
+  presentacion: true,
   activo: true,
   actualizadoEn: true,
 } as const
@@ -368,7 +394,7 @@ export async function crearProductoPanel(req: Request, res: Response): Promise<v
   await slugLibre(tiendaId, datos.slug)
 
   const producto = await prisma.producto.create({
-    data: { ...datos, tiendaId },
+    data: { ...datos, categoria: datos.categoria || null, presentacion: datos.presentacion || null, tiendaId },
     select: camposProducto,
   })
   res.status(201).json({ producto: serializar(producto) })
@@ -389,7 +415,11 @@ export async function actualizarProductoPanel(req: Request, res: Response): Prom
   revisarFotos(datos.fotos, await planDeLaSesion(req))
   await slugLibre(tiendaId, datos.slug, id)
 
-  const producto = await prisma.producto.update({ where: { id }, data: datos, select: camposProducto })
+  const producto = await prisma.producto.update({
+    where: { id },
+    data: { ...datos, categoria: datos.categoria || null, presentacion: datos.presentacion || null },
+    select: camposProducto,
+  })
   res.json({ producto: serializar(producto) })
 }
 

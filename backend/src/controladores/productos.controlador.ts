@@ -15,6 +15,8 @@ function serializarProducto(producto: {
   precioComparacion: { toString(): string } | null
   stock: number
   fotos: string[]
+  categoria: string | null
+  presentacion: string | null
 }) {
   return {
     ...producto,
@@ -32,6 +34,8 @@ const camposPublicos = {
   precioComparacion: true,
   stock: true,
   fotos: true,
+  categoria: true,
+  presentacion: true,
 } as const
 
 /** Catálogo público de la tienda del Host actual. */
@@ -42,7 +46,7 @@ export async function listarProductosPublicos(req: Request, res: Response): Prom
     where: { tiendaId, activo: true },
     select: camposPublicos,
     orderBy: { creadoEn: 'desc' },
-    take: 100,
+    take: 200,
   })
 
   res.json({ productos: productos.map(serializarProducto) })

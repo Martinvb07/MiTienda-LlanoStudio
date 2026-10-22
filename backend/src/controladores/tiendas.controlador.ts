@@ -20,6 +20,7 @@ export async function obtenerTiendaPublica(req: Request, res: Response): Promise
       plantilla: true,
       tema: true,
       configuracionBloques: true,
+      ajustes: true,
       moneda: true,
       publicada: true,
     },

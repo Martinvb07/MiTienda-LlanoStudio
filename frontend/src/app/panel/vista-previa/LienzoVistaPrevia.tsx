@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { BotonWhatsapp } from '@/componentes/tienda/BotonWhatsapp'
 import { CabeceraTienda } from '@/componentes/tienda/CabeceraTienda'
 import { FichaProducto } from '@/componentes/tienda/FichaProducto'
 import { RenderizadorBloques } from '@/componentes/tienda/RenderizadorBloques'
@@ -46,7 +47,8 @@ export function LienzoVistaPrevia() {
   }
 
   const { tienda } = datos
-  const cabecera = <CabeceraTienda nombre={tienda.nombre || 'Mi tienda'} logoUrl={tienda.logoUrl} />
+  const ajustes = tienda.ajustes ?? {}
+  const cabecera = <CabeceraTienda nombre={tienda.nombre || 'Mi tienda'} logoUrl={tienda.logoUrl} ajustes={ajustes} />
 
   return (
     <div style={variablesTema(tienda.tema)} className="min-h-screen bg-superficie font-sans text-tinta">
@@ -56,7 +58,7 @@ export function LienzoVistaPrevia() {
       {datos.vista === 'producto' && datos.producto ? (
         <>
           {cabecera}
-          <FichaProducto producto={datos.producto} nombreTienda={tienda.nombre} moneda={tienda.moneda} />
+          <FichaProducto producto={datos.producto} nombreTienda={tienda.nombre} moneda={tienda.moneda} ajustes={ajustes} />
         </>
       ) : (
         <RenderizadorBloques
@@ -65,8 +67,10 @@ export function LienzoVistaPrevia() {
           moneda={tienda.moneda}
           cabecera={cabecera}
           quitarMarca={limitesDe(tienda.plan).quitarMarca}
+          ajustes={ajustes}
         />
       )}
+      {ajustes.whatsappFlotante && ajustes.whatsapp && <BotonWhatsapp numero={ajustes.whatsapp} tienda={tienda.nombre} />}
     </div>
   )
 }

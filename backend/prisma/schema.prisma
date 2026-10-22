@@ -148,6 +148,9 @@ model Tienda {
   /// Diseño del constructor drag-and-drop: array ordenado de bloques
   /// ({ id, tipo, props }). Se guarda como JSON, nunca como HTML generado.
   configuracionBloques Json @default("[]")
+  /// Cabecera, contacto y redes: menú, buscador, WhatsApp, dirección, horario.
+  /// JSON libre validado en la API (ver esquemaAjustes en panel.controlador).
+  ajustes   Json   @default("{}")
 
   moneda    String  @default("COP")
   publicada Boolean @default(false)
@@ -177,6 +180,10 @@ model Producto {
   stock             Int      @default(0)
   /// URLs públicas en Cloudflare R2, ya optimizadas por la cola de imágenes.
   fotos             String[]
+  /// Agrupa el catálogo: alimenta las secciones de categorías y sus páginas.
+  categoria         String?
+  /// Cómo se vende: "500 gr", "Paquete x 10", "Talla única".
+  presentacion      String?
 
   activo Boolean @default(true)
 
@@ -188,6 +195,7 @@ model Producto {
 
   @@unique([tiendaId, slug])
   @@index([tiendaId, activo])
+  @@index([tiendaId, categoria])
   @@map("productos")
 }
 

@@ -42,6 +42,7 @@ interface Props {
   alError: (mensaje: string) => void
   alSubiendo: (delta: number) => void
   limites: LimitesPlan
+  categorias?: string[]
 }
 
 const TIPOS = Object.keys(ETIQUETAS_BLOQUE) as TipoBloque[]
@@ -50,7 +51,16 @@ const TIPOS = Object.keys(ETIQUETAS_BLOQUE) as TipoBloque[]
  * Secciones de la página, en orden. Se arrastran por el asa para reordenar,
  * se ocultan con el ojo y se abren para editar su contenido.
  */
-export function ListaBloques({ bloques, alCambiar, abierto, alAbrir, alError, alSubiendo, limites }: Props) {
+export function ListaBloques({
+  bloques,
+  alCambiar,
+  abierto,
+  alAbrir,
+  alError,
+  alSubiendo,
+  limites,
+  categorias,
+}: Props) {
   const [menu, setMenu] = useState(false)
   const lleno = bloques.length >= limites.secciones
 
@@ -108,6 +118,7 @@ export function ListaBloques({ bloques, alCambiar, abierto, alAbrir, alError, al
                 alError={alError}
                 alSubiendo={alSubiendo}
                 limites={limites}
+                categorias={categorias}
               />
             ))}
           </ul>
@@ -185,6 +196,7 @@ function FilaBloque({
   alError,
   alSubiendo,
   limites,
+  categorias,
 }: {
   bloque: Bloque
   abierto: boolean
@@ -195,6 +207,7 @@ function FilaBloque({
   alError: (mensaje: string) => void
   alSubiendo: (delta: number) => void
   limites: LimitesPlan
+  categorias?: string[]
 }) {
   // Misma curva y duración que el reordenamiento del editor de llanostudio.co.
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -276,6 +289,7 @@ function FilaBloque({
                 alError={alError}
                 alSubiendo={alSubiendo}
                 limites={limites}
+                categorias={categorias}
               />
               <button
                 type="button"

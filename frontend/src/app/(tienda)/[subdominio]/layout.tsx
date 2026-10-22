@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { obtenerTienda } from '@/servicios/tiendas.servicio'
 import { hostDesdeIdentificador } from '@/utilidades/dominios'
 import { variablesTema } from '@/utilidades/tema'
+import { BotonWhatsapp } from '@/componentes/tienda/BotonWhatsapp'
 
 /** Revalidación ISR: las tiendas se sirven de caché y se refrescan solas. */
 export const revalidate = 60
@@ -55,6 +56,9 @@ export default async function LayoutTienda({ children, params }: Props) {
   return (
     <div style={variablesTema(tienda.tema)} className="min-h-screen bg-superficie font-sans text-tinta">
       {children}
+      {tienda.ajustes.whatsappFlotante && tienda.ajustes.whatsapp && (
+        <BotonWhatsapp numero={tienda.ajustes.whatsapp} tienda={tienda.nombre} />
+      )}
     </div>
   )
 }

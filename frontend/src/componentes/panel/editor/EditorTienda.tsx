@@ -4,7 +4,7 @@ import { ArrowUpRight } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence } from 'motion/react'
 import { guardarTienda, listarProductos, type DatosTienda } from '@/servicios/panel'
-import type { Producto, TemaTienda, Tienda } from '@/tipos/tienda'
+import type { AjustesTienda, Producto, TemaTienda, Tienda } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
 import { ESTILOS_PREDEFINIDOS, FUENTES_TITULOS, RADIOS } from '@/utilidades/tema'
 import { cn } from '@/utilidades/clases'
@@ -13,6 +13,7 @@ import { PLANTILLAS_TIENDA, type PlantillaTienda } from '@/utilidades/plantillas
 import { useSesion } from '../SesionPanel'
 import { Aviso, Campo, CampoArea, CampoColor, Candado, Interruptor, PlanRequerido, Seccion, Segmentado } from '../ui/basicos'
 import { ZonaImagen } from '../ui/imagenes'
+import { CamposCabecera, CamposContacto } from './CamposAjustes'
 import { ListaBloques } from './ListaBloques'
 import { MarcoEditor, useAtajosEditor } from './MarcoEditor'
 import { VistaPrevia, type Dispositivo } from './VistaPrevia'
@@ -27,6 +28,7 @@ function borradorDe(tienda: Tienda): DatosTienda {
     plantilla: tienda.plantilla,
     tema: { ...TEMA_BASE, ...tienda.tema },
     configuracionBloques: tienda.configuracionBloques,
+    ajustes: tienda.ajustes ?? {},
     publicada: tienda.publicada,
   }
 }
@@ -82,6 +84,11 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     setBorrador((actual) => ({ ...actual, ...cambios }))
   }, [])
   const cambiarTema = (cambios: Partial<TemaTienda>) => cambiar({ tema: { ...borrador.tema, ...cambios } })
+  const cambiarAjustes = (cambios: Partial<AjustesTienda>) => cambiar({ ajustes: { ...borrador.ajustes, ...cambios } })
+  const categorias = useMemo(
+    () => [...new Set(productos.map((producto) => producto.categoria?.trim()).filter((c): c is string => Boolean(c)))],
+    [productos],
+  )
   const alSubiendo = useCallback((delta: number) => setSubiendo((valor) => valor + delta), [])
 
   const guardar = useCallback(async () => {
@@ -133,6 +140,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
         logoUrl: borrador.logoUrl,
         tema: borrador.tema,
         configuracionBloques: borrador.configuracionBloques,
+        ajustes: borrador.ajustes,
         moneda: tienda.moneda,
         plan,
       },
@@ -220,7 +228,16 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
               alError={setError}
               alSubiendo={alSubiendo}
               limites={limites}
+              categorias={categorias}
             />
+          </Seccion>
+
+          <Seccion titulo="Cabecera y menú">
+            <CamposCabecera ajustes={borrador.ajustes} alCambiar={cambiarAjustes} categorias={categorias} />
+          </Seccion>
+
+          <Seccion titulo="Contacto y redes">
+            <CamposContacto ajustes={borrador.ajustes} alCambiar={cambiarAjustes} />
           </Seccion>
 
           <Seccion titulo="Estilo">

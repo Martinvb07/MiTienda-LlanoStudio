@@ -120,7 +120,7 @@ export const obtenerSesion = () => pedir<SesionPanel>('/sesion')
 
 export type DatosTienda = Pick<
   Tienda,
-  'nombre' | 'descripcion' | 'logoUrl' | 'plantilla' | 'tema' | 'configuracionBloques' | 'publicada'
+  'nombre' | 'descripcion' | 'logoUrl' | 'plantilla' | 'tema' | 'configuracionBloques' | 'ajustes' | 'publicada'
 >
 
 export async function obtenerTienda(): Promise<{ tienda: Tienda; subdominio: string }> {
@@ -130,6 +130,7 @@ export async function obtenerTienda(): Promise<{ tienda: Tienda; subdominio: str
     tienda: {
       ...tienda,
       tema: tienda.tema ?? {},
+      ajustes: tienda.ajustes ?? {},
       configuracionBloques: normalizarBloques(tienda.configuracionBloques),
     },
   }
@@ -140,7 +141,11 @@ export async function guardarTienda(datos: DatosTienda): Promise<Tienda> {
     method: 'PUT',
     body: JSON.stringify(datos),
   })
-  return { ...tienda, configuracionBloques: normalizarBloques(tienda.configuracionBloques) }
+  return {
+    ...tienda,
+    ajustes: tienda.ajustes ?? {},
+    configuracionBloques: normalizarBloques(tienda.configuracionBloques),
+  }
 }
 
 // ── Productos ──

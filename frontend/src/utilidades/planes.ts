@@ -21,7 +21,7 @@ export interface LimitesPlan {
   quitarMarca: boolean
 }
 
-const TODOS_LOS_BLOQUES: readonly TipoBloque[] = ['anuncio', 'hero', 'grilla-productos', 'imagen-texto', 'texto', 'pie']
+const TODOS_LOS_BLOQUES: readonly TipoBloque[] = ['anuncio', 'hero', 'carrusel', 'categorias', 'grilla-productos', 'imagen-texto', 'texto', 'pie']
 
 export const PLANES: Record<Plan, LimitesPlan> = {
   GRATIS: {

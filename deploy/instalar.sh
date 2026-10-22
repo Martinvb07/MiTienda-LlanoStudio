@@ -345,8 +345,9 @@ for nombre in "${NOMBRES[@]}"; do
   fi
 done
 if [ ${#LISTOS[@]} -gt 0 ]; then
-  certbot --nginx --non-interactive --agree-tos -m "$CORREO" --redirect --keep-until-expiring "${LISTOS[@]}" \
-    && verde "Certificado listo para: ${LISTOS[*]//-d /}" \
+  certbot --nginx --non-interactive --agree-tos -m "$CORREO" --redirect --keep-until-expiring \
+    --cert-name "$HOST_PANEL" "${LISTOS[@]}" \
+    && verde "Certificado listo para: ${NOMBRES[*]}" \
     || ambar "certbot no pudo emitir el certificado; revisa el mensaje de arriba."
 fi
 

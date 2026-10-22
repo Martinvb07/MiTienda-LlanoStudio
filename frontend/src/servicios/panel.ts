@@ -148,6 +148,16 @@ export async function guardarTienda(datos: DatosTienda): Promise<Tienda> {
   }
 }
 
+// ── Cuenta ──
+
+export async function actualizarCuenta(datos: { nombre: string; email: string }) {
+  const { token } = await pedir<{ token: string }>('/cuenta', { method: 'PUT', body: JSON.stringify(datos) })
+  guardarToken(token)
+}
+
+export const cambiarContrasena = (actual: string, nueva: string) =>
+  pedir<void>('/cuenta/contrasena', { method: 'PUT', body: JSON.stringify({ actual, nueva }) })
+
 // ── Productos ──
 
 export type DatosProducto = Omit<ProductoPanel, 'id' | 'actualizadoEn'>

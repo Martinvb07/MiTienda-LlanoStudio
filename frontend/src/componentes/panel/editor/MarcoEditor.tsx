@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowLeft, Monitor, Smartphone, Check } from 'lucide-react'
 import { cn } from '@/utilidades/clases'
@@ -60,7 +61,9 @@ export function MarcoEditor(props: Props) {
     }
   }, [])
 
-  return (
+  // Va directo al body: así ningún transform o filtro de las animaciones del
+  // panel se vuelve el contenedor de este `fixed`.
+  return createPortal(
     <motion.div
       role="dialog"
       aria-label={`Editor: ${props.titulo}`}
@@ -68,7 +71,7 @@ export function MarcoEditor(props: Props) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 24 }}
       transition={{ duration: 0.45, ease: CURVA }}
-      className="fixed inset-0 z-[200] flex flex-col bg-[#050505] text-white"
+      className="marco-oscuro fixed inset-0 z-[200] flex flex-col bg-[#050505] font-sans text-white"
     >
       <header className="flex h-[60px] shrink-0 items-center gap-2 border-b border-sitio-borde bg-[#0a0a0b] px-2.5 md:gap-3.5 md:px-4">
         <BotonPanel variante="fantasma" onClick={props.alCerrar}>
@@ -160,7 +163,8 @@ export function MarcoEditor(props: Props) {
         </aside>
         <div className={cn('min-h-0 lg:grid', pestana === 'editar' ? 'hidden' : 'grid')}>{props.vista}</div>
       </div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   )
 }
 

@@ -1,5 +1,6 @@
 import { NavegacionPanel } from '@/componentes/panel/NavegacionPanel'
 import { ProveedorSesion } from '@/componentes/panel/SesionPanel'
+import { TransicionPanel } from '@/componentes/panel/TransicionPanel'
 
 /**
  * Marco del tablero de administración. Siempre se sirve en
@@ -18,7 +19,9 @@ export default function LayoutTablero({ children }: { children: React.ReactNode 
       >
         <div className="flex min-h-screen flex-col md:flex-row">
           <NavegacionPanel />
-          <main className="min-w-0 flex-1 px-5 py-8 md:px-10 md:py-10">{children}</main>
+          <main className="mx-auto w-full max-w-[1280px] min-w-0 flex-1 px-4 pt-6 pb-28 sm:px-6 md:px-10 md:py-10">
+            <TransicionPanel>{children}</TransicionPanel>
+          </main>
         </div>
       </ProveedorSesion>
     </div>

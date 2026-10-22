@@ -3,10 +3,14 @@ import { exigirSesion } from '../middlewares/autenticacion.js'
 import { validar } from '../middlewares/validacion.js'
 import { TIPOS_IMAGEN } from '../almacenamiento/index.js'
 import {
+  actualizarCuenta,
   actualizarProductoPanel,
   actualizarTiendaPanel,
+  cambiarContrasena,
   crearProductoPanel,
   eliminarProductoPanel,
+  esquemaContrasena,
+  esquemaCuenta,
   esquemaIngreso,
   esquemaProducto,
   esquemaRegistro,
@@ -33,6 +37,8 @@ enrutador.post('/ingreso', validar(esquemaIngreso), ingresar)
 enrutador.use(exigirSesion)
 
 enrutador.get('/sesion', obtenerSesion)
+enrutador.put('/cuenta', validar(esquemaCuenta), actualizarCuenta)
+enrutador.put('/cuenta/contrasena', validar(esquemaContrasena), cambiarContrasena)
 
 enrutador.get('/tienda', obtenerTiendaPanel)
 enrutador.put('/tienda', validar(esquemaTienda), actualizarTiendaPanel)

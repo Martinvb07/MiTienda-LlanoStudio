@@ -29,6 +29,16 @@ export const esquemaIngreso = z.object({
   contrasena: z.string().min(1, 'Escribe tu contraseña').max(200),
 })
 
+export const esquemaCuenta = z.object({
+  nombre: z.string().trim().min(1, 'Escribe tu nombre').max(80),
+  email: correo,
+})
+
+export const esquemaContrasena = z.object({
+  actual: z.string().min(1, 'Escribe tu contraseña actual').max(200),
+  nueva: z.string().min(8, 'Tiene que tener al menos 8 caracteres').max(200),
+})
+
 const colorHex = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Color inválido')
 
 const esquemaTema = z.object({
@@ -228,6 +238,50 @@ export async function obtenerSesion(req: Request, res: Response): Promise<void> 
     tenant: { subdominio: usuario.tenant.subdominio, plan: usuario.tenant.plan },
     tienda: usuario.tenant.tienda,
   })
+}
+
+/**
+ * Cambia el nombre y el correo de quien tiene la sesión. El correo va dentro
+ * del token, así que se devuelve uno nuevo.
+ */
+export async function actualizarCuenta(req: Request, res: Response): Promise<void> {
+  const sesion = req.sesion!
+  const datos = req.body as z.infer<typeof esquemaCuenta>
+
+  const otro = await prisma.usuario.findUnique({ where: { email: datos.email }, select: { id: true } })
+  if (otro && otro.id !== sesion.usuarioId) {
+    throw new ErrorHttp(409, 'Ya existe una cuenta con ese correo', 'CORREO_EN_USO', [
+      { campo: 'email', mensaje: 'Ya existe una cuenta con ese correo' },
+    ])
+  }
+
+  const { count } = await prisma.usuario.updateMany({
+    where: { id: sesion.usuarioId, tenantId: sesion.tenantId, activo: true },
+    data: { nombre: datos.nombre, email: datos.email },
+  })
+  if (count === 0) throw noAutorizado('La sesión ya no es válida')
+
+  res.json({ token: firmarSesion({ ...sesion, email: datos.email }) })
+}
+
+/** Cambia la contraseña pidiendo la actual: una sesión olvidada abierta no basta. */
+export async function cambiarContrasena(req: Request, res: Response): Promise<void> {
+  const { usuarioId, tenantId } = req.sesion!
+  const { actual, nueva } = req.body as z.infer<typeof esquemaContrasena>
+
+  const usuario = await prisma.usuario.findFirst({
+    where: { id: usuarioId, tenantId, activo: true },
+    select: { contrasenaHash: true },
+  })
+  if (!usuario) throw noAutorizado('La sesión ya no es válida')
+  if (!(await verificarContrasena(actual, usuario.contrasenaHash))) {
+    throw solicitudInvalida('La contraseña actual no coincide', [
+      { campo: 'actual', mensaje: 'La contraseña actual no coincide' },
+    ])
+  }
+
+  await prisma.usuario.update({ where: { id: usuarioId }, data: { contrasenaHash: await cifrarContrasena(nueva) } })
+  res.status(204).end()
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

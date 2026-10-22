@@ -43,6 +43,14 @@ const esquema = z.object({
   // A dónde vuelve la persona después de pagar. Vacío = https://<SUBDOMINIO_PANEL>.<DOMINIO_BASE>
   URL_PANEL: z.string().default(''),
 
+  // Correos automáticos (bienvenida, plan por vencer, te extrañamos). Sin
+  // SMTP_HOST no se envía nada y el resto sigue funcionando.
+  SMTP_HOST: z.string().default(''),
+  SMTP_PUERTO: z.coerce.number().int().positive().default(465),
+  SMTP_USUARIO: z.string().default(''),
+  SMTP_CLAVE: z.string().default(''),
+  CORREO_REMITENTE: z.string().default('Mi Tienda <hola@llanostudio.co>'),
+
   // Cloudflare R2 — opcionales mientras la subida de archivos no esté implementada.
   R2_ACCOUNT_ID: z.string().default(''),
   R2_ACCESS_KEY_ID: z.string().default(''),

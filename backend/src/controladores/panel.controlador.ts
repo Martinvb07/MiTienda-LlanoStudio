@@ -10,7 +10,9 @@ import { esSubdominioValido } from '../utilidades/dominios.js'
 import { ErrorHttp, noAutorizado, noEncontrado, solicitudInvalida } from '../utilidades/errores.js'
 import { ETIQUETAS_BLOQUE_PLAN, TEMAS_PREDEFINIDOS, fueraDelPlan, limitesDe } from '../utilidades/planes.js'
 import { aplicarVencimientos, estadoSuscripcion } from '../servicios/suscripciones.servicio.js'
-import { tokenSiEsAdmin } from './admin.controlador.js'
+import { tokenSiEsAdmin } from '../servicios/admins.servicio.js'
+import { cambiarPlan, leerAjuste } from '../servicios/plataforma.servicio.js'
+import { enviarCorreo } from '../servicios/correos.servicio.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Esquemas
@@ -24,6 +26,10 @@ export const esquemaRegistro = z.object({
   contrasena: z.string().min(8, 'Tiene que tener al menos 8 caracteres').max(200),
   tienda: z.string().trim().min(1, 'Escribe el nombre de tu tienda').max(80),
   subdominio: z.string().trim().toLowerCase(),
+  /** Código de la tienda que lo invitó (?ref=). */
+  ref: z.string().trim().toUpperCase().max(20).optional(),
+  /** De dónde llegó (utm_source u otro), para el embudo del admin. */
+  origen: z.string().trim().toLowerCase().max(60).optional(),
 })
 
 export const esquemaIngreso = z.object({
@@ -204,8 +210,8 @@ function conStockDeVariantes<T extends { stock: number; variantes?: { stock: num
 // Sesión
 // ─────────────────────────────────────────────────────────────────────────────
 
-function firmarSesion(sesion: SesionPanel): string {
-  return jwt.sign(sesion, entorno.JWT_SECRETO, { expiresIn: '7d' })
+export function firmarSesion(sesion: SesionPanel, duracion: jwt.SignOptions['expiresIn'] = '7d'): string {
+  return jwt.sign(sesion, entorno.JWT_SECRETO, { expiresIn: duracion })
 }
 
 function bloquesIniciales(nombreTienda: string) {
@@ -237,7 +243,11 @@ function bloquesIniciales(nombreTienda: string) {
 export async function registrar(req: Request, res: Response): Promise<void> {
   const datos = req.body as z.infer<typeof esquemaRegistro>
 
-  if (!esSubdominioValido(datos.subdominio)) {
+  const mantenimiento = await leerAjuste('mantenimiento')
+  if (mantenimiento.registrosCerrados) throw new ErrorHttp(503, mantenimiento.mensaje, 'REGISTROS_CERRADOS')
+
+  const bloqueado = await prisma.subdominioBloqueado.findUnique({ where: { subdominio: datos.subdominio } })
+  if (!esSubdominioValido(datos.subdominio) || bloqueado) {
     throw solicitudInvalida('Esa dirección no está disponible', [
       { campo: 'subdominio', mensaje: 'Esa dirección no está disponible. Prueba con otra.' },
     ])
@@ -259,11 +269,17 @@ export async function registrar(req: Request, res: Response): Promise<void> {
   }
 
   const contrasenaHash = await cifrarContrasena(datos.contrasena)
+  const [prueba, padrino] = await Promise.all([
+    leerAjuste('prueba'),
+    datos.ref ? prisma.tenant.findUnique({ where: { codigoReferido: datos.ref }, select: { id: true } }) : null,
+  ])
 
   const tenant = await prisma.tenant.create({
     data: {
       nombre: datos.tienda,
       subdominio: datos.subdominio,
+      origen: padrino ? 'referido' : (datos.origen ?? null),
+      referidoPorId: padrino?.id ?? null,
       usuarios: { create: { email: datos.email, nombre: datos.nombre, contrasenaHash } },
       tienda: {
         create: { nombre: datos.tienda, configuracionBloques: bloquesIniciales(datos.tienda) },
@@ -271,6 +287,19 @@ export async function registrar(req: Request, res: Response): Promise<void> {
     },
     select: { id: true, usuarios: { select: { id: true, rol: true } } },
   })
+
+  // Prueba gratis de un plan pago, si el admin la tiene activa.
+  if (prueba.activa && prueba.dias > 0) {
+    await prisma.$transaction((tx) =>
+      cambiarPlan(tx, tenant.id, {
+        plan: prueba.plan,
+        venceEn: new Date(Date.now() + prueba.dias * 86_400_000),
+        motivo: 'PRUEBA',
+        detalle: `${prueba.dias} días`,
+      }),
+    )
+  }
+  void enviarCorreo('bienvenida', tenant.id).catch(() => undefined)
 
   const usuario = tenant.usuarios[0]!
   const token = firmarSesion({

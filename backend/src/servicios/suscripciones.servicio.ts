@@ -3,6 +3,7 @@ import { entorno } from '../config/entorno.js'
 import { prisma } from '../config/prisma.js'
 import type { Prisma } from '../generado/prisma/client.js'
 import { registro } from '../utilidades/registro.js'
+import { cambiarPlan, leerAjuste } from './plataforma.servicio.js'
 
 /**
  * Suscripciones de la plataforma, cobradas con el botón de pagos de Bold.
@@ -77,7 +78,16 @@ export async function aplicarPago(referencia: string, idBold: string | null, dat
     })
     if (count === 0) return pago
 
-    await tx.tenant.update({ where: { id: pago.tenantId }, data: { plan: pago.plan, planVenceEn: cubreHasta } })
+    await cambiarPlan(tx, pago.tenantId, {
+      plan: pago.plan,
+      venceEn: cubreHasta,
+      motivo: 'PAGO',
+      detalle: `${referencia} · ${pago.periodo === 'ANUAL' ? 'anual' : 'mensual'}`,
+    })
+    if (pago.cuponCodigo) {
+      await tx.cuponSuscripcion.updateMany({ where: { codigo: pago.cuponCodigo }, data: { usos: { increment: 1 } } })
+    }
+    await premiarReferido(tx, pago.tenantId)
     registro.info({ referencia, plan: pago.plan, cubreHasta }, 'Suscripción pagada')
     return { ...pago, estado: 'APROBADO' as const, cubreHasta }
   })
@@ -149,10 +159,42 @@ export function estadoSuscripcion(venceEn: Date | null, ahora = new Date()) {
 /** Pasa a Gratis las tiendas que llevan más de los días de gracia sin pagar. */
 export async function aplicarVencimientos(tenantId?: string) {
   const limite = new Date(Date.now() - DIAS_GRACIA * DIA)
-  const { count } = await prisma.tenant.updateMany({
+  const vencidas = await prisma.tenant.findMany({
     where: { ...(tenantId ? { id: tenantId } : {}), planVenceEn: { lt: limite }, plan: { not: 'GRATIS' } },
-    data: { plan: 'GRATIS', planVenceEn: null },
+    select: { id: true },
   })
-  if (count > 0 && !tenantId) registro.info({ cantidad: count }, 'Planes vencidos pasados a Gratis')
-  return count
+  for (const { id } of vencidas) {
+    await prisma.$transaction((tx) => cambiarPlan(tx, id, { plan: 'GRATIS', venceEn: null, motivo: 'VENCIMIENTO' }))
+  }
+  if (vencidas.length > 0 && !tenantId) registro.info({ cantidad: vencidas.length }, 'Planes vencidos pasados a Gratis')
+  return vencidas.length
+}
+
+/**
+ * Primer pago de una tienda invitada: la que la invitó gana días. Si estaba en
+ * Gratis, se le da Emprende por esos días; si ya pagaba, se le suman.
+ */
+async function premiarReferido(tx: Prisma.TransactionClient, tenantId: string) {
+  const tenant = await tx.tenant.findUnique({ where: { id: tenantId }, select: { referidoPorId: true, nombre: true } })
+  if (!tenant?.referidoPorId) return
+  const pagosAprobados = await tx.pagoSuscripcion.count({ where: { tenantId, estado: 'APROBADO' } })
+  if (pagosAprobados !== 1) return
+  const ajustes = await leerAjuste('referidos')
+  if (!ajustes.activa) return
+
+  const padrino = await tx.tenant.findUnique({
+    where: { id: tenant.referidoPorId },
+    select: { id: true, plan: true, planVenceEn: true },
+  })
+  if (!padrino) return
+  const ahora = new Date()
+  const base = padrino.planVenceEn && padrino.planVenceEn > ahora ? padrino.planVenceEn : ahora
+  // Con un plan pago sin vencimiento (cortesía del admin) no hay nada que sumar.
+  if (padrino.plan !== 'GRATIS' && !padrino.planVenceEn) return
+  await cambiarPlan(tx, padrino.id, {
+    plan: padrino.plan === 'GRATIS' ? 'EMPRENDE' : padrino.plan,
+    venceEn: new Date(base.getTime() + ajustes.dias * DIA),
+    motivo: 'REFERIDO',
+    detalle: `Invitó a ${tenant.nombre}`,
+  })
 }

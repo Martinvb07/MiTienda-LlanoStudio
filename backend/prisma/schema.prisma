@@ -74,6 +74,17 @@ model Tenant {
   /// por el admin). Pasados los días de gracia vuelve a Gratis.
   planVenceEn DateTime?
 
+  /// Etiquetas internas del admin: "vip", "en riesgo", "beta"…
+  etiquetas         String[]  @default([])
+  /// De dónde llegó al registrarse (utm_source o referido).
+  origen            String?
+  /// Código que comparte para invitar a otras tiendas.
+  codigoReferido    String?   @unique
+  /// Tienda que la invitó.
+  referidoPorId     String?
+  /// Última vez que abrió las novedades: lo nuevo después de esto va con punto.
+  novedadesVistasEn DateTime?
+
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
 
@@ -81,6 +92,9 @@ model Tenant {
   usuarios         Usuario[]
   dominios         DominioPropio[]
   pagosSuscripcion PagoSuscripcion[]
+  notas            NotaTienda[]
+  historialPlanes  HistorialPlan[]
+  tickets          TicketSoporte[]
 
   @@map("tenants")
 }
@@ -403,19 +417,22 @@ model PagoSuscripcion {
   id       String @id @default(cuid())
   tenantId String
 
-  plan       PlanTenant
-  periodo    PeriodoSuscripcion
+  plan          PlanTenant
+  periodo       PeriodoSuscripcion
   /// Pesos colombianos, tal como se le cobró.
-  monto      Int
+  monto         Int
   /// Order id que viaja a Bold y vuelve en el webhook.
-  referencia String             @unique
-  estado     EstadoPago         @default(PENDIENTE)
+  referencia    String             @unique
+  estado        EstadoPago         @default(PENDIENTE)
   /// Id de la transacción en Bold, cuando llega.
-  idBold     String?
+  idBold        String?
   /// Carga cruda del webhook, para conciliación.
-  datosBold  Json?
+  datosBold     Json?
   /// Hasta dónde dejó pago el plan este cobro (sólo si se aprobó).
-  cubreHasta DateTime?
+  cubreHasta    DateTime?
+  /// Cupón de suscripción aplicado y el precio antes del descuento.
+  cuponCodigo   String?
+  montoOriginal Int?
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
@@ -424,4 +441,255 @@ model PagoSuscripcion {
 
   @@index([tenantId, creadoEn])
   @@map("pagos_suscripcion")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Administración de la plataforma
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum RolAdmin {
+  DUENO
+  SOPORTE
+  LECTURA
+}
+
+/// Personas de Llano Studio con acceso al admin. El correo del .env sigue
+/// entrando como dueño; si se guarda aquí con ese correo, manda lo de aquí.
+model AdminPlataforma {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  nombre         String
+  contrasenaHash String
+  rol            RolAdmin  @default(SOPORTE)
+  activo         Boolean   @default(true)
+  ultimoAccesoEn DateTime?
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@map("admins_plataforma")
+}
+
+/// Quién hizo qué en el admin.
+model ActividadAdmin {
+  id       String  @id @default(cuid())
+  admin    String
+  accion   String
+  detalle  String?
+  tenantId String?
+
+  creadoEn DateTime @default(now())
+
+  @@index([creadoEn])
+  @@index([tenantId])
+  @@map("actividad_admin")
+}
+
+model NotaTienda {
+  id       String @id @default(cuid())
+  tenantId String
+  autor    String
+  texto    String
+
+  creadoEn DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, creadoEn])
+  @@map("notas_tienda")
+}
+
+/// Cada cambio de plan y por qué: pago, admin, vencimiento, prueba, referido…
+model HistorialPlan {
+  id           String     @id @default(cuid())
+  tenantId     String
+  planAnterior PlanTenant
+  planNuevo    PlanTenant
+  motivo       String
+  detalle      String?
+
+  creadoEn DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, creadoEn])
+  @@index([creadoEn])
+  @@map("historial_planes")
+}
+
+/// Descuento sobre el precio de un plan al pagarlo con Bold.
+model CuponSuscripcion {
+  id          String       @id @default(cuid())
+  /// En mayúsculas: "LANZAMIENTO50".
+  codigo      String       @unique
+  porcentaje  Int
+  /// Vacío = sirve para todos los planes.
+  planes      PlanTenant[] @default([])
+  usosMaximos Int?
+  usos        Int          @default(0)
+  venceEn     DateTime?
+  activo      Boolean      @default(true)
+
+  creadoEn DateTime @default(now())
+
+  @@map("cupones_suscripcion")
+}
+
+enum TipoAnuncio {
+  CAMPANA
+  BARRA
+}
+
+/// Mensaje de la plataforma a las tiendas: en la campana o en una barra arriba del panel.
+model Anuncio {
+  id     String       @id @default(cuid())
+  titulo String
+  cuerpo String
+  tipo   TipoAnuncio  @default(CAMPANA)
+  /// Vacío = para todos los planes.
+  planes PlanTenant[] @default([])
+  activo Boolean      @default(true)
+  desde  DateTime     @default(now())
+  hasta  DateTime?
+
+  creadoEn DateTime @default(now())
+
+  @@index([activo, desde])
+  @@map("anuncios")
+}
+
+/// Historial de cambios de la plataforma que ven las tiendas en el panel.
+model Novedad {
+  id          String   @id @default(cuid())
+  titulo      String
+  cuerpo      String
+  etiqueta    String?
+  publicadaEn DateTime @default(now())
+
+  @@index([publicadaEn])
+  @@map("novedades")
+}
+
+/// Nombres que nadie puede usar como subdominio (marcas, suplantaciones…).
+model SubdominioBloqueado {
+  subdominio String  @id
+  motivo     String?
+
+  creadoEn DateTime @default(now())
+
+  @@map("subdominios_bloqueados")
+}
+
+/// Ajustes sueltos de la plataforma, guardados como JSON por clave:
+/// prueba gratis, referidos, preguntas frecuentes, testimonios, mantenimiento…
+model ConfiguracionPlataforma {
+  clave String @id
+  valor Json
+
+  actualizadoEn DateTime @updatedAt
+
+  @@map("configuracion_plataforma")
+}
+
+/// Artículos del blog editados desde el admin. Los del código siguen
+/// apareciendo salvo que uno de aquí tenga el mismo slug.
+model Articulo {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  titulo    String
+  categoria String
+  resumen   String
+  portada   String
+  minutos   Int      @default(4)
+  /// [{ titulo?, parrafos: string[], lista?: string[] }]
+  secciones Json
+  publicado Boolean  @default(true)
+  fecha     DateTime @default(now())
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@map("articulos")
+}
+
+/// Correos automáticos ya enviados, para no repetirlos.
+model CorreoEnviado {
+  id       String @id @default(cuid())
+  tenantId String
+  tipo     String
+  /// Distingue envíos del mismo tipo: la fecha de vencimiento, por ejemplo.
+  clave    String
+
+  creadoEn DateTime @default(now())
+
+  @@unique([tenantId, tipo, clave])
+  @@map("correos_enviados")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Soporte en vivo
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum EstadoTicket {
+  ABIERTO
+  EN_CURSO
+  RESUELTO
+}
+
+enum OrigenTicket {
+  LANDING
+  PANEL
+}
+
+enum AutorMensaje {
+  CLIENTE
+  ASESOR
+  SISTEMA
+}
+
+/// Conversación de soporte. Desde la web la abre cualquiera (se reconecta con
+/// tokenVisitante); desde el panel queda ligada a la tienda.
+model TicketSoporte {
+  id             String       @id @default(cuid())
+  numero         Int          @unique @default(autoincrement())
+  origen         OrigenTicket
+  tenantId       String?
+  nombre         String
+  email          String
+  asunto         String?
+  estado         EstadoTicket @default(ABIERTO)
+  /// Correo del asesor que lo tomó.
+  asignadoA      String?
+  tokenVisitante String       @unique
+  calificacion   Int?
+
+  noLeidosAsesor  Int       @default(0)
+  noLeidosCliente Int       @default(0)
+  ultimoMensajeEn DateTime  @default(now())
+  cerradoEn       DateTime?
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  tenant   Tenant?          @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  mensajes MensajeSoporte[]
+
+  @@index([estado, ultimoMensajeEn])
+  @@index([tenantId])
+  @@map("tickets_soporte")
+}
+
+model MensajeSoporte {
+  id          String       @id @default(cuid())
+  ticketId    String
+  autor       AutorMensaje
+  nombreAutor String
+  texto       String
+
+  creadoEn DateTime @default(now())
+
+  ticket TicketSoporte @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, creadoEn])
+  @@map("mensajes_soporte")
 }

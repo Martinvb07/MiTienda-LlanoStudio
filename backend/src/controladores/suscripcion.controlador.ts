@@ -1,8 +1,10 @@
+import { randomBytes } from 'node:crypto'
 import type { Request, Response } from 'express'
 import { z } from 'zod'
 import { entorno } from '../config/entorno.js'
 import { prisma } from '../config/prisma.js'
 import { listarOfertas } from '../servicios/ofertas.servicio.js'
+import { leerAjuste } from '../servicios/plataforma.servicio.js'
 import {
   aplicarPago,
   aplicarVencimientos,
@@ -23,7 +25,55 @@ import { registro } from '../utilidades/registro.js'
 export const esquemaCheckout = z.object({
   plan: z.enum(['EMPRENDE', 'NEGOCIO', 'PRO']),
   periodo: z.enum(['MENSUAL', 'ANUAL']),
+  cupon: z.string().trim().toUpperCase().max(24).optional(),
 })
+
+/** Monto con el cupón aplicado. Lanza un error claro si el cupón no sirve. */
+async function aplicarCupon(codigo: string | undefined, plan: 'EMPRENDE' | 'NEGOCIO' | 'PRO', monto: number) {
+  if (!codigo) return { monto, cupon: null as null | { codigo: string; porcentaje: number } }
+  const cupon = await prisma.cuponSuscripcion.findUnique({ where: { codigo } })
+  const invalido = (mensaje: string) =>
+    new ErrorHttp(400, mensaje, 'CUPON_INVALIDO', [{ campo: 'cupon', mensaje }])
+  if (!cupon || !cupon.activo) throw invalido('Ese cupón no existe')
+  if (cupon.venceEn && cupon.venceEn < new Date()) throw invalido('Ese cupón ya venció')
+  if (cupon.usosMaximos !== null && cupon.usos >= cupon.usosMaximos) throw invalido('Ese cupón ya se agotó')
+  if (cupon.planes.length > 0 && !cupon.planes.includes(plan)) throw invalido('Ese cupón no aplica para este plan')
+  // Bold no cobra montos en cero: con 100% queda en el mínimo de 1.000.
+  const conDescuento = Math.max(Math.round((monto * (100 - cupon.porcentaje)) / 100), 1000)
+  return { monto: conDescuento, cupon: { codigo: cupon.codigo, porcentaje: cupon.porcentaje } }
+}
+
+/** Vista previa del cupón antes de pagar. */
+export async function probarCupon(req: Request, res: Response): Promise<void> {
+  const { plan, periodo, cupon } = req.body as z.infer<typeof esquemaCheckout>
+  const oferta = (await listarOfertas()).find((item) => item.plan === plan)!
+  const base = periodo === 'ANUAL' ? oferta.precioAnual : oferta.precio
+  const resultado = await aplicarCupon(cupon, plan, base)
+  res.json({ montoOriginal: base, ...resultado })
+}
+
+/** Código para invitar a otras tiendas; se crea la primera vez que se pide. */
+export async function obtenerReferidos(req: Request, res: Response): Promise<void> {
+  const tenantId = req.sesion!.tenantId
+  const ajustes = await leerAjuste('referidos')
+  let tenant = await prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { codigoReferido: true } })
+  if (!tenant.codigoReferido) {
+    for (let intento = 0; intento < 5 && !tenant.codigoReferido; intento++) {
+      const codigo = randomBytes(4).toString('hex').toUpperCase()
+      tenant = await prisma.tenant
+        .update({ where: { id: tenantId }, data: { codigoReferido: codigo }, select: { codigoReferido: true } })
+        .catch(() => tenant)
+    }
+  }
+  const invitadas = await prisma.tenant.count({ where: { referidoPorId: tenantId } })
+  res.json({
+    activa: ajustes.activa,
+    dias: ajustes.dias,
+    codigo: tenant.codigoReferido,
+    enlace: `${urlPanel()}/panel/crear-cuenta?ref=${tenant.codigoReferido}`,
+    invitadas,
+  })
+}
 
 const PAGO_PUBLICO = {
   referencia: true,
@@ -69,13 +119,21 @@ export async function crearCheckout(req: Request, res: Response): Promise<void> 
   if (!boldConfigurado()) {
     throw new ErrorHttp(503, 'Los pagos en línea todavía no están activos. Escríbenos y te ayudamos.', 'PAGOS_INACTIVOS')
   }
-  const { plan, periodo } = req.body as z.infer<typeof esquemaCheckout>
+  const { plan, periodo, cupon: codigo } = req.body as z.infer<typeof esquemaCheckout>
   const oferta = (await listarOfertas()).find((item) => item.plan === plan)!
-  const monto = periodo === 'ANUAL' ? oferta.precioAnual : oferta.precio
-  if (monto <= 0) throw solicitudInvalida(periodo === 'ANUAL' ? 'Este plan no se vende anual' : 'Este plan no tiene precio')
+  const base = periodo === 'ANUAL' ? oferta.precioAnual : oferta.precio
+  if (base <= 0) throw solicitudInvalida(periodo === 'ANUAL' ? 'Este plan no se vende anual' : 'Este plan no tiene precio')
+  const { monto, cupon } = await aplicarCupon(codigo, plan, base)
 
   const pago = await prisma.pagoSuscripcion.create({
-    data: { tenantId: req.sesion!.tenantId, plan, periodo, monto, referencia: nuevaReferencia() },
+    data: {
+      tenantId: req.sesion!.tenantId,
+      plan,
+      periodo,
+      monto,
+      referencia: nuevaReferencia(),
+      ...(cupon ? { cuponCodigo: cupon.codigo, montoOriginal: base } : {}),
+    },
     select: { referencia: true },
   })
 

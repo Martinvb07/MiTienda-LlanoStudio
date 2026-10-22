@@ -62,9 +62,12 @@ import {
 import {
   crearCheckout,
   esquemaCheckout,
+  obtenerReferidos,
   obtenerSuscripcion,
+  probarCupon,
   verificarPago,
 } from '../controladores/suscripcion.controlador.js'
+import { marcarNovedadesVistas, obtenerComunicados } from '../controladores/comunicados.controlador.js'
 
 const enrutador = Router()
 
@@ -100,6 +103,8 @@ const gestion = exigirRolActual('PROPIETARIO', 'ADMINISTRADOR')
 
 enrutador.get('/metricas', gestion, obtenerMetricas)
 enrutador.get('/avisos', obtenerAvisos)
+enrutador.get('/comunicados', obtenerComunicados)
+enrutador.post('/novedades/vistas', marcarNovedadesVistas)
 
 enrutador.get('/cupones', gestion, listarCupones)
 enrutador.post('/cupones', gestion, validar(esquemaCupon), crearCupon)
@@ -114,6 +119,8 @@ enrutador.delete('/dominios/:id', gestion, quitarDominio)
 enrutador.get('/suscripcion', gestion, obtenerSuscripcion)
 enrutador.post('/suscripcion/checkout', gestion, validar(esquemaCheckout), crearCheckout)
 enrutador.post('/suscripcion/pagos/:referencia/verificar', gestion, verificarPago)
+enrutador.post('/suscripcion/cupon', gestion, validar(esquemaCheckout), probarCupon)
+enrutador.get('/referidos', gestion, obtenerReferidos)
 
 enrutador.get('/equipo', gestion, listarEquipo)
 enrutador.post('/equipo', gestion, validar(esquemaMiembro), agregarMiembro)

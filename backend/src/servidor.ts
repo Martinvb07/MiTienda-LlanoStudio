@@ -5,6 +5,8 @@ import { cerrarRedis } from './config/redis.js'
 import { cerrarColas } from './colas/index.js'
 import { registro } from './utilidades/registro.js'
 import { aplicarVencimientos } from './servicios/suscripciones.servicio.js'
+import { revisarCorreosProgramados } from './servicios/correos.servicio.js'
+import { cerrarTiempoReal, iniciarTiempoReal } from './servicios/soporte.servicio.js'
 
 const app = crearApp()
 
@@ -20,8 +22,12 @@ const servidor = app.listen(entorno.PUERTO, entorno.HOST, () => {
 // cubre a quien no abre el panel.
 const revisionVencimientos = setInterval(() => {
   aplicarVencimientos().catch((error: unknown) => registro.error({ err: error }, 'No se pudieron revisar vencimientos'))
+  revisarCorreosProgramados().catch((error: unknown) => registro.error({ err: error }, 'No se pudieron enviar los correos programados'))
 }, 60 * 60 * 1000)
 revisionVencimientos.unref()
+
+// Chat de soporte en vivo sobre el mismo servidor HTTP.
+iniciarTiempoReal(servidor)
 
 /**
  * Apagado ordenado: PM2 manda SIGINT en cada `pm2 reload`. Dejar de aceptar
@@ -36,6 +42,7 @@ async function apagar(senal: string): Promise<void> {
   })
 
   try {
+    await cerrarTiempoReal()
     await cerrarColas()
     await desconectarPrisma()
     await cerrarRedis()

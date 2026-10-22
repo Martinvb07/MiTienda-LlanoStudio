@@ -31,6 +31,18 @@ function leerToken(req: Request): string | null {
  * El emisor del token (login, registro, refresco) todavía no está implementado
  * — llega con NextAuth/Auth.js en la fase del panel. Aquí sólo se valida.
  */
+/** Lee un token del panel sin pasar por Express (lo usa el chat en tiempo real). */
+export function leerSesionPanel(token: string | null | undefined): SesionPanel | null {
+  if (!token) return null
+  try {
+    const carga = jwt.verify(token, entorno.JWT_SECRETO) as Partial<SesionPanel>
+    if (!carga.usuarioId || !carga.tenantId) return null
+    return { usuarioId: carga.usuarioId, tenantId: carga.tenantId, email: carga.email ?? '', rol: carga.rol ?? 'EDITOR' }
+  } catch {
+    return null
+  }
+}
+
 export function exigirSesion(req: Request, _res: Response, next: NextFunction): void {
   const token = leerToken(req)
   if (!token) {

@@ -1,10 +1,10 @@
-import type { NextFunction, Request, Response } from 'express'
-import jwt from 'jsonwebtoken'
+import type { Request, Response } from 'express'
 import { z } from 'zod'
-import { entorno } from '../config/entorno.js'
 import { prisma } from '../config/prisma.js'
-import { cifrarContrasena, verificarContrasena } from '../utilidades/contrasenas.js'
+import { cifrarContrasena } from '../utilidades/contrasenas.js'
+import { registrarActividad, tokenSiEsAdmin } from '../servicios/admins.servicio.js'
 import { listarOfertas } from '../servicios/ofertas.servicio.js'
+import { cambiarPlan } from '../servicios/plataforma.servicio.js'
 import { noAutorizado, noEncontrado } from '../utilidades/errores.js'
 
 /**
@@ -42,36 +42,11 @@ export const esquemaOferta = z.object({
 
 const PLAN_VALIDO = z.enum(['GRATIS', 'EMPRENDE', 'NEGOCIO', 'PRO'])
 
-/**
- * Token de admin si el correo y la contraseña son los del .env; si no, null.
- * Lo usa también el ingreso normal del panel: el admin entra por el mismo login.
- */
-export async function tokenSiEsAdmin(email: string, contrasena: string): Promise<string | null> {
-  const configurado = Boolean(entorno.ADMIN_CORREO && entorno.ADMIN_CONTRASENA_HASH)
-  const valido =
-    configurado &&
-    email.toLowerCase() === entorno.ADMIN_CORREO.toLowerCase() &&
-    (await verificarContrasena(contrasena, entorno.ADMIN_CONTRASENA_HASH))
-  return valido ? jwt.sign({ admin: true, email }, entorno.JWT_SECRETO, { expiresIn: '12h' }) : null
-}
-
 export async function ingresarAdmin(req: Request, res: Response): Promise<void> {
   const { email, contrasena } = req.body as z.infer<typeof esquemaIngresoAdmin>
   const token = await tokenSiEsAdmin(email, contrasena)
   if (!token) throw noAutorizado('Credenciales de administrador incorrectas')
   res.json({ token })
-}
-
-export function exigirAdmin(req: Request, _res: Response, next: NextFunction): void {
-  const cabecera = req.headers.authorization
-  const token = cabecera?.startsWith('Bearer ') ? cabecera.slice(7).trim() : ''
-  try {
-    const carga = jwt.verify(token, entorno.JWT_SECRETO) as { admin?: boolean }
-    if (carga.admin !== true) throw new Error('No es admin')
-    next()
-  } catch {
-    next(noAutorizado('Sesión de administrador inválida o vencida'))
-  }
 }
 
 /** Cifras de toda la plataforma. */
@@ -121,6 +96,8 @@ export async function listarTiendasAdmin(req: Request, res: Response): Promise<v
       planVenceEn: true,
       activo: true,
       creadoEn: true,
+      etiquetas: true,
+      origen: true,
       usuarios: {
         where: { rol: 'PROPIETARIO' },
         take: 1,
@@ -150,9 +127,14 @@ export async function cambiarTiendaAdmin(req: Request, res: Response): Promise<v
   if (!existe) throw noEncontrado('Esa tienda no existe')
 
   // Un plan puesto a mano no vence: es una cortesía, no un pago.
-  const tenant = await prisma.tenant.update({
+  await prisma.$transaction(async (tx) => {
+    if (datos.plan) await cambiarPlan(tx, id, { plan: datos.plan, venceEn: null, motivo: 'ADMIN', detalle: req.admin?.email })
+    if (datos.activo !== undefined) await tx.tenant.update({ where: { id }, data: { activo: datos.activo } })
+  })
+  if (datos.plan) registrarActividad(req, 'Cambió el plan', `A ${datos.plan}`, id)
+  if (datos.activo !== undefined) registrarActividad(req, datos.activo ? 'Reactivó la tienda' : 'Suspendió la tienda', undefined, id)
+  const tenant = await prisma.tenant.findUniqueOrThrow({
     where: { id },
-    data: datos.plan ? { ...datos, planVenceEn: null } : datos,
     select: { id: true, plan: true, activo: true, planVenceEn: true },
   })
   res.json({ tenant })
@@ -174,6 +156,7 @@ export async function cambiarContrasenaAdmin(req: Request, res: Response): Promi
     where: { id: propietario.id },
     data: { contrasenaHash: await cifrarContrasena(contrasena) },
   })
+  registrarActividad(req, 'Cambió la contraseña del dueño', propietario.email, req.params.id as string)
   res.json({ email: propietario.email })
 }
 
@@ -204,5 +187,6 @@ export async function guardarOfertaAdmin(req: Request, res: Response): Promise<v
     create: { plan: plan.data, ...datos },
     update: datos,
   })
+  registrarActividad(req, 'Editó la oferta de un plan', plan.data)
   res.json({ planes: await listarOfertas() })
 }

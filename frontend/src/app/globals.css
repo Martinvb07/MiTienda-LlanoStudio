@@ -331,42 +331,36 @@ html[data-tema='claro']:has(.marco-oscuro) {
   }
 
   /*
-   * ── Estados: etiqueta recta como los botones, en mayúsculas finas. El color
-   * sólo va en el punto (un cuadrito con halo), el texto se queda en tinta.
+   * ── Estados: texto normal con un punto redondo del color del estado. Sin
+   * caja ni borde: el color sólo va en el punto.
    */
   .estado {
     --tono: var(--color-sitio-tenue);
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    height: 26px;
-    padding: 0 10px 0 9px;
-    border-radius: 3px;
-    border: 1px solid var(--color-sitio-borde-fuerte);
-    background: color-mix(in srgb, var(--color-white) 3%, transparent);
-    color: var(--color-white);
-    font-size: 10.5px;
+    gap: 7px;
+    color: var(--color-sitio-suave);
+    font-size: 12.5px;
     font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    line-height: 1;
+    line-height: 1.2;
     white-space: nowrap;
   }
   .estado-chico {
-    height: 22px;
-    gap: 7px;
-    padding: 0 8px 0 7px;
-    font-size: 9.5px;
+    gap: 6px;
+    font-size: 11.5px;
   }
   .estado-punto {
     --tono: var(--color-sitio-tenue);
     position: relative;
     flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--tono);
+  }
+  .estado-chico .estado-punto {
     width: 6px;
     height: 6px;
-    border-radius: 1.5px;
-    background: var(--tono);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tono) 18%, transparent);
   }
   .estado[data-tono='verde'],
   .estado-punto[data-tono='verde'] {
@@ -387,13 +381,13 @@ html[data-tema='claro']:has(.marco-oscuro) {
   .estado .estado-punto {
     --tono: inherit;
   }
-  /* En vivo: el halo late despacio en vez del ping redondo. */
+  /* En vivo: una onda suave que sale del punto. */
   .estado-punto[data-vivo]::after {
     content: '';
     position: absolute;
-    inset: -3px;
-    border-radius: 3px;
-    border: 1px solid var(--tono);
+    inset: 0;
+    border-radius: inherit;
+    background: var(--tono);
     animation: latido 2.4s var(--ease-salida) infinite;
   }
 
@@ -606,12 +600,12 @@ html[data-tema='claro']:has(.marco-oscuro) {
 
 @keyframes latido {
   0% {
-    opacity: 0.7;
-    transform: scale(0.6);
+    opacity: 0.55;
+    transform: scale(1);
   }
   70%,
   100% {
     opacity: 0;
-    transform: scale(1.5);
+    transform: scale(2.6);
   }
 }

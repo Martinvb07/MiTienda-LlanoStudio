@@ -3,24 +3,26 @@
 import { Plus, Trash2 } from 'lucide-react'
 import type { AjustesTienda, EnlaceMenu } from '@/tipos/tienda'
 import { generarSlug } from '@/utilidades/formato'
-import { Campo, CampoColor, Interruptor, Segmentado } from '../ui/basicos'
+import { planMinimo, type LimitesPlan } from '@/utilidades/planes'
+import { Campo, CampoColor, Candado, Interruptor, Segmentado } from '../ui/basicos'
 
 interface Props {
   ajustes: AjustesTienda
   alCambiar: (cambios: Partial<AjustesTienda>) => void
   /** Categorías del catálogo: se ofrecen como atajo para el menú. */
   categorias: string[]
+  limites: LimitesPlan
 }
 
-const MAXIMO_MENU = 8
-
 /** Cabecera de la tienda: estilo, barra de menú y botón destacado. */
-export function CamposCabecera({ ajustes, alCambiar, categorias }: Props) {
-  const completa = ajustes.cabecera === 'completa'
+export function CamposCabecera({ ajustes, alCambiar, categorias, limites }: Props) {
+  const completa = limites.cabeceraCompleta && ajustes.cabecera === 'completa'
   const menu = ajustes.menu ?? []
 
   function cambiarEnlace(indice: number, cambios: Partial<EnlaceMenu>) {
-    alCambiar({ menu: menu.map((enlace, i) => (i === indice ? { ...enlace, ...cambios } : enlace)) })
+    alCambiar({
+      menu: menu.map((enlace, i) => (i === indice ? { ...enlace, ...cambios } : enlace)),
+    })
   }
 
   const sinUsar = categorias.filter((categoria) => !menu.some((enlace) => enlace.texto === categoria))
@@ -35,9 +37,14 @@ export function CamposCabecera({ ajustes, alCambiar, categorias }: Props) {
             { valor: 'completa', etiqueta: 'Completa, con barra' },
           ]}
           valor={completa ? 'completa' : 'simple'}
-          alCambiar={(cabecera) => alCambiar({ cabecera })}
+          alCambiar={(cabecera) => limites.cabeceraCompleta && alCambiar({ cabecera })}
           chico
         />
+        {!limites.cabeceraCompleta && (
+          <Candado plan={planMinimo((plan) => plan.cabeceraCompleta)}>
+            Cabecera completa con barra de color, botón destacado y WhatsApp.
+          </Candado>
+        )}
         <span className="text-[11px] leading-relaxed text-sitio-tenue">
           {completa
             ? 'Logo grande, buscador al centro y una barra de color con el menú y tu WhatsApp.'
@@ -45,9 +52,13 @@ export function CamposCabecera({ ajustes, alCambiar, categorias }: Props) {
         </span>
       </div>
 
-      <Interruptor activo={ajustes.buscador ?? completa} alCambiar={(buscador) => alCambiar({ buscador })}>
-        Buscador de productos
-      </Interruptor>
+      {limites.buscador ? (
+        <Interruptor activo={ajustes.buscador ?? completa} alCambiar={(buscador) => alCambiar({ buscador })}>
+          Buscador de productos
+        </Interruptor>
+      ) : (
+        <Candado plan={planMinimo((plan) => plan.buscador)}>Buscador de productos.</Candado>
+      )}
 
       {completa && (
         <CampoColor
@@ -58,8 +69,13 @@ export function CamposCabecera({ ajustes, alCambiar, categorias }: Props) {
       )}
 
       <div className="flex flex-col gap-2">
-        <span className="text-[11.5px] text-sitio-suave">Menú</span>
-        {menu.map((enlace, indice) => (
+        <span className="text-[11.5px] text-sitio-suave">
+          Menú{' '}
+          <small className="text-sitio-tenue">
+            (hasta {limites.enlacesMenu} enlaces en tu plan {limites.nombre})
+          </small>
+        </span>
+        {menu.slice(0, limites.enlacesMenu).map((enlace, indice) => (
           <div key={indice} className="grid grid-cols-[1fr_1fr_auto] items-end gap-1.5">
             <Campo
               etiqueta="Texto"
@@ -83,11 +99,15 @@ export function CamposCabecera({ ajustes, alCambiar, categorias }: Props) {
             </button>
           </div>
         ))}
-        {menu.length < MAXIMO_MENU && (
+        {menu.length < limites.enlacesMenu && (
           <div className="flex flex-wrap gap-1.5">
             <button
               type="button"
-              onClick={() => alCambiar({ menu: [...menu, { texto: 'Productos', enlace: '/buscar' }] })}
+              onClick={() =>
+                alCambiar({
+                  menu: [...menu, { texto: 'Productos', enlace: '/buscar' }],
+                })
+              }
               className="inline-flex h-7 items-center gap-1 rounded-full border border-dashed border-sitio-borde px-2.5 text-[11.5px] text-sitio-suave transition-colors hover:border-white/30 hover:text-white"
             >
               <Plus aria-hidden="true" className="h-3 w-3" />
@@ -99,7 +119,13 @@ export function CamposCabecera({ ajustes, alCambiar, categorias }: Props) {
                 type="button"
                 onClick={() =>
                   alCambiar({
-                    menu: [...menu, { texto: categoria, enlace: `/categoria/${generarSlug(categoria)}` }],
+                    menu: [
+                      ...menu,
+                      {
+                        texto: categoria,
+                        enlace: `/categoria/${generarSlug(categoria)}`,
+                      },
+                    ],
                   })
                 }
                 className="inline-flex h-7 items-center gap-1 rounded-full border border-sitio-borde px-2.5 text-[11.5px] text-sitio-suave transition-colors hover:border-white/30 hover:text-white"
@@ -118,7 +144,14 @@ export function CamposCabecera({ ajustes, alCambiar, categorias }: Props) {
             etiqueta="Botón destacado"
             valor={ajustes.botonDestacado?.texto ?? ''}
             alCambiar={(texto) =>
-              alCambiar({ botonDestacado: texto ? { texto, enlace: ajustes.botonDestacado?.enlace ?? '/buscar' } : undefined })
+              alCambiar({
+                botonDestacado: texto
+                  ? {
+                      texto,
+                      enlace: ajustes.botonDestacado?.enlace ?? '/buscar',
+                    }
+                  : undefined,
+              })
             }
             marcador="Tienda en línea"
             maximo={40}
@@ -127,7 +160,10 @@ export function CamposCabecera({ ajustes, alCambiar, categorias }: Props) {
             etiqueta="Lleva a"
             valor={ajustes.botonDestacado?.enlace ?? ''}
             alCambiar={(enlace) =>
-              ajustes.botonDestacado && alCambiar({ botonDestacado: { ...ajustes.botonDestacado, enlace } })
+              ajustes.botonDestacado &&
+              alCambiar({
+                botonDestacado: { ...ajustes.botonDestacado, enlace },
+              })
             }
             marcador="/buscar"
           />
@@ -138,7 +174,7 @@ export function CamposCabecera({ ajustes, alCambiar, categorias }: Props) {
 }
 
 /** WhatsApp, dirección, horario y redes: los usan la cabecera, el pie y la ficha. */
-export function CamposContacto({ ajustes, alCambiar }: Omit<Props, 'categorias'>) {
+export function CamposContacto({ ajustes, alCambiar, limites }: Omit<Props, 'categorias'>) {
   return (
     <>
       <Campo
@@ -149,7 +185,10 @@ export function CamposContacto({ ajustes, alCambiar }: Omit<Props, 'categorias'>
         maximo={20}
         ayuda="Activa el botón “Pedir por WhatsApp” en cada producto."
       />
-      {ajustes.whatsapp && (
+      {ajustes.whatsapp && !limites.whatsappFlotante && (
+        <Candado plan={planMinimo((plan) => plan.whatsappFlotante)}>Botón flotante de WhatsApp.</Candado>
+      )}
+      {ajustes.whatsapp && limites.whatsappFlotante && (
         <Interruptor
           activo={ajustes.whatsappFlotante ?? false}
           alCambiar={(whatsappFlotante) => alCambiar({ whatsappFlotante })}
@@ -157,30 +196,40 @@ export function CamposContacto({ ajustes, alCambiar }: Omit<Props, 'categorias'>
           Botón flotante de WhatsApp
         </Interruptor>
       )}
-      <Campo
-        etiqueta="Dirección"
-        valor={ajustes.direccion ?? ''}
-        alCambiar={(direccion) => alCambiar({ direccion })}
-        marcador="Cra 30 # 40-12, Villavicencio"
-        maximo={160}
-      />
-      <div className="grid grid-cols-2 gap-2.5">
+      {!limites.pieColumnas && (
+        <Candado plan={planMinimo((plan) => plan.pieColumnas)}>
+          Pie en columnas con dirección, correo y horario.
+        </Candado>
+      )}
+      <fieldset
+        disabled={!limites.pieColumnas}
+        className="flex flex-col gap-3.5 disabled:pointer-events-none disabled:opacity-40"
+      >
         <Campo
-          etiqueta="Correo"
-          tipo="email"
-          valor={ajustes.correo ?? ''}
-          alCambiar={(correo) => alCambiar({ correo })}
-          marcador="hola@tutienda.co"
-          maximo={120}
+          etiqueta="Dirección"
+          valor={ajustes.direccion ?? ''}
+          alCambiar={(direccion) => alCambiar({ direccion })}
+          marcador="Cra 30 # 40-12, Villavicencio"
+          maximo={160}
         />
-        <Campo
-          etiqueta="Horario"
-          valor={ajustes.horario ?? ''}
-          alCambiar={(horario) => alCambiar({ horario })}
-          marcador="Lun a sáb, 8 a 6"
-          maximo={120}
-        />
-      </div>
+        <div className="grid grid-cols-2 gap-2.5">
+          <Campo
+            etiqueta="Correo"
+            tipo="email"
+            valor={ajustes.correo ?? ''}
+            alCambiar={(correo) => alCambiar({ correo })}
+            marcador="hola@tutienda.co"
+            maximo={120}
+          />
+          <Campo
+            etiqueta="Horario"
+            valor={ajustes.horario ?? ''}
+            alCambiar={(horario) => alCambiar({ horario })}
+            marcador="Lun a sáb, 8 a 6"
+            maximo={120}
+          />
+        </div>
+      </fieldset>
       <div className="grid grid-cols-3 gap-2">
         <Campo
           etiqueta="Instagram"
@@ -204,10 +253,11 @@ export function CamposContacto({ ajustes, alCambiar }: Omit<Props, 'categorias'>
           maximo={60}
         />
       </div>
-      <p className="text-[11.5px] leading-relaxed text-sitio-tenue">
-        Con dirección, correo u horario, el pie de la tienda pasa a columnas con contacto, categorías y redes.
-      </p>
+      {limites.pieColumnas && (
+        <p className="text-[11.5px] leading-relaxed text-sitio-tenue">
+          Con dirección, correo u horario, el pie de la tienda pasa a columnas con contacto, categorías y redes.
+        </p>
+      )}
     </>
   )
 }
-

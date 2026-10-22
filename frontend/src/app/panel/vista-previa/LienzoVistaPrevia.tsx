@@ -5,7 +5,7 @@ import { BotonWhatsapp } from '@/componentes/tienda/BotonWhatsapp'
 import { CabeceraTienda } from '@/componentes/tienda/CabeceraTienda'
 import { FichaProducto } from '@/componentes/tienda/FichaProducto'
 import { RenderizadorBloques } from '@/componentes/tienda/RenderizadorBloques'
-import { limitesDe } from '@/utilidades/planes'
+import { ajustarAlPlan, limitesDe } from '@/utilidades/planes'
 import { variablesTema } from '@/utilidades/tema'
 import type { MensajeVistaPrevia } from './mensajes'
 
@@ -47,7 +47,8 @@ export function LienzoVistaPrevia() {
   }
 
   const { tienda } = datos
-  const ajustes = tienda.ajustes ?? {}
+  // Igual que la tienda pública: lo que el plan no incluye no se pinta.
+  const { ajustes, bloques } = ajustarAlPlan(tienda.plan, tienda.ajustes ?? {}, tienda.configuracionBloques)
   const cabecera = <CabeceraTienda nombre={tienda.nombre || 'Mi tienda'} logoUrl={tienda.logoUrl} ajustes={ajustes} />
 
   return (
@@ -62,7 +63,7 @@ export function LienzoVistaPrevia() {
         </>
       ) : (
         <RenderizadorBloques
-          bloques={tienda.configuracionBloques}
+          bloques={bloques}
           productos={datos.productos}
           moneda={tienda.moneda}
           cabecera={cabecera}

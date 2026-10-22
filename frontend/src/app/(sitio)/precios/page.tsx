@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { CabeceraPagina } from '@/componentes/sitio/CabeceraPagina'
+import { ComparativaPlanes } from '@/componentes/sitio/ComparativaPlanes'
 import { LlamadoFinal } from '@/componentes/sitio/LlamadoFinal'
 import { Preguntas } from '@/componentes/sitio/Preguntas'
 import { TablaPrecios } from '@/componentes/sitio/TablaPrecios'
@@ -53,6 +54,8 @@ export default function PaginaPrecios() {
       />
 
       <TablaPrecios />
+
+      <ComparativaPlanes />
 
       <Preguntas titulo="Lo que más nos preguntan sobre los planes" preguntas={PREGUNTAS} />
 

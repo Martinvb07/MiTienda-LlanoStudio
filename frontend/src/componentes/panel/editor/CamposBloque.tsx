@@ -53,10 +53,19 @@ function ListaEditable<T extends { id: string }>({
   return (
     <div className="flex flex-col gap-2">
       {elementos.map((elemento, indice) => (
-        <div key={elemento.id} className="flex flex-col gap-2.5 rounded-[10px] border border-sitio-borde bg-white/[0.02] p-2.5">
+        <div
+          key={elemento.id}
+          className="flex flex-col gap-2.5 rounded-[10px] border border-sitio-borde bg-white/[0.02] p-2.5"
+        >
           <div className="flex items-center gap-1">
             <span className="flex-1 truncate text-[11.5px] text-sitio-suave">{titulo(elemento, indice)}</span>
-            <button type="button" className={boton} disabled={indice === 0} onClick={() => mover(indice, -1)} aria-label="Subir">
+            <button
+              type="button"
+              className={boton}
+              disabled={indice === 0}
+              onClick={() => mover(indice, -1)}
+              aria-label="Subir"
+            >
               <ArrowUp aria-hidden="true" className="h-3.5 w-3.5" />
             </button>
             <button
@@ -123,7 +132,12 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
     case 'hero':
       return (
         <>
-          <Campo etiqueta="Título" valor={bloque.props.titulo} alCambiar={(titulo) => alCambiar({ titulo })} maximo={90} />
+          <Campo
+            etiqueta="Título"
+            valor={bloque.props.titulo}
+            alCambiar={(titulo) => alCambiar({ titulo })}
+            maximo={90}
+          />
           <CampoArea
             etiqueta="Subtítulo"
             valor={bloque.props.subtitulo ?? ''}
@@ -171,9 +185,12 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
           <ListaEditable
             elementos={bloque.props.diapositivas}
             alCambiar={(diapositivas) => alCambiar({ diapositivas })}
-            crear={(): DiapositivaCarrusel => ({ id: nuevoId(), titulo: 'Nuevo banner' })}
-            maximo={8}
-            textoAgregar="Agregar banner"
+            crear={(): DiapositivaCarrusel => ({
+              id: nuevoId(),
+              titulo: 'Nuevo banner',
+            })}
+            maximo={limites.bannersCarrusel}
+            textoAgregar={`Agregar banner (hasta ${limites.bannersCarrusel})`}
             titulo={(diapositiva, indice) => diapositiva.titulo || `Banner ${indice + 1}`}
           >
             {(diapositiva, cambiar) => (
@@ -260,8 +277,8 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
             elementos={bloque.props.items}
             alCambiar={(items) => alCambiar({ items })}
             crear={(): ItemCategoria => ({ id: nuevoId(), nombre: '' })}
-            maximo={12}
-            textoAgregar="Agregar categoría"
+            maximo={limites.itemsCategorias}
+            textoAgregar={`Agregar categoría (hasta ${limites.itemsCategorias})`}
             titulo={(item, indice) => item.nombre || `Categoría ${indice + 1}`}
           >
             {(item, cambiar) => (
@@ -302,7 +319,11 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
               tipo="number"
               min={1}
               valor={bloque.props.limite ?? 8}
-              alCambiar={(limite) => alCambiar({ limite: Math.min(48, Math.max(1, Number(limite) || 1)) })}
+              alCambiar={(limite) =>
+                alCambiar({
+                  limite: Math.min(48, Math.max(1, Number(limite) || 1)),
+                })
+              }
             />
             <div className="flex flex-col gap-1.5">
               <span className="text-[11.5px] text-sitio-suave">Columnas</span>
@@ -311,7 +332,7 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
                   { valor: '2', etiqueta: '2' },
                   { valor: '3', etiqueta: '3' },
                   { valor: '4', etiqueta: '4' },
-                  { valor: '5', etiqueta: '5' },
+                  ...(limites.grillaAvanzada ? [{ valor: '5' as const, etiqueta: '5' }] : []),
                 ]}
                 valor={String(bloque.props.columnas ?? 3) as '2' | '3' | '4' | '5'}
                 alCambiar={(columnas) => alCambiar({ columnas: Number(columnas) })}
@@ -319,25 +340,36 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
               />
             </div>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <span className="text-[11.5px] text-sitio-suave">Estilo de las tarjetas</span>
-            <Segmentado
-              opciones={[
-                { valor: 'simple', etiqueta: 'Simple' },
-                { valor: 'tarjeta', etiqueta: 'Con borde y precio destacado' },
-              ]}
-              valor={bloque.props.estilo ?? 'simple'}
-              alCambiar={(estilo) => alCambiar({ estilo })}
-              chico
-            />
-          </div>
-          <Campo
-            etiqueta="Sólo de la categoría"
-            valor={bloque.props.categoria ?? ''}
-            alCambiar={(categoria) => alCambiar({ categoria: categoria || undefined })}
-            lista={categorias}
-            marcador="Vacío = todos los productos"
-          />
+          {limites.grillaAvanzada ? (
+            <>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[11.5px] text-sitio-suave">Estilo de las tarjetas</span>
+                <Segmentado
+                  opciones={[
+                    { valor: 'simple', etiqueta: 'Simple' },
+                    {
+                      valor: 'tarjeta',
+                      etiqueta: 'Con borde y precio destacado',
+                    },
+                  ]}
+                  valor={bloque.props.estilo ?? 'simple'}
+                  alCambiar={(estilo) => alCambiar({ estilo })}
+                  chico
+                />
+              </div>
+              <Campo
+                etiqueta="Sólo de la categoría"
+                valor={bloque.props.categoria ?? ''}
+                alCambiar={(categoria) => alCambiar({ categoria: categoria || undefined })}
+                lista={categorias}
+                marcador="Vacío = todos los productos"
+              />
+            </>
+          ) : (
+            <Candado plan={planMinimo((plan) => plan.grillaAvanzada)}>
+              Tarjetas con borde, 5 columnas y productos de una sola categoría.
+            </Candado>
+          )}
           <p className="text-[11.5px] leading-relaxed text-sitio-tenue">
             Se muestran tus productos visibles, del más nuevo al más antiguo.
           </p>
@@ -347,7 +379,12 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
     case 'imagen-texto':
       return (
         <>
-          <Campo etiqueta="Título" valor={bloque.props.titulo} alCambiar={(titulo) => alCambiar({ titulo })} maximo={90} />
+          <Campo
+            etiqueta="Título"
+            valor={bloque.props.titulo}
+            alCambiar={(titulo) => alCambiar({ titulo })}
+            maximo={90}
+          />
           <CampoArea
             etiqueta="Texto"
             valor={bloque.props.contenido ?? ''}
@@ -473,7 +510,10 @@ export function resumenBloque(bloque: Bloque): string {
     case 'carrusel':
       return `${bloque.props.diapositivas.length} banners`
     case 'categorias':
-      return bloque.props.items.map((item) => item.nombre).filter(Boolean).join(', ')
+      return bloque.props.items
+        .map((item) => item.nombre)
+        .filter(Boolean)
+        .join(', ')
     case 'grilla-productos':
       return bloque.props.titulo || `${bloque.props.limite ?? 8} productos`
     case 'texto':

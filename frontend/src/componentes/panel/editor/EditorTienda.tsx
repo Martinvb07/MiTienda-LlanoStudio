@@ -233,11 +233,11 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
           </Seccion>
 
           <Seccion titulo="Cabecera y menú">
-            <CamposCabecera ajustes={borrador.ajustes} alCambiar={cambiarAjustes} categorias={categorias} />
+            <CamposCabecera ajustes={borrador.ajustes} alCambiar={cambiarAjustes} categorias={categorias} limites={limites} />
           </Seccion>
 
           <Seccion titulo="Contacto y redes">
-            <CamposContacto ajustes={borrador.ajustes} alCambiar={cambiarAjustes} />
+            <CamposContacto ajustes={borrador.ajustes} alCambiar={cambiarAjustes} limites={limites} />
           </Seccion>
 
           <Seccion titulo="Estilo">

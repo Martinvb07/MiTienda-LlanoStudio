@@ -2,6 +2,7 @@ import 'server-only'
 import { pedirApi, ErrorApi } from './api'
 import { normalizarBloques } from '@/tipos/bloques'
 import type { Producto, Tienda } from '@/tipos/tienda'
+import { ajustarAlPlan } from '@/utilidades/planes'
 
 interface RespuestaTienda {
   tienda: Omit<Tienda, 'configuracionBloques' | 'tema' | 'ajustes'> & {
@@ -23,11 +24,17 @@ export async function obtenerTienda(host: string): Promise<Tienda | null> {
       etiquetas: [`tienda:${host}`],
     })
 
+    // La tienda pública sólo muestra lo que su plan incluye.
+    const { ajustes, bloques } = ajustarAlPlan(
+      tienda.plan,
+      (tienda.ajustes ?? {}) as Tienda['ajustes'],
+      normalizarBloques(tienda.configuracionBloques),
+    )
     return {
       ...tienda,
       tema: (tienda.tema ?? {}) as Tienda['tema'],
-      ajustes: (tienda.ajustes ?? {}) as Tienda['ajustes'],
-      configuracionBloques: normalizarBloques(tienda.configuracionBloques),
+      ajustes,
+      configuracionBloques: bloques,
     }
   } catch (error) {
     if (error instanceof ErrorApi && error.estado === 404) return null

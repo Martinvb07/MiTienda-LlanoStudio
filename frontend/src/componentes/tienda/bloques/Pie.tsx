@@ -13,7 +13,7 @@ interface Props extends PropsPie {
 }
 
 /**
- * Pie de la tienda. Con datos de contacto en los ajustes se vuelve un pie
+ * Pie de la tienda. Con dirección, correo u horario en los ajustes se vuelve un pie
  * completo en columnas (contacto, categorías, redes); sin ellos, una línea.
  */
 export function Pie({
@@ -28,7 +28,7 @@ export function Pie({
 }: Props) {
   const telefono = ajustes.whatsapp || whatsapp
   const cuentaInstagram = ajustes.instagram || instagram
-  const completo = Boolean(ajustes.direccion || ajustes.correo || ajustes.horario || categorias.length > 0)
+  const completo = Boolean(ajustes.direccion || ajustes.correo || ajustes.horario)
   const marca = !(quitarMarcaPermitido && ocultarMarca) && (
     <p className="mt-8 text-center text-xs text-tinta/40">Hecho con Mi Tienda de Llano Studio</p>
   )

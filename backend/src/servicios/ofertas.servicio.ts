@@ -32,7 +32,8 @@ export const OFERTAS_POR_DEFECTO: Record<Plan, Oferta> = {
     incluye: [
       'Hasta 100 productos, 8 fotos cada uno',
       'Colores, letra y esquinas a tu medida',
-      'Todas las secciones y plantillas de Emprende',
+      'Carrusel de banners, categorías con foto y buscador',
+      'Cabecera completa, WhatsApp flotante y pie con contacto',
       'Sin marca de Mi Tienda en el pie',
     ],
     destacado: false,
@@ -43,8 +44,8 @@ export const OFERTAS_POR_DEFECTO: Record<Plan, Oferta> = {
     resumen: 'Para tiendas con volumen y varias personas al frente.',
     incluye: [
       'Productos ilimitados, 10 fotos cada uno',
-      'Todas las plantillas',
-      'Hasta 30 secciones',
+      'Todas las plantillas y hasta 30 secciones',
+      'Hasta 8 banners, 12 categorías y 8 enlaces de menú',
       'Soporte prioritario',
     ],
     destacado: true,

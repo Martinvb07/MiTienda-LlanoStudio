@@ -147,15 +147,13 @@ export function NavegacionPanel() {
           <SelloTienda className="h-10 w-10" />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[13.5px] font-medium">{sesion.tienda?.nombre ?? 'Mi tienda'}</span>
-            <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-sitio-tenue">
-              <span className="relative flex h-1.5 w-1.5">
-                {publicada && (
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sitio-verde opacity-60" />
-                )}
-                <span
-                  className={cn('relative inline-flex h-1.5 w-1.5 rounded-full', publicada ? 'bg-sitio-verde' : 'bg-sitio-ambar')}
-                />
-              </span>
+            <span className="mt-1.5 flex items-center gap-2 text-[10px] tracking-[0.12em] text-sitio-tenue uppercase">
+              <span
+                aria-hidden="true"
+                className="estado-punto"
+                data-tono={publicada ? 'verde' : 'ambar'}
+                data-vivo={publicada || undefined}
+              />
               {publicada ? 'En línea' : 'Borrador'}
             </span>
           </span>
@@ -272,8 +270,8 @@ export function NavegacionPanel() {
           <SelloTienda className="h-8 w-8" />
           <span className="min-w-0">
             <span className="block truncate text-[14px] leading-tight font-medium">{sesion.tienda?.nombre ?? 'Mi tienda'}</span>
-            <span className="flex items-center gap-1.5 text-[10.5px] text-sitio-tenue">
-              <span className={cn('h-1.5 w-1.5 rounded-full', publicada ? 'bg-sitio-verde' : 'bg-sitio-ambar')} />
+            <span className="mt-0.5 flex items-center gap-2 text-[9.5px] tracking-[0.12em] text-sitio-tenue uppercase">
+              <span aria-hidden="true" className="estado-punto" data-tono={publicada ? 'verde' : 'ambar'} />
               {publicada ? 'En línea' : 'Borrador'}
             </span>
           </span>

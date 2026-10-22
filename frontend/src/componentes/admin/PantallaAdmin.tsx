@@ -316,10 +316,9 @@ function Tiendas({
                   <span className="hidden text-[13px] text-white/60 md:block">{tienda.productos} prod.</span>
                   <span className="hidden text-[12px] md:block">
                     <span
-                      className={cn(
-                        'mr-2 inline-block h-1.5 w-1.5 rounded-full align-middle',
-                        !tienda.activo ? 'bg-sitio-ambar' : tienda.publicada ? 'bg-sitio-verde' : 'bg-white/30',
-                      )}
+                      aria-hidden="true"
+                      className="estado-punto mr-2.5 inline-block align-middle"
+                      data-tono={!tienda.activo ? 'ambar' : tienda.publicada ? 'verde' : 'neutro'}
                     />
                     <span className="text-white/70">{!tienda.activo ? 'Suspendida' : tienda.publicada ? 'Publicada' : 'Borrador'}</span>
                     <span className="mt-0.5 block pl-3.5 text-[11px] text-white/35">

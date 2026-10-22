@@ -10,6 +10,7 @@ import {
   Check,
   Copy,
   EyeOff,
+  Globe,
   ImageOff,
   LayoutTemplate,
   PackageX,
@@ -88,6 +89,10 @@ export function PantallaResumen() {
   const publicada = sesion.tienda?.publicada ?? false
   const direccion = urlTienda(sesion.tenant.subdominio)
   const direccionCorta = direccion.replace(/^https?:\/\//, '')
+  // Se pinta en dos tonos: el nombre de la tienda resalta y el dominio base se apaga.
+  const corte = direccionCorta.indexOf('.')
+  const subdominio = corte > 0 ? direccionCorta.slice(0, corte) : direccionCorta
+  const dominioBase = corte > 0 ? direccionCorta.slice(corte) : ''
   const nombreTienda = sesion.tienda?.nombre ?? 'Tu tienda'
 
   const pasos = [
@@ -156,43 +161,45 @@ export function PantallaResumen() {
             {nombreTienda}
           </h1>
 
-          <div className="mt-5 flex flex-wrap items-center gap-2.5">
-            <span
-              className={cn(
-                'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold',
-                publicada
-                  ? 'border-sitio-verde/30 bg-sitio-verde/[0.08] text-sitio-verde'
-                  : 'border-sitio-ambar/30 bg-sitio-ambar/[0.08] text-sitio-ambar',
-              )}
-            >
-              <span className="relative flex h-1.5 w-1.5">
-                {publicada && <span className="absolute h-full w-full animate-ping rounded-full bg-current opacity-60" />}
-                <span className="relative h-1.5 w-1.5 rounded-full bg-current" />
-              </span>
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <span className="estado" data-tono={publicada ? 'verde' : 'ambar'}>
+              <span aria-hidden="true" className="estado-punto" data-vivo={publicada || undefined} />
               {publicada ? 'En línea' : 'Borrador'}
             </span>
-            <button
-              type="button"
-              onClick={() => void copiar()}
-              className="group inline-flex min-w-0 items-center gap-2 rounded-full border border-sitio-borde bg-black/30 py-1 pr-2.5 pl-3 font-mono text-[12px] text-sitio-suave transition-colors hover:border-white/25 hover:text-white"
-            >
-              <span className="truncate">{direccionCorta}</span>
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.span
-                  key={copiado ? 'si' : 'no'}
-                  initial={{ opacity: 0, scale: 0.6 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.6 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  {copiado ? (
-                    <Check aria-label="Copiado" className="h-3.5 w-3.5 text-sitio-verde" />
-                  ) : (
-                    <Copy aria-label="Copiar enlace" className="h-3.5 w-3.5" />
-                  )}
-                </motion.span>
-              </AnimatePresence>
-            </button>
+            <span className="direccion max-w-full">
+              <a
+                href={direccion}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-w-0 gap-2 px-2.5 transition-colors hover:bg-white/[0.04]"
+              >
+                <Globe aria-hidden="true" className="h-3 w-3 shrink-0 text-sitio-tenue" />
+                <span className="truncate">
+                  <span className="text-white">{subdominio}</span>
+                  <span className="text-sitio-tenue">{dominioBase}</span>
+                </span>
+              </a>
+              <button type="button" onClick={() => void copiar()} className="direccion-boton">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={copiado ? 'si' : 'no'}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.2 }}
+                    className="inline-flex items-center gap-1.5"
+                  >
+                    {copiado ? (
+                      <Check aria-hidden="true" className="h-3 w-3 text-sitio-verde" />
+                    ) : (
+                      <Copy aria-hidden="true" className="h-3 w-3" />
+                    )}
+                    <span className="hidden sm:inline">{copiado ? 'Copiado' : 'Copiar'}</span>
+                  </motion.span>
+                </AnimatePresence>
+                <span className="sr-only sm:hidden">{copiado ? 'Copiado' : 'Copiar enlace'}</span>
+              </button>
+            </span>
           </div>
 
           <div className="mt-8 grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap">
@@ -279,7 +286,7 @@ export function PantallaResumen() {
                 </div>
                 <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/[0.06]">
                   <motion.div
-                    className="h-full rounded-full bg-sitio-verde"
+                    className="h-full rounded-full bg-white"
                     initial={{ width: 0 }}
                     animate={{ width: `${(hechos / pasos.length) * 100}%` }}
                     transition={{ duration: 1.4, delay: 0.4, ease: SALIDA }}
@@ -293,13 +300,13 @@ export function PantallaResumen() {
                     >
                       <span
                         className={cn(
-                          'grid h-7 w-7 place-items-center rounded-full border text-[11px]',
+                          'grid h-7 w-7 place-items-center rounded-[6px] border font-mono text-[10.5px]',
                           paso.hecho
-                            ? 'border-sitio-verde/40 bg-sitio-verde/10 text-sitio-verde'
-                            : 'border-sitio-borde text-sitio-tenue',
+                            ? 'border-white bg-white text-black'
+                            : 'border-sitio-borde-fuerte text-sitio-tenue',
                         )}
                       >
-                        {paso.hecho ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : String(indice + 1).padStart(2, '0')}
+                        {paso.hecho ? <Check aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={2.6} /> : String(indice + 1).padStart(2, '0')}
                       </span>
                       <div className="min-w-0">
                         <p className={cn('text-sm', paso.hecho && 'text-sitio-tenue line-through')}>{paso.titulo}</p>
@@ -317,9 +324,19 @@ export function PantallaResumen() {
               </>
             ) : (
               <>
-                <div className="flex items-center gap-3">
-                  <span className="grid h-9 w-9 place-items-center rounded-full border border-sitio-verde/40 bg-sitio-verde/10 text-sitio-verde">
-                    <Check aria-hidden="true" className="h-4 w-4" />
+                <div className="flex items-center gap-4">
+                  <span className="sello-ok">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none">
+                      <motion.path
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        stroke="currentColor"
+                        strokeWidth={2.4}
+                        strokeLinecap="square"
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 0.7, delay: 0.5, ease: SALIDA }}
+                      />
+                    </svg>
                   </span>
                   <div>
                     <h2 className="text-[15px] font-medium">Tu tienda está lista para vender</h2>

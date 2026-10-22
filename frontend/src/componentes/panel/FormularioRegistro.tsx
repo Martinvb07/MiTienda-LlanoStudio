@@ -190,7 +190,7 @@ export function FormularioRegistro() {
             <p className="mt-1.5 text-[12.5px] text-red-300">{errores.subdominio}</p>
           ) : (
             <p className="mt-2 flex min-w-0 items-center gap-1.5 text-[12px] text-sitio-tenue" title="Tu tienda va a vivir en esta dirección">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-sitio-verde" />
+              <span aria-hidden="true" className="estado-punto mr-1" data-tono="verde" />
               <span className="truncate font-mono text-white/80">{dominioCompleto}</span>
             </p>
           )}

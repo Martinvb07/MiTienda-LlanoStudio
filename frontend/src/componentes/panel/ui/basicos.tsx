@@ -49,15 +49,8 @@ export function Etiqueta({
   children: ReactNode
 }) {
   return (
-    <span
-      className={cn(
-        'rounded-full border px-2 py-[3px] text-[10.5px] font-semibold whitespace-nowrap',
-        tono === 'neutro' && 'border-sitio-borde text-sitio-suave',
-        tono === 'verde' && 'border-sitio-verde/30 bg-sitio-verde/[0.08] text-sitio-verde',
-        tono === 'ambar' && 'border-sitio-ambar/30 bg-sitio-ambar/[0.08] text-sitio-ambar',
-        tono === 'azul' && 'border-sitio-azul-claro/30 bg-sitio-azul/[0.1] text-sitio-azul-claro',
-      )}
-    >
+    <span className="estado estado-chico" data-tono={tono}>
+      <span aria-hidden="true" className="estado-punto" />
       {children}
     </span>
   )

@@ -330,7 +330,124 @@ html[data-tema='claro']:has(.marco-oscuro) {
     background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-white) 12%, transparent) 50%, transparent);
   }
 
+  /*
+   * ── Estados: etiqueta recta como los botones, en mayúsculas finas. El color
+   * sólo va en el punto (un cuadrito con halo), el texto se queda en tinta.
+   */
+  .estado {
+    --tono: var(--color-sitio-tenue);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 26px;
+    padding: 0 10px 0 9px;
+    border-radius: 3px;
+    border: 1px solid var(--color-sitio-borde-fuerte);
+    background: color-mix(in srgb, var(--color-white) 3%, transparent);
+    color: var(--color-white);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .estado-chico {
+    height: 22px;
+    gap: 7px;
+    padding: 0 8px 0 7px;
+    font-size: 9.5px;
+  }
+  .estado-punto {
+    --tono: var(--color-sitio-tenue);
+    position: relative;
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 1.5px;
+    background: var(--tono);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tono) 18%, transparent);
+  }
+  .estado[data-tono='verde'],
+  .estado-punto[data-tono='verde'] {
+    --tono: var(--color-sitio-verde);
+  }
+  .estado[data-tono='ambar'],
+  .estado-punto[data-tono='ambar'] {
+    --tono: var(--color-sitio-ambar);
+  }
+  .estado[data-tono='azul'],
+  .estado-punto[data-tono='azul'] {
+    --tono: var(--color-sitio-azul-claro);
+  }
+  .estado[data-tono='rojo'],
+  .estado-punto[data-tono='rojo'] {
+    --tono: var(--color-sitio-rojo);
+  }
+  .estado .estado-punto {
+    --tono: inherit;
+  }
+  /* En vivo: el halo late despacio en vez del ping redondo. */
+  .estado-punto[data-vivo]::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 3px;
+    border: 1px solid var(--tono);
+    animation: latido 2.4s var(--ease-salida) infinite;
+  }
 
+  /* ── Dirección de la tienda: barra de navegador con botón de copiar ── */
+  .direccion {
+    display: inline-flex;
+    align-items: stretch;
+    min-width: 0;
+    height: 26px;
+    border-radius: 3px;
+    border: 1px solid var(--color-sitio-borde-fuerte);
+    background: color-mix(in srgb, var(--color-white) 3%, transparent);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    line-height: 1;
+    overflow: hidden;
+  }
+  .direccion > * {
+    display: inline-flex;
+    align-items: center;
+  }
+  .direccion-boton {
+    gap: 6px;
+    padding: 0 9px;
+    border-left: 1px solid var(--color-sitio-borde-fuerte);
+    font-family: var(--font-sans);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-sitio-suave);
+    cursor: pointer;
+    transition:
+      background 0.3s ease,
+      color 0.3s ease;
+  }
+  .direccion-boton:hover {
+    background: color-mix(in srgb, var(--color-white) 7%, transparent);
+    color: var(--color-white);
+  }
+
+  /* ── Sello de listo: cuadro en tinta con el check dibujado ── */
+  .sello-ok {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--color-white);
+    color: var(--color-black);
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--color-white) 6%, transparent),
+      0 8px 24px -10px color-mix(in srgb, var(--color-white) 35%, transparent);
+  }
 
   /* Brillo mientras algo carga (subidas de imágenes) */
   .brillo {
@@ -485,4 +602,16 @@ html[data-tema='claro']:has(.marco-oscuro) {
 }
 [data-segunda-foto] .tarjeta-producto:hover .foto-alterna {
   opacity: 1;
+}
+
+@keyframes latido {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.6);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
 }

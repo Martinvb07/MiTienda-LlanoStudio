@@ -40,3 +40,4 @@ coverage/
 .eslintcache
 .turbo/
 backend/.medios/
+.mitienda.env

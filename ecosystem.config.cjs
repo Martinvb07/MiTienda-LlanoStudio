@@ -5,18 +5,32 @@
  *   pm2 reload ecosystem.config.cjs --update-env   lo hace el deploy en cada push
  *   pm2 logs mitienda-api                           ver registros
  *
- * Puertos (sólo escuchan en 127.0.0.1; afuera habla nginx):
- *   mitienda-web  4100  Next: web de Mi Tienda, panel y tiendas
- *   mitienda-api  4101  API de Express (PUERTO en backend/.env)
- * Se eligen lejos del 3001 de la API de Llano Studio, que vive en el mismo VPS.
+ * Puertos (sólo escuchan en 127.0.0.1; afuera habla nginx): los elige
+ * deploy/instalar.sh entre los libres y los deja en .mitienda.env. La API toma
+ * el suyo de PUERTO en backend/.env.
  *
  * Las variables de entorno se leen de backend/.env y frontend/.env.local, que
  * viven sólo en el servidor y nunca en el repositorio.
  */
+const fs = require('node:fs')
 const path = require('node:path')
 
 const RAIZ = __dirname
-const PUERTO_WEB = process.env.MITIENDA_PUERTO_WEB || '4100'
+
+// Puertos y Node que eligió deploy/instalar.sh (archivo sólo del servidor).
+const local = {}
+try {
+  for (const linea of fs.readFileSync(path.join(RAIZ, '.mitienda.env'), 'utf8').split('\n')) {
+    const [clave, ...valor] = linea.split('=')
+    if (clave && !clave.startsWith('#') && valor.length) local[clave.trim()] = valor.join('=').trim()
+  }
+} catch {
+  // Sin instalador: valores por defecto.
+}
+
+const PUERTO_WEB = local.PUERTO_WEB || '4200'
+// Node 22 propio de Mi Tienda si el global es más viejo; si no, el global.
+const NODE = local.DIR_NODE ? path.join(local.DIR_NODE, 'node') : 'node'
 
 module.exports = {
   apps: [
@@ -24,6 +38,7 @@ module.exports = {
       name: 'mitienda-api',
       cwd: path.join(RAIZ, 'backend'),
       script: 'dist/servidor.js',
+      interpreter: NODE,
       // Express no guarda estado en memoria: se puede subir a 'max' cuando
       // haya tráfico. Para empezar, una instancia deja RAM para lo demás.
       instances: 1,
@@ -40,6 +55,7 @@ module.exports = {
       name: 'mitienda-trabajadores',
       cwd: path.join(RAIZ, 'backend'),
       script: 'dist/colas/trabajadores/index.js',
+      interpreter: NODE,
       // Un solo proceso: la concurrencia la controla BullMQ dentro del worker.
       instances: 1,
       exec_mode: 'fork',
@@ -54,6 +70,7 @@ module.exports = {
       name: 'mitienda-web',
       cwd: path.join(RAIZ, 'frontend'),
       script: 'node_modules/next/dist/bin/next',
+      interpreter: NODE,
       args: `start --hostname 127.0.0.1 --port ${PUERTO_WEB}`,
       instances: 1,
       exec_mode: 'fork',

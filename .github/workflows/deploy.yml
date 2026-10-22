@@ -83,6 +83,12 @@ jobs:
           cd "$VPS_PATH"
           ANTERIOR="$(git rev-parse HEAD)"
 
+          # Puertos y Node que dejó deploy/instalar.sh.
+          leer() { (grep -E "^$1=" .mitienda.env 2>/dev/null || true) | tail -1 | cut -d= -f2-; }
+          DIR_NODE="$(leer DIR_NODE)"
+          [ -n "$DIR_NODE" ] && export PATH="$DIR_NODE:$PATH"
+          PUERTO_WEB="$(leer PUERTO_WEB)"; PUERTO_WEB="${PUERTO_WEB:-4200}"
+
           # backend/.medios (fotos subidas sin R2) vive sólo en el servidor y git
           # lo ignora, así que el deploy no lo toca. Aun así se respalda.
           RESPALDOS="$HOME/mitienda-respaldos"
@@ -109,7 +115,7 @@ jobs:
           }
 
           PUERTO_API="$( (grep -E '^PUERTO=' backend/.env 2>/dev/null || true) | tail -1 | cut -d= -f2 | tr -d "\"' \r")"
-          PUERTO_API="${PUERTO_API:-4101}"
+          PUERTO_API="${PUERTO_API:-4201}"
           PANEL="$( (grep -E '^NEXT_PUBLIC_SUBDOMINIO_PANEL=' frontend/.env.local 2>/dev/null || true) | tail -1 | cut -d= -f2 | tr -d "\"' \r")"
           BASE="$( (grep -E '^NEXT_PUBLIC_DOMINIO_BASE=' frontend/.env.local 2>/dev/null || true) | tail -1 | cut -d= -f2 | tr -d "\"' \r")"
 
@@ -118,7 +124,7 @@ jobs:
             local intentos=0 api web
             while true; do
               api=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:$PUERTO_API/api/salud/detallada" || echo 000)
-              web=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -H "Host: ${PANEL:-mitienda}.${BASE:-llanostudio.co}" "http://127.0.0.1:4100/" || echo 000)
+              web=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -H "Host: ${PANEL:-mitienda}.${BASE:-llanostudio.co}" "http://127.0.0.1:$PUERTO_WEB/" || echo 000)
               [ "$api" = "200" ] && [ "$web" = "200" ] && return 0
               intentos=$((intentos + 1))
               [ "$intentos" -ge 15 ] && { echo "!! API respondió $api y web $web"; return 1; }

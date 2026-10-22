@@ -4,8 +4,8 @@
 Internet ─HTTPS─► nginx ─┬─ llanostudio.co, www ───► sitio de Llano Studio (ya existe, no se toca)
                          └─ mitienda.llanostudio.co ─┐
                             *.llanostudio.co ────────┤
-                                                     ├─ /api/...  ──► mitienda-api  127.0.0.1:4101 (Express, PM2)
-                                                     └─ lo demás ──► mitienda-web  127.0.0.1:4100 (Next, PM2)
+                                                     ├─ /api/...  ──► mitienda-api  127.0.0.1:<libre> (Express, PM2)
+                                                     └─ lo demás ──► mitienda-web  127.0.0.1:<libre> (Next, PM2)
                                                                        │
                                      PostgreSQL (datos) ◄──────────────┤
                                      Redis (colas)      ◄──────────────┘
@@ -18,6 +18,31 @@ Internet ─HTTPS─► nginx ─┬─ llanostudio.co, www ───► sitio d
 Carpeta en el VPS: `/var/www/llanostudio/sitios/mitienda`
 
 ---
+
+## Instalación en un comando
+
+```bash
+cd /var/www/llanostudio/sitios
+git clone https://github.com/Martinvb07/MiTienda-LlanoStudio.git mitienda
+cd mitienda && sudo bash deploy/instalar.sh
+```
+
+Te pregunta el dominio (`llanostudio.co`), el subdominio del panel (`mitienda`), tu correo y la
+contraseña de tu panel de admin. Hace todo lo demás:
+
+- Instala lo que falte: PostgreSQL, Redis, nginx y certbot.
+- **Busca puertos libres** desde el 4200 y no toca los que ya usas.
+- Si tu Node global es menor a 22, baja un Node 22 **aparte**, en `/opt/mitienda-node`, solo
+  para Mi Tienda. Tus otras apps siguen con el suyo.
+- Crea la base de datos, `backend/.env` y `frontend/.env.local` con claves al azar.
+- Construye, arranca todo en PM2 y crea el sitio `mitienda` en nginx sin editar los tuyos.
+- Saca el HTTPS de `mitienda.llanostudio.co` si el DNS ya apunta al VPS.
+
+Se puede volver a correr cuando quieras: conserva las claves y la base de datos.
+Para una tienda de prueba con HTTPS desde ya: `SUBDOMINIOS_PRUEBA="prueba" sudo -E bash deploy/instalar.sh`.
+
+Lo único manual es el DNS (paso 1) y, más adelante, el certificado comodín para todas las tiendas
+(paso 7). Los pasos 2 a 6 de abajo explican lo que hace el instalador, por si quieres hacerlo a mano.
 
 ## 1. DNS en Namecheap (una vez)
 
@@ -35,12 +60,13 @@ Comprueba (tarda unos minutos): `dig +short prueba.llanostudio.co` → debe resp
 
 ## 2. Puertos libres
 
+El instalador los elige solo. Para verlos tú:
+
 ```bash
-sudo ss -ltn | grep -E ':(4100|4101)\b' || echo "4100 y 4101 libres"
+for p in $(seq 4200 4300); do ss -ltn | awk '{print $4}' | grep -qE "[:.]$p$" || echo "$p libre"; done | head
 ```
 
-Si alguno está ocupado, cambia `4100` en `ecosystem.config.cjs` y en `deploy/nginx-mitienda.conf`, y `4101`
-en `backend/.env` (`PUERTO`), `frontend/.env.local` (`URL_API`) y el mismo nginx.
+Quedan anotados en `.mitienda.env` (raíz del proyecto, sólo en el servidor), que leen PM2 y el deploy.
 
 ## 3. Node 22, PostgreSQL y Redis (sin Docker)
 
@@ -78,7 +104,7 @@ cd mitienda
 
 ```bash
 NODE_ENV=production
-PUERTO=4101
+PUERTO=4201
 DATABASE_URL="postgresql://mitienda:una-clave-larga@localhost:5432/mitienda?schema=public"
 REDIS_URL="redis://localhost:6379"
 DOMINIO_BASE="llanostudio.co"
@@ -100,7 +126,7 @@ R2_URL_PUBLICA=""
 `frontend/.env.local`:
 
 ```bash
-URL_API="http://127.0.0.1:4101"
+URL_API="http://127.0.0.1:4201"
 MITIENDA_TOKEN_INTERNO="la-misma-cadena-que-TOKEN_INTERNO"
 NEXT_PUBLIC_DOMINIO_BASE="llanostudio.co"
 NEXT_PUBLIC_SUBDOMINIO_PANEL="mitienda"
@@ -125,7 +151,7 @@ mkdir -p logs
 pm2 start ecosystem.config.cjs && pm2 save
 pm2 startup        # sólo si nunca lo hiciste: ejecuta el comando que muestra
 
-curl -s http://127.0.0.1:4101/api/salud/detallada   # {"estado":"ok",...postgres ok, redis ok}
+curl -s http://127.0.0.1:4201/api/salud/detallada   # {"estado":"ok",...postgres ok, redis ok}
 ```
 
 ## 7. nginx y HTTPS para los subdominios
@@ -153,14 +179,9 @@ sudo certbot certonly --dns-cloudflare --dns-cloudflare-credentials /root/.secre
   -d '*.llanostudio.co' --cert-name llanostudio.co-comodin
 ```
 
-Con el certificado listo:
-
-```bash
-sudo cp deploy/mitienda-proxy.conf /etc/nginx/snippets/mitienda-proxy.conf
-sudo cp deploy/nginx-mitienda.conf /etc/nginx/sites-available/mitienda
-sudo ln -s /etc/nginx/sites-available/mitienda /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-```
+Con el certificado listo, vuelve a correr `sudo bash deploy/instalar.sh`: detecta el comodín y pasa
+todas las tiendas a HTTPS. (Si prefieres hacerlo a mano, `deploy/nginx-mitienda.conf` es la plantilla:
+ajusta en ella los puertos de `.mitienda.env`.)
 
 nginx atiende primero los nombres exactos (`llanostudio.co`, `www`) con su configuración actual, y sólo lo
 demás cae en el comodín de Mi Tienda: tu sitio no cambia.
@@ -206,6 +227,6 @@ npx prisma migrate deploy && pm2 reload mitienda-api
 | Estado de los procesos | `pm2 status` |
 | Registros | `pm2 logs mitienda-api` · `pm2 logs mitienda-web` |
 | Reiniciar | `pm2 reload ecosystem.config.cjs --update-env` |
-| Salud de la API | `curl -s 127.0.0.1:4101/api/salud/detallada` |
+| Salud de la API | `curl -s 127.0.0.1:4201/api/salud/detallada` |
 | Respaldo de la base | `pg_dump -U mitienda -h localhost mitienda > respaldo.sql` |
 | Respaldo de fotos | `tar -czf medios.tgz -C backend .medios` |

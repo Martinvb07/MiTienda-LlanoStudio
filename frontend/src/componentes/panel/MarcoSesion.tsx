@@ -32,7 +32,7 @@ export function MarcoSesion({ children }: { children: React.ReactNode }) {
   const lado = LADOS[ruta] ?? LADOS['/panel/ingresar']!
 
   return (
-    <div className="marco-oscuro grid min-h-screen font-sans lg:grid-cols-[1.05fr_1fr]">
+    <div className="marco-oscuro grid min-h-dvh font-sans lg:grid-cols-[1.05fr_1fr]">
       {/* Tienda real de un lado */}
       <aside className="relative hidden overflow-hidden border-r border-white/10 bg-[#070707] lg:block">
         <AnimatePresence mode="wait">
@@ -64,7 +64,7 @@ export function MarcoSesion({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Formulario del otro */}
-      <main className="flex min-h-screen flex-col px-6 py-6 sm:px-10 lg:px-16">
+      <main className="flex min-h-dvh flex-col px-6 py-5 sm:px-10 lg:px-16">
         <div className="flex items-center justify-between">
           <Link
             href="/"
@@ -84,7 +84,7 @@ export function MarcoSesion({ children }: { children: React.ReactNode }) {
           initial={{ opacity: 0, y: 34, filter: 'blur(6px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
           transition={{ duration: 1.1, ease: SALIDA }}
-          className="mx-auto my-auto w-full max-w-[560px] py-14"
+          className="mx-auto my-auto w-full max-w-[560px] py-6"
         >
           {children}
         </motion.div>

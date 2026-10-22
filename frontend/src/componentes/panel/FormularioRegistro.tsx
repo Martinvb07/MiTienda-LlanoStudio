@@ -107,14 +107,14 @@ export function FormularioRegistro() {
 
   return (
     <>
-      <h1 className="text-[clamp(34px,3.4vw,46px)] leading-[1.02] font-normal tracking-[-0.045em]">
+      <h1 className="text-[clamp(28px,2.6vw,36px)] leading-[1.02] font-normal tracking-[-0.045em]">
         Crea tu tienda gratis
       </h1>
-      <p className="mt-2 text-sm text-sitio-tenue">
+      <p className="mt-1.5 text-sm text-sitio-tenue">
         En un par de minutos la tienes publicada. Sin tarjeta de crédito.
       </p>
 
-      <form onSubmit={alEnviar} noValidate className="mt-9 grid gap-x-4 gap-y-5 sm:grid-cols-2">
+      <form onSubmit={alEnviar} noValidate className="mt-5 grid grid-cols-2 gap-x-3 gap-y-3.5 sm:gap-x-4">
         <CampoTexto
           etiqueta="Tu nombre"
           nombre="nombre"
@@ -137,23 +137,19 @@ export function FormularioRegistro() {
           error={errores.email}
         />
 
-        <div className="sm:col-span-2">
-        <CampoContrasena
-          etiqueta="Contraseña"
-          nombre="contrasena"
-          valor={contrasena}
-          alCambiar={setContrasena}
-          autoCompletar="new-password"
-          error={errores.contrasena}
-          medirFortaleza
-        />
+        <div className="col-span-2">
+          <CampoContrasena
+            etiqueta="Contraseña"
+            nombre="contrasena"
+            valor={contrasena}
+            alCambiar={setContrasena}
+            autoCompletar="new-password"
+            error={errores.contrasena}
+            medirFortaleza
+          />
         </div>
 
-        <p className="border-t border-white/10 pt-6 text-[11px] tracking-[0.14em] text-white/45 uppercase sm:col-span-2">
-          Tu tienda
-        </p>
-
-        <div>
+        <div className="col-span-2 sm:col-span-1">
           <CampoTexto
             etiqueta="Nombre de tu tienda"
             nombre="tienda"
@@ -164,7 +160,7 @@ export function FormularioRegistro() {
           />
         </div>
 
-        <div>
+        <div className="col-span-2 sm:col-span-1">
           <label htmlFor="subdominio" className="text-[12px] text-sitio-suave">
             La dirección de tu tienda
           </label>
@@ -205,7 +201,7 @@ export function FormularioRegistro() {
           enlaces se los come: al pulsarlos, el navegador marca la casilla en
           vez de navegar. La casilla recibe su nombre accesible por aria-label.
         */}
-        <div className="flex items-start gap-2.5 sm:col-span-2">
+        <div className="flex items-start gap-2.5 col-span-2">
           <input
             type="checkbox"
             name="condiciones"
@@ -232,14 +228,14 @@ export function FormularioRegistro() {
             .
           </p>
         </div>
-        {errores.condiciones && <p className="text-[12.5px] text-red-300 sm:col-span-2">{errores.condiciones}</p>}
+        {errores.condiciones && <p className="text-[12.5px] text-red-300 col-span-2">{errores.condiciones}</p>}
 
-        {errorServidor && <div className="sm:col-span-2"><AvisoFormulario>{errorServidor}</AvisoFormulario></div>}
+        {errorServidor && <div className="col-span-2"><AvisoFormulario>{errorServidor}</AvisoFormulario></div>}
 
         <button
           type="submit"
           disabled={enviando}
-          className="boton boton-primario w-full sm:col-span-2"
+          className="boton boton-primario w-full col-span-2"
         >
           {enviando && (
             <span
@@ -251,7 +247,7 @@ export function FormularioRegistro() {
         </button>
       </form>
 
-      <p className="mt-8 text-center text-sm text-sitio-tenue">
+      <p className="mt-4 text-center text-sm text-sitio-tenue">
         ¿Ya tienes cuenta?{' '}
         <Link
           href="/panel/ingresar"

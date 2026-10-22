@@ -37,22 +37,22 @@ export function Hero() {
           <br />
           lista hoy
         </h1>
-        <p className="bajada mx-auto mt-[22px] !text-base">
+        <p className="bajada mx-auto mt-[22px] hidden !text-base md:block">
           Elige una plantilla, sube tus productos y vende desde tu propia dirección. Sin escribir una
           sola línea de código.
         </p>
-        <div className="mt-[34px] flex flex-wrap justify-center gap-3">
-          <Boton href="/panel/crear-cuenta" flecha>
+        <div className="mt-[30px] flex w-full max-w-[400px] justify-center gap-3 md:mt-[34px] md:w-auto md:max-w-none">
+          <Boton href="/panel/crear-cuenta" flecha className="w-full md:w-auto">
             Crear mi tienda gratis
           </Boton>
-          <Boton href="/plantillas" variante="secundario">
+          <Boton href="/plantillas" variante="secundario" className="hidden md:inline-flex">
             Ver plantillas
           </Boton>
         </div>
-        <p className="mt-5 text-xs text-white/45">Sin tarjeta de crédito · Tu tienda en línea el mismo día</p>
+        <p className="mt-5 text-[13px] text-white/45 md:text-xs">Sin tarjeta de crédito · Tu tienda en línea el mismo día</p>
       </div>
 
-      <div ref={zona} className="relative mx-auto mt-20 h-[clamp(260px,46vw,620px)] max-w-[1400px] md:mt-24">
+      <div ref={zona} className="relative mx-auto mt-12 h-[calc(54vw+44px)] max-w-[1400px] [--abrir:31vw] md:mt-24 md:h-[clamp(260px,46vw,620px)] md:[--abrir:22vw]">
         {VITRINA.map((tarjeta, indice) => (
           <TarjetaVitrina key={tarjeta.src} {...tarjeta} progreso={scrollYProgress} orden={indice} />
         ))}
@@ -61,7 +61,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 80, filter: 'blur(8px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
           transition={{ duration: 1.5, delay: 0.25, ease: SALIDA }}
-          className="absolute top-0 left-1/2 z-10 w-[min(64vw,880px)] -translate-x-1/2 overflow-hidden rounded-[10px] bg-black shadow-[0_40px_120px_-30px_rgba(0,0,0,1)] ring-1 ring-white/10"
+          className="absolute top-0 left-1/2 z-10 w-[86vw] -translate-x-1/2 md:w-[min(64vw,880px)] overflow-hidden rounded-[10px] bg-black shadow-[0_40px_120px_-30px_rgba(0,0,0,1)] ring-1 ring-white/10"
         >
           <div className="flex h-7 items-center gap-1.5 border-b border-white/10 bg-[#141416] px-3">
             <span className="h-2 w-2 rounded-full bg-white/20" />
@@ -75,7 +75,7 @@ export function Hero() {
             width={1440}
             height={900}
             priority
-            sizes="(max-width: 1400px) 64vw, 880px"
+            sizes="(max-width: 768px) 86vw, (max-width: 1400px) 64vw, 880px"
             className="h-auto w-full"
           />
         </motion.figure>
@@ -117,9 +117,13 @@ function TarjetaVitrina({
   orden: number
 }) {
   // Al bajar, las tarjetas de los lados se abren hacia afuera y se inclinan.
+  // --abrir (en el contenedor) separa más las de escritorio en celular, para
+  // que se asomen por los bordes como en llanostudio.co.
   const separacion = useTransform(progreso, [0.15, 0.6], [0, lado * (tipo === 'movil' ? 3.5 : 6)])
   const giro = useTransform(progreso, [0.15, 0.6], [0, lado * 2.5])
-  const x = useTransform(separacion, (valor) => `calc(-50% + ${lado * (tipo === 'movil' ? 37 : 22)}vw + ${valor}vw)`)
+  const x = useTransform(separacion, (valor) =>
+    tipo === 'movil' ? `calc(-50% + ${lado * 37}vw + ${valor}vw)` : `calc(-50% + ${lado} * var(--abrir) + ${valor}vw)`,
+  )
 
   return (
     <motion.figure
@@ -129,11 +133,11 @@ function TarjetaVitrina({
       style={{ x, rotate: giro }}
       className={
         tipo === 'escritorio'
-          ? 'absolute top-[7%] left-1/2 hidden w-[min(40vw,560px)] overflow-hidden rounded-[8px] bg-black opacity-70 shadow-[0_30px_80px_-20px_rgba(0,0,0,1)] ring-1 ring-white/10 md:block'
+          ? 'absolute top-[7%] left-1/2 w-[62vw] overflow-hidden rounded-[8px] bg-black opacity-70 shadow-[0_30px_80px_-20px_rgba(0,0,0,1)] ring-1 ring-white/10 md:w-[min(40vw,560px)]'
           : 'absolute top-[12%] left-1/2 hidden w-[min(13vw,190px)] overflow-hidden rounded-[22px] border-[5px] border-[#1b1b1e] bg-black shadow-[0_30px_80px_-20px_rgba(0,0,0,1)] lg:block'
       }
     >
-      <Image src={src} alt={alt} width={tipo === 'escritorio' ? 1440 : 560} height={tipo === 'escritorio' ? 900 : 1212} sizes="40vw" className="h-auto w-full brightness-[0.8]" />
+      <Image src={src} alt={alt} width={tipo === 'escritorio' ? 1440 : 560} height={tipo === 'escritorio' ? 900 : 1212} sizes="(max-width: 768px) 62vw, 40vw" className="h-auto w-full brightness-[0.8]" />
     </motion.figure>
   )
 }

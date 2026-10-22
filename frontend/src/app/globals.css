@@ -71,10 +71,46 @@ body {
   background: var(--color-sitio-azul);
   color: #fff;
 }
-.marco-oscuro,
-.marco-oscuro * {
-  scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+/* Barras de scroll del sitio y el panel: finas, grafito sobre negro y azul
+   del logotipo al agarrarlas. Incluye la del documento (html), que es la
+   que se ve al bajar por la página, sólo cuando hay marco oscuro. */
+html:has(.marco-oscuro) {
+  background: #000;
+  color-scheme: dark;
+}
+@supports not selector(::-webkit-scrollbar) {
+  html:has(.marco-oscuro),
+  .marco-oscuro * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.22) #000;
+  }
+}
+html:has(.marco-oscuro)::-webkit-scrollbar,
+.marco-oscuro ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html:has(.marco-oscuro)::-webkit-scrollbar-track,
+.marco-oscuro ::-webkit-scrollbar-track {
+  background: transparent;
+}
+html:has(.marco-oscuro)::-webkit-scrollbar-thumb,
+.marco-oscuro ::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.18) padding-box;
+}
+html:has(.marco-oscuro)::-webkit-scrollbar-thumb:hover,
+.marco-oscuro ::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.4) padding-box;
+}
+html:has(.marco-oscuro)::-webkit-scrollbar-thumb:active,
+.marco-oscuro ::-webkit-scrollbar-thumb:active {
+  background: var(--color-sitio-azul) padding-box;
+}
+html:has(.marco-oscuro)::-webkit-scrollbar-corner,
+.marco-oscuro ::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 @layer components {

@@ -102,7 +102,7 @@ function ModalPlantilla({ plantilla, alCerrar }: { plantilla: PlantillaTienda; a
       />
 
       <motion.div
-        className="relative grid max-h-[92vh] w-full max-w-[1180px] overflow-hidden rounded-t-[14px] border border-white/10 bg-[#0a0a0b] md:rounded-[14px] lg:grid-cols-[1.45fr_1fr]"
+        className="relative flex max-h-[92dvh] w-full max-w-[1180px] flex-col overflow-hidden rounded-t-[14px] border border-white/10 bg-[#0a0a0b] md:rounded-[14px]"
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 30, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
@@ -117,93 +117,96 @@ function ModalPlantilla({ plantilla, alCerrar }: { plantilla: PlantillaTienda; a
           <X aria-hidden="true" className="h-4 w-4" />
         </button>
 
-        {/* La tienda completa, con scroll propio */}
-        <div className="relative min-h-[300px] overflow-y-auto bg-[radial-gradient(circle_at_50%_0%,#17171a,#0b0b0c_70%)] p-4 md:p-6 lg:max-h-[92vh]">
-          <motion.div
-            layoutId={`plantilla-${plantilla.clave}`}
-            transition={{ duration: 0.7, ease: SALIDA }}
-            className="overflow-hidden rounded-[8px] bg-black shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] ring-1 ring-white/10"
-          >
-            <div className="flex h-8 items-center gap-1.5 border-b border-white/10 bg-[#141416] px-3">
-              <span className="h-2 w-2 rounded-full bg-white/20" />
-              <span className="h-2 w-2 rounded-full bg-white/20" />
-              <span className="h-2 w-2 rounded-full bg-white/20" />
-              <span className="ml-3 truncate font-mono text-[10.5px] text-white/40">
-                {plantilla.ejemplo.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-')}
-                .llanostudio.co
-              </span>
-            </div>
-            <Image
-              src={plantilla.captura.replace('.webp', '-completa.webp')}
-              alt={`Página completa de ${plantilla.ejemplo}`}
-              width={1100}
-              height={2400}
-              sizes="(max-width: 1024px) 100vw, 680px"
-              className="h-auto w-full"
-            />
-          </motion.div>
-        </div>
-
-        {/* Ficha */}
-        <motion.div
-          className="flex flex-col overflow-y-auto border-t border-white/10 p-7 md:p-9 lg:max-h-[92vh] lg:border-t-0 lg:border-l"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, delay: 0.15, ease: SALIDA }}
-        >
-          <span className="antetitulo">{textoPlan(plantilla)}</span>
-          <h3 className="mt-3 text-[34px] leading-[1.02] tracking-[-0.04em]">{plantilla.nombre}</h3>
-          <p className="mt-2 text-[13px] text-white/45">
-            {plantilla.categoria} · Ejemplo: {plantilla.ejemplo}
-          </p>
-          <p className="mt-5 text-[15px] leading-relaxed text-white/65">{plantilla.descripcion}</p>
-
-          <div className="mt-7 flex items-end gap-5">
-            <div className="relative h-[230px] w-[112px] shrink-0 overflow-hidden rounded-[18px] border-[5px] border-[#1b1b1e] bg-black shadow-[0_20px_50px_-15px_rgba(0,0,0,0.9)]">
-              <Image src={plantilla.capturaMovil} alt="" fill sizes="112px" className="object-cover object-top" />
-            </div>
-            <div className="pb-1">
-              <p className="text-[11px] tracking-[0.12em] text-white/45 uppercase">Estilo</p>
-              <div className="mt-2.5 flex gap-1.5">
-                {colores.map((color, indice) => (
-                  <span
-                    key={`${indice}-${color}`}
-                    className="h-6 w-6 rounded-full ring-1 ring-white/15"
-                    style={{ background: color }}
-                  />
-                ))}
+        {/* En celular todo el modal desliza junto; en escritorio cada columna tiene su scroll */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain lg:grid lg:grid-cols-[1.45fr_1fr] lg:overflow-hidden">
+          {/* La tienda completa */}
+          <div className="relative min-h-[300px] bg-[radial-gradient(circle_at_50%_0%,#17171a,#0b0b0c_70%)] p-4 md:p-6 lg:max-h-[92dvh] lg:overflow-y-auto lg:overscroll-contain">
+            <motion.div
+              layoutId={`plantilla-${plantilla.clave}`}
+              transition={{ duration: 0.7, ease: SALIDA }}
+              className="overflow-hidden rounded-[8px] bg-black shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] ring-1 ring-white/10"
+            >
+              <div className="flex h-8 items-center gap-1.5 border-b border-white/10 bg-[#141416] px-3">
+                <span className="h-2 w-2 rounded-full bg-white/20" />
+                <span className="h-2 w-2 rounded-full bg-white/20" />
+                <span className="h-2 w-2 rounded-full bg-white/20" />
+                <span className="ml-3 truncate font-mono text-[10.5px] text-white/40">
+                  {plantilla.ejemplo.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-')}
+                  .llanostudio.co
+                </span>
               </div>
-              <p className="mt-2.5 text-[13px] text-white/60">
-                Letra {FUENTES_TITULOS[plantilla.tema.fuenteTitulos].etiqueta.toLowerCase()}
+              <Image
+                src={plantilla.captura.replace('.webp', '-completa.webp')}
+                alt={`Página completa de ${plantilla.ejemplo}`}
+                width={1100}
+                height={2400}
+                sizes="(max-width: 1024px) 100vw, 680px"
+                className="h-auto w-full"
+              />
+            </motion.div>
+          </div>
+
+          {/* Ficha */}
+          <motion.div
+            className="flex flex-col border-t border-white/10 p-7 md:p-9 lg:max-h-[92dvh] lg:overflow-y-auto lg:overscroll-contain lg:border-t-0 lg:border-l"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, delay: 0.15, ease: SALIDA }}
+          >
+            <span className="antetitulo">{textoPlan(plantilla)}</span>
+            <h3 className="mt-3 text-[34px] leading-[1.02] tracking-[-0.04em]">{plantilla.nombre}</h3>
+            <p className="mt-2 text-[13px] text-white/45">
+              {plantilla.categoria} · Ejemplo: {plantilla.ejemplo}
+            </p>
+            <p className="mt-5 text-[15px] leading-relaxed text-white/65">{plantilla.descripcion}</p>
+
+            <div className="mt-7 flex items-end gap-5">
+              <div className="relative h-[230px] w-[112px] shrink-0 overflow-hidden rounded-[18px] border-[5px] border-[#1b1b1e] bg-black shadow-[0_20px_50px_-15px_rgba(0,0,0,0.9)]">
+                <Image src={plantilla.capturaMovil} alt="" fill sizes="112px" className="object-cover object-top" />
+              </div>
+              <div className="pb-1">
+                <p className="text-[11px] tracking-[0.12em] text-white/45 uppercase">Estilo</p>
+                <div className="mt-2.5 flex gap-1.5">
+                  {colores.map((color, indice) => (
+                    <span
+                      key={`${indice}-${color}`}
+                      className="h-6 w-6 rounded-full ring-1 ring-white/15"
+                      style={{ background: color }}
+                    />
+                  ))}
+                </div>
+                <p className="mt-2.5 text-[13px] text-white/60">
+                  Letra {FUENTES_TITULOS[plantilla.tema.fuenteTitulos].etiqueta.toLowerCase()}
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-8 text-[11px] tracking-[0.12em] text-white/45 uppercase">Qué trae</p>
+            <ul className="mt-3 border-b border-white/10">
+              {secciones.map((seccion) => (
+                <li key={seccion} className="flex items-center gap-3 border-t border-white/10 py-3 text-[14px] text-white/80">
+                  <Check aria-hidden="true" className="h-3.5 w-3.5 text-white/40" />
+                  {seccion}
+                </li>
+              ))}
+              <li className="flex items-center gap-3 border-t border-white/10 py-3 text-[14px] text-white/80">
+                <Check aria-hidden="true" className="h-3.5 w-3.5 text-white/40" />
+                Textos de ejemplo listos para cambiar
+              </li>
+            </ul>
+
+            <div className="mt-auto pt-8">
+              <Link href={`/panel/crear-cuenta?plantilla=${plantilla.clave}`} className="group boton boton-primario w-full">
+                Usar esta plantilla
+                <ArrowRight aria-hidden="true" className="h-[15px] w-[15px] transition-transform duration-500 ease-salida group-hover:translate-x-1" />
+              </Link>
+              <p className="mt-3 text-center text-[12px] text-white/40">
+                La cambias cuando quieras sin perder productos ni textos.
               </p>
             </div>
-          </div>
-
-          <p className="mt-8 text-[11px] tracking-[0.12em] text-white/45 uppercase">Qué trae</p>
-          <ul className="mt-3 border-b border-white/10">
-            {secciones.map((seccion) => (
-              <li key={seccion} className="flex items-center gap-3 border-t border-white/10 py-3 text-[14px] text-white/80">
-                <Check aria-hidden="true" className="h-3.5 w-3.5 text-white/40" />
-                {seccion}
-              </li>
-            ))}
-            <li className="flex items-center gap-3 border-t border-white/10 py-3 text-[14px] text-white/80">
-              <Check aria-hidden="true" className="h-3.5 w-3.5 text-white/40" />
-              Textos de ejemplo listos para cambiar
-            </li>
-          </ul>
-
-          <div className="mt-auto pt-8">
-            <Link href={`/panel/crear-cuenta?plantilla=${plantilla.clave}`} className="group boton boton-primario w-full">
-              Usar esta plantilla
-              <ArrowRight aria-hidden="true" className="h-[15px] w-[15px] transition-transform duration-500 ease-salida group-hover:translate-x-1" />
-            </Link>
-            <p className="mt-3 text-center text-[12px] text-white/40">
-              La cambias cuando quieras sin perder productos ni textos.
-            </p>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </motion.div>
     </motion.div>
   )

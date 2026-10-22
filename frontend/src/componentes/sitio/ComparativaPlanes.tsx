@@ -90,7 +90,7 @@ function Celda({ valor }: { valor: Valor }): ReactNode {
   return <span className="text-white/80">{valor}</span>
 }
 
-const COLUMNAS = 'grid grid-cols-[minmax(200px,1.6fr)_repeat(4,minmax(0,1fr))] items-center'
+const COLUMNAS = 'grid grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,1fr))] items-center sm:grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,1fr))]'
 
 /**
  * Tabla comparativa por grupos que se despliegan, como las preguntas
@@ -116,12 +116,12 @@ export function ComparativaPlanes() {
           <h2 className="titulo-2 mt-4">Qué personalizas en cada plan</h2>
         </Revelar>
 
-        <Revelar className="mt-12 overflow-x-auto">
-          <div className="min-w-[640px] text-[13.5px]" role="table" aria-label="Comparación de planes">
+        <Revelar className="mt-12">
+          <div className="text-[12px] sm:text-[13.5px]" role="table" aria-label="Comparación de planes">
             <div className={`${COLUMNAS} border-b border-white/15`} role="row">
               <span role="columnheader" />
               {ORDEN_PLANES.map((plan) => (
-                <span key={plan} role="columnheader" className="py-4 text-center text-[15px] tracking-[-0.01em]">
+                <span key={plan} role="columnheader" className="truncate py-4 text-center text-[11.5px] tracking-[-0.01em] sm:text-[15px]">
                   {PLANES[plan].nombre}
                 </span>
               ))}
@@ -159,7 +159,7 @@ export function ComparativaPlanes() {
                         <div className="pb-4">
                           {grupo.filas.map((fila) => (
                             <div key={fila.etiqueta} className={`${COLUMNAS} border-t border-white/10`} role="row">
-                              <span role="rowheader" className="py-3.5 pr-4 text-white/70">
+                              <span role="rowheader" className="py-3.5 pr-3 text-white/70 sm:pr-4">
                                 {fila.etiqueta}
                               </span>
                               {ORDEN_PLANES.map((plan) => (

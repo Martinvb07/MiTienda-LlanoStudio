@@ -101,6 +101,21 @@ function TarjetaPlan({ inicial, alGuardar }: { inicial: OfertaPlan; alGuardar: (
           alCambiar={(valor) => cambiar({ precio: Number(valor.replace(/\D/g, '').slice(0, 9)) || 0 })}
           ayuda={plan.precio === 0 ? 'Gratis' : `$ ${new Intl.NumberFormat('es-CO').format(plan.precio)} al mes`}
         />
+        {plan.plan !== 'GRATIS' && (
+          <Campo
+            etiqueta="Precio anual (COP)"
+            prefijo="$"
+            valor={plan.precioAnual === 0 ? '0' : String(plan.precioAnual)}
+            alCambiar={(valor) => cambiar({ precioAnual: Number(valor.replace(/\D/g, '').slice(0, 10)) || 0 })}
+            ayuda={
+              plan.precioAnual === 0
+                ? 'En 0 no se ofrece el pago anual'
+                : `$ ${new Intl.NumberFormat('es-CO').format(plan.precioAnual)} al año${
+                    plan.precio > 0 ? ` · ${Math.round((1 - plan.precioAnual / (plan.precio * 12)) * 100)}% de ahorro` : ''
+                  }`
+            }
+          />
+        )}
         <CampoArea etiqueta="Resumen" valor={plan.resumen} alCambiar={(resumen) => cambiar({ resumen })} filas={2} maximo={200} />
 
         <div>

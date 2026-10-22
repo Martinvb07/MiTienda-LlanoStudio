@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import {
   ArrowUpRight,
   BarChart3,
+  CreditCard,
   LayoutGrid,
   LogOut,
   Menu,
@@ -58,7 +59,10 @@ const GRUPOS: { titulo: string; enlaces: Enlace[] }[] = [
   },
   {
     titulo: 'Cuenta',
-    enlaces: [{ href: '/panel/configuracion', etiqueta: 'Configuración', corta: 'Ajustes', Icono: Settings }],
+    enlaces: [
+      { href: '/panel/plan', etiqueta: 'Plan y pagos', corta: 'Plan', Icono: CreditCard, movil: false },
+      { href: '/panel/configuracion', etiqueta: 'Configuración', corta: 'Ajustes', Icono: Settings },
+    ],
   },
 ]
 
@@ -225,8 +229,7 @@ export function NavegacionPanel() {
         <div className="mt-auto p-4">
           {!esPro && (
             <Link
-              href="/precios"
-              target="_blank"
+              href="/panel/plan"
               className="group mb-3 flex items-center gap-3 rounded-[10px] px-3 py-2.5 ring-1 ring-sitio-borde transition-colors duration-300 ring-inset hover:bg-white/[0.04]"
             >
               <span className="min-w-0 flex-1">

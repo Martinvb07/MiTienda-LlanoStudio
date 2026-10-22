@@ -68,6 +68,8 @@ export interface TiendaAdmin {
   nombre: string
   subdominio: string
   plan: string
+  /** Hasta cuándo está pago; null = no vence. */
+  planVenceEn: string | null
   activo: boolean
   creadoEn: string
   publicada: boolean
@@ -84,7 +86,7 @@ export const listarTiendas = (buscar = '') =>
   )
 
 export const cambiarTienda = (id: string, cambios: { plan?: string; activo?: boolean }) =>
-  pedir<{ tenant: { id: string; plan: string; activo: boolean } }>(`/tiendas/${id}`, {
+  pedir<{ tenant: { id: string; plan: string; activo: boolean; planVenceEn: string | null } }>(`/tiendas/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(cambios),
   }).then((respuesta) => respuesta.tenant)
@@ -98,6 +100,8 @@ export const cambiarContrasena = (id: string, contrasena: string) =>
 export interface OfertaPlan {
   plan: 'GRATIS' | 'EMPRENDE' | 'NEGOCIO' | 'PRO'
   precio: number
+  /** Precio por un año; 0 = no se vende anual. */
+  precioAnual: number
   resumen: string
   incluye: string[]
   destacado: boolean

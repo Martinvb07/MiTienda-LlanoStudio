@@ -34,6 +34,7 @@ export const esquemaContrasena = z.object({
 
 export const esquemaOferta = z.object({
   precio: z.coerce.number().int().min(0).max(100_000_000),
+  precioAnual: z.coerce.number().int().min(0).max(1_000_000_000),
   resumen: z.string().trim().min(1).max(200),
   incluye: z.array(z.string().trim().min(1).max(120)).max(12),
   destacado: z.boolean(),
@@ -111,6 +112,7 @@ export async function listarTiendasAdmin(req: Request, res: Response): Promise<v
       nombre: true,
       subdominio: true,
       plan: true,
+      planVenceEn: true,
       activo: true,
       creadoEn: true,
       usuarios: {
@@ -141,10 +143,11 @@ export async function cambiarTiendaAdmin(req: Request, res: Response): Promise<v
   const existe = await prisma.tenant.findUnique({ where: { id }, select: { id: true } })
   if (!existe) throw noEncontrado('Esa tienda no existe')
 
+  // Un plan puesto a mano no vence: es una cortesía, no un pago.
   const tenant = await prisma.tenant.update({
     where: { id },
-    data: datos,
-    select: { id: true, plan: true, activo: true },
+    data: datos.plan ? { ...datos, planVenceEn: null } : datos,
+    select: { id: true, plan: true, activo: true, planVenceEn: true },
   })
   res.json({ tenant })
 }

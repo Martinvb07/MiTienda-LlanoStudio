@@ -38,7 +38,18 @@ export async function TablaPrecios() {
                     {plan.precio === 0 ? '0' : new Intl.NumberFormat('es-CO').format(plan.precio)}
                   </span>
                 </p>
-                <p className="mt-2 text-[12px] text-white/40">{plan.precio === 0 ? 'para siempre' : 'al mes'}</p>
+                <p className="mt-2 text-[12px] text-white/40">
+                  {plan.precio === 0 ? 'para siempre' : 'al mes'}
+                  {plan.precioAnual > 0 && (
+                    <>
+                      {' · o '}
+                      <span className="text-white/70">$ {new Intl.NumberFormat('es-CO').format(plan.precioAnual)} al año</span>
+                      {plan.precio > 0 && plan.precioAnual < plan.precio * 12 && (
+                        <> (ahorras {Math.round((1 - plan.precioAnual / (plan.precio * 12)) * 100)}%)</>
+                      )}
+                    </>
+                  )}
+                </p>
 
                 <ul className="mt-7 flex-1 border-b border-white/10">
                   {plan.incluye.map((punto) => (

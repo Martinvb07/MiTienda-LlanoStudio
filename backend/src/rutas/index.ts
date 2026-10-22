@@ -8,6 +8,7 @@ import rutasVisitas from './visitas.rutas.js'
 import rutasPanel from './panel.rutas.js'
 import rutasAdmin from './admin.rutas.js'
 import rutasPlanes from './planes.rutas.js'
+import { webhookBold } from '../controladores/suscripcion.controlador.js'
 
 const enrutador = Router()
 
@@ -20,6 +21,7 @@ enrutador.use('/salud', rutasSalud)
 enrutador.use('/panel', rutasPanel)
 enrutador.use('/admin', rutasAdmin)
 enrutador.use('/planes', rutasPlanes)
+enrutador.post('/bold/webhook', webhookBold)
 
 // A partir de aquí, toda petición pasa por la resolución de tenant por Host.
 enrutador.use(resolverTenant)

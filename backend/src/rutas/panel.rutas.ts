@@ -59,6 +59,12 @@ import {
   esquemaActualizarPedido,
   listarPedidosPanel,
 } from '../controladores/pedidos.controlador.js'
+import {
+  crearCheckout,
+  esquemaCheckout,
+  obtenerSuscripcion,
+  verificarPago,
+} from '../controladores/suscripcion.controlador.js'
 
 const enrutador = Router()
 
@@ -104,6 +110,10 @@ enrutador.get('/dominios', gestion, listarDominios)
 enrutador.post('/dominios', gestion, validar(esquemaDominio), agregarDominio)
 enrutador.post('/dominios/:id/verificar', gestion, verificarDominio)
 enrutador.delete('/dominios/:id', gestion, quitarDominio)
+
+enrutador.get('/suscripcion', gestion, obtenerSuscripcion)
+enrutador.post('/suscripcion/checkout', gestion, validar(esquemaCheckout), crearCheckout)
+enrutador.post('/suscripcion/pagos/:referencia/verificar', gestion, verificarPago)
 
 enrutador.get('/equipo', gestion, listarEquipo)
 enrutador.post('/equipo', gestion, validar(esquemaMiembro), agregarMiembro)

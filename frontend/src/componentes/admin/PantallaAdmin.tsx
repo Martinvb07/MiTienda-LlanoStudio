@@ -324,6 +324,16 @@ function Tiendas({
                     <span className="mt-0.5 block pl-3.5 text-[11px] text-white/35">
                       Desde {new Date(tienda.creadoEn).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
                     </span>
+                    {tienda.planVenceEn && (
+                      <span
+                        className={cn(
+                          'mt-0.5 block pl-3.5 text-[11px]',
+                          new Date(tienda.planVenceEn).getTime() < Date.now() ? 'text-sitio-ambar' : 'text-white/35',
+                        )}
+                      >
+                        Pago hasta {new Date(tienda.planVenceEn).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
+                      </span>
+                    )}
                   </span>
                   <Selector
                     etiqueta={`Plan de ${tienda.nombre}`}

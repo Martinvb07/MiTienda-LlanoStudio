@@ -4,6 +4,7 @@ import { desconectarPrisma } from './config/prisma.js'
 import { cerrarRedis } from './config/redis.js'
 import { cerrarColas } from './colas/index.js'
 import { registro } from './utilidades/registro.js'
+import { aplicarVencimientos } from './servicios/suscripciones.servicio.js'
 
 const app = crearApp()
 
@@ -13,6 +14,14 @@ const servidor = app.listen(entorno.PUERTO, entorno.HOST, () => {
     'API de Mi Tienda escuchando',
   )
 })
+
+// Cada hora, las tiendas que pasaron los días de gracia sin pagar vuelven a
+// Gratis. La sesión del panel también lo revisa al entrar, así que esto sólo
+// cubre a quien no abre el panel.
+const revisionVencimientos = setInterval(() => {
+  aplicarVencimientos().catch((error: unknown) => registro.error({ err: error }, 'No se pudieron revisar vencimientos'))
+}, 60 * 60 * 1000)
+revisionVencimientos.unref()
 
 /**
  * Apagado ordenado: PM2 manda SIGINT en cada `pm2 reload`. Dejar de aceptar

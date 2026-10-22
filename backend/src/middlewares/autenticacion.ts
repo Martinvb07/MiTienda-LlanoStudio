@@ -14,6 +14,8 @@ declare module 'express-serve-static-core' {
   interface Request {
     /** Sesión del panel, presente sólo tras pasar por `exigirSesion`. */
     sesion?: SesionPanel
+    /** Cuerpo tal como llegó, sólo en los webhooks que firman los bytes. */
+    cuerpoCrudo?: Buffer
   }
 }
 

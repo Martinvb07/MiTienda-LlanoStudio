@@ -89,8 +89,16 @@ async function pedir<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
 
 export interface SesionPanel {
   usuario: { nombre: string; email: string; rol: string }
-  tenant: { subdominio: string; plan: string }
+  tenant: { subdominio: string; plan: string; suscripcion?: EstadoSuscripcion }
   tienda: { nombre: string; logoUrl: string | null; publicada: boolean } | null
+}
+
+/** Cómo va el plan pago. `gracia` = ya venció y cuenta los días antes de volver a Gratis. */
+export interface EstadoSuscripcion {
+  estado: 'sin-vencimiento' | 'activa' | 'por-vencer' | 'gracia'
+  venceEn: string | null
+  diasRestantes: number | null
+  bajaEn: string | null
 }
 
 export async function registrar(datos: {
@@ -331,3 +339,52 @@ export async function subirImagen(archivo: File): Promise<string> {
   })
   return url
 }
+
+// ── Suscripción (Bold) ──
+
+export type PlanPago = 'EMPRENDE' | 'NEGOCIO' | 'PRO'
+export type PeriodoPago = 'MENSUAL' | 'ANUAL'
+
+export interface PagoSuscripcion {
+  referencia: string
+  plan: PlanPago
+  periodo: PeriodoPago
+  monto: number
+  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'ANULADO' | 'ERROR'
+  cubreHasta: string | null
+  creadoEn: string
+}
+
+export interface Suscripcion extends EstadoSuscripcion {
+  plan: string
+  pagosHabilitados: boolean
+  planes: {
+    plan: 'GRATIS' | PlanPago
+    nombre: string
+    precio: number
+    precioAnual: number
+    resumen: string
+    incluye: string[]
+    destacado: boolean
+  }[]
+  pagos: PagoSuscripcion[]
+}
+
+export interface CheckoutBold {
+  referencia: string
+  monto: number
+  moneda: string
+  llave: string
+  firma: string
+  descripcion: string
+  redireccion: string
+  correo: string
+}
+
+export const obtenerSuscripcion = () => pedir<Suscripcion>('/suscripcion')
+
+export const crearCheckout = (plan: PlanPago, periodo: PeriodoPago) =>
+  pedir<CheckoutBold>('/suscripcion/checkout', { method: 'POST', body: JSON.stringify({ plan, periodo }) })
+
+export const verificarPago = (referencia: string) =>
+  pedir<{ pago: PagoSuscripcion }>(`/suscripcion/pagos/${encodeURIComponent(referencia)}/verificar`, { method: 'POST' })

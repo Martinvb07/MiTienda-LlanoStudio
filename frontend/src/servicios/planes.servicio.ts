@@ -4,6 +4,7 @@ export interface PlanPublico {
   plan: 'GRATIS' | 'EMPRENDE' | 'NEGOCIO' | 'PRO'
   nombre: string
   precio: number
+  precioAnual: number
   resumen: string
   incluye: string[]
   destacado: boolean

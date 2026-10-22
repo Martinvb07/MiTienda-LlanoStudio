@@ -15,7 +15,7 @@ const PREGUNTAS = [
   {
     pregunta: '¿Necesito tarjeta de crédito para empezar?',
     respuesta:
-      'No. El plan Gratis no pide datos de pago: creas tu cuenta, armas la tienda y la publicas. Sólo se te piden si decides pasar a un plan pago.',
+      'No. El plan Gratis no pide datos de pago: creas tu cuenta, armas la tienda y la publicas. Si pasas a un plan pago, lo pagas desde tu panel con Bold: tarjeta, PSE, Nequi o Botón Bancolombia, mes a mes o por un año con descuento.',
   },
   {
     pregunta: '¿Puedo cambiar de plan más adelante?',
@@ -40,7 +40,7 @@ const PREGUNTAS = [
   {
     pregunta: '¿Qué pasa con mi tienda si dejo de pagar?',
     respuesta:
-      'La tienda deja de estar publicada, pero tus datos no se borran. Puedes reactivarla volviendo a un plan pago o quedarte en el plan Gratis con sus límites.',
+      'No hay cobros automáticos: cuando tu plan está por vencer te avisamos en el panel. Si vence, tienes 5 días para pagar; después tu tienda pasa al plan Gratis, sin borrar nada, y vuelves a tu plan apenas pagues.',
   },
 ]
 

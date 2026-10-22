@@ -9,6 +9,7 @@ import { cifrarContrasena, verificarContrasena } from '../utilidades/contrasenas
 import { esSubdominioValido } from '../utilidades/dominios.js'
 import { ErrorHttp, noAutorizado, noEncontrado, solicitudInvalida } from '../utilidades/errores.js'
 import { ETIQUETAS_BLOQUE_PLAN, TEMAS_PREDEFINIDOS, fueraDelPlan, limitesDe } from '../utilidades/planes.js'
+import { aplicarVencimientos, estadoSuscripcion } from '../servicios/suscripciones.servicio.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Esquemas
@@ -305,6 +306,7 @@ export async function ingresar(req: Request, res: Response): Promise<void> {
 /** Quién es y qué tienda administra: lo primero que pide el panel al cargar. */
 export async function obtenerSesion(req: Request, res: Response): Promise<void> {
   const { usuarioId, tenantId } = req.sesion!
+  await aplicarVencimientos(tenantId)
 
   const usuario = await prisma.usuario.findFirst({
     where: { id: usuarioId, tenantId, activo: true },
@@ -312,14 +314,18 @@ export async function obtenerSesion(req: Request, res: Response): Promise<void> 
       nombre: true,
       email: true,
       rol: true,
-      tenant: { select: { subdominio: true, plan: true, tienda: { select: { nombre: true, logoUrl: true, publicada: true } } } },
+      tenant: { select: { subdominio: true, plan: true, planVenceEn: true, tienda: { select: { nombre: true, logoUrl: true, publicada: true } } } },
     },
   })
   if (!usuario) throw noAutorizado('La sesión ya no es válida')
 
   res.json({
     usuario: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
-    tenant: { subdominio: usuario.tenant.subdominio, plan: usuario.tenant.plan },
+    tenant: {
+      subdominio: usuario.tenant.subdominio,
+      plan: usuario.tenant.plan,
+      suscripcion: estadoSuscripcion(usuario.tenant.planVenceEn),
+    },
     tienda: usuario.tenant.tienda,
   })
 }

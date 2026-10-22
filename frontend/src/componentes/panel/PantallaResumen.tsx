@@ -511,12 +511,11 @@ export function PantallaResumen() {
           { href: '/panel/plantillas', titulo: 'Cambiar plantilla', texto: 'Seis diseños listos', Icono: LayoutTemplate },
           { href: '/panel/plantillas?editar=1', titulo: 'Logo y colores', texto: 'Tu marca en la tienda', Icono: Palette },
           { href: '/panel/descuentos', titulo: 'Descuentos', texto: 'Cupones para tus clientes', Icono: Ticket },
-          { href: '/precios', titulo: 'Planes', texto: `Estás en ${plan.nombre}`, Icono: Sparkles, externo: true },
+          { href: '/panel/plan', titulo: 'Plan y pagos', texto: `Estás en ${plan.nombre}`, Icono: Sparkles },
         ].map((acceso, indice) => (
           <Aparecer key={acceso.titulo} orden={8 + indice}>
             <Link
               href={acceso.href}
-              target={acceso.externo ? '_blank' : undefined}
               className={cn(
                 TARJETA,
                 'group flex h-full flex-col gap-6 p-5 transition-[border-color,background,transform] duration-500 ease-salida hover:-translate-y-0.5 hover:border-white/20 hover:bg-sitio-campo',

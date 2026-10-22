@@ -4,6 +4,8 @@ import type { Plan } from '../utilidades/planes.js'
 export interface Oferta {
   plan: Plan
   precio: number
+  /** Precio por un año pagado de una vez; 0 = no se vende anual. */
+  precioAnual: number
   resumen: string
   incluye: string[]
   destacado: boolean
@@ -16,6 +18,7 @@ export const OFERTAS_POR_DEFECTO: Record<Plan, Oferta> = {
   GRATIS: {
     plan: 'GRATIS',
     precio: 0,
+    precioAnual: 0,
     resumen: 'Para probar la plataforma y publicar tus primeros productos.',
     incluye: [
       'Hasta 10 productos, 4 fotos cada uno',
@@ -28,6 +31,7 @@ export const OFERTAS_POR_DEFECTO: Record<Plan, Oferta> = {
   EMPRENDE: {
     plan: 'EMPRENDE',
     precio: 39900,
+    precioAnual: 399000,
     resumen: 'Para quien ya vende y quiere una tienda con su identidad.',
     incluye: [
       'Hasta 100 productos, 8 fotos cada uno',
@@ -41,6 +45,7 @@ export const OFERTAS_POR_DEFECTO: Record<Plan, Oferta> = {
   NEGOCIO: {
     plan: 'NEGOCIO',
     precio: 89900,
+    precioAnual: 899000,
     resumen: 'Para tiendas con volumen y varias personas al frente.',
     incluye: [
       'Productos ilimitados, 10 fotos cada uno',
@@ -53,6 +58,7 @@ export const OFERTAS_POR_DEFECTO: Record<Plan, Oferta> = {
   PRO: {
     plan: 'PRO',
     precio: 179900,
+    precioAnual: 1799000,
     resumen: 'Para quien opera más de una marca a la vez.',
     incluye: [
       'Todo lo de Negocio',
@@ -70,7 +76,7 @@ export async function listarOfertas(): Promise<Oferta[]> {
   return ORDEN.map((plan) => {
     const fila = guardadas.find((oferta) => oferta.plan === plan)
     return fila
-      ? { plan, precio: fila.precio, resumen: fila.resumen, incluye: fila.incluye, destacado: fila.destacado }
+      ? { plan, precio: fila.precio, precioAnual: fila.precioAnual, resumen: fila.resumen, incluye: fila.incluye, destacado: fila.destacado }
       : OFERTAS_POR_DEFECTO[plan]
   })
 }

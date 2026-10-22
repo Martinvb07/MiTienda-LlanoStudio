@@ -277,7 +277,7 @@ export function PantallaConfiguracion() {
             ))}
           </ul>
           {sesion.tenant.plan !== 'PRO' && (
-            <Link href="/precios" target="_blank" className="group boton boton-primario boton-chico mt-6">
+            <Link href="/panel/plan" className="group boton boton-primario boton-chico mt-6">
               Mejorar mi plan
               <ArrowUpRight
                 aria-hidden="true"

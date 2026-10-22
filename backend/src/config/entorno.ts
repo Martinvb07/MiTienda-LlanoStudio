@@ -35,6 +35,14 @@ const esquema = z.object({
   ADMIN_CORREO: z.string().default(''),
   ADMIN_CONTRASENA_HASH: z.string().default(''),
 
+  // Bold: cobro de las suscripciones de la plataforma. Las dos llaves salen del
+  // panel de Bold > Integraciones > Llaves de integración. Sin ellas el botón
+  // de pagar queda deshabilitado. En pruebas la llave secreta puede ir vacía.
+  BOLD_LLAVE_IDENTIDAD: z.string().default(''),
+  BOLD_LLAVE_SECRETA: z.string().default(''),
+  // A dónde vuelve la persona después de pagar. Vacío = https://<SUBDOMINIO_PANEL>.<DOMINIO_BASE>
+  URL_PANEL: z.string().default(''),
+
   // Cloudflare R2 — opcionales mientras la subida de archivos no esté implementada.
   R2_ACCOUNT_ID: z.string().default(''),
   R2_ACCESS_KEY_ID: z.string().default(''),

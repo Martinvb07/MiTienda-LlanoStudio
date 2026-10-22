@@ -64,19 +64,23 @@ enum EstadoPago {
 
 /// Cuenta cliente de la plataforma. Es la raíz del aislamiento multi-tenant.
 model Tenant {
-  id         String     @id @default(cuid())
-  nombre     String
+  id          String     @id @default(cuid())
+  nombre      String
   /// Etiqueta usada como <subdominio>.llanostudio.co. Única en toda la plataforma.
-  subdominio String     @unique
-  plan       PlanTenant @default(GRATIS)
-  activo     Boolean    @default(true)
+  subdominio  String     @unique
+  plan        PlanTenant @default(GRATIS)
+  activo      Boolean    @default(true)
+  /// Hasta cuándo está pago el plan. null = no vence (Gratis, o puesto a mano
+  /// por el admin). Pasados los días de gracia vuelve a Gratis.
+  planVenceEn DateTime?
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
 
-  tienda   Tienda?
-  usuarios Usuario[]
-  dominios DominioPropio[]
+  tienda           Tienda?
+  usuarios         Usuario[]
+  dominios         DominioPropio[]
+  pagosSuscripcion PagoSuscripcion[]
 
   @@map("tenants")
 }
@@ -141,16 +145,16 @@ model Tienda {
   faviconUrl  String?
 
   /// Plantilla base elegida en el panel ("clasica", "minimal", …).
-  plantilla String @default("clasica")
+  plantilla            String @default("clasica")
   /// Sobrescrituras de tema: colores, tipografías, radios. Se inyecta como
   /// variables CSS en la tienda pública.
-  tema      Json   @default("{}")
+  tema                 Json   @default("{}")
   /// Diseño del constructor drag-and-drop: array ordenado de bloques
   /// ({ id, tipo, props }). Se guarda como JSON, nunca como HTML generado.
-  configuracionBloques Json @default("[]")
+  configuracionBloques Json   @default("[]")
   /// Cabecera, contacto y redes: menú, buscador, WhatsApp, dirección, horario.
   /// JSON libre validado en la API (ver esquemaAjustes en panel.controlador).
-  ajustes   Json   @default("{}")
+  ajustes              Json   @default("{}")
 
   moneda    String  @default("COP")
   publicada Boolean @default(false)
@@ -158,7 +162,7 @@ model Tienda {
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
 
-  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   productos Producto[]
   pedidos   Pedido[]
   cupones   Cupon[]
@@ -187,7 +191,7 @@ model Producto {
   /// Cómo se vende: "500 gr", "Paquete x 10", "Talla única".
   presentacion      String?
 
-  activo Boolean @default(true)
+  activo    Boolean @default(true)
   /// Sale primero en el catálogo y en las secciones "sólo destacados".
   destacado Boolean @default(false)
 
@@ -228,11 +232,11 @@ model Pedido {
   notas           String?
 
   /// Por dónde llegó: "web" (confirmó en la tienda) o "whatsapp" (lo mandó por chat).
-  canal      String  @default("web")
+  canal       String  @default("web")
   /// "contra-entrega", "transferencia" o "acordar". Wompi/PSE llegan con Pago.
-  metodoPago String  @default("acordar")
+  metodoPago  String  @default("acordar")
   /// Código del cupón aplicado, guardado tal cual para el histórico.
-  cupon      String?
+  cupon       String?
   /// Nota interna de la tienda; el cliente no la ve.
   notaInterna String?
 
@@ -284,11 +288,11 @@ model Pago {
   id       String @id @default(cuid())
   pedidoId String @unique
 
-  proveedor  ProveedorPago
-  estado     EstadoPago    @default(PENDIENTE)
+  proveedor      ProveedorPago
+  estado         EstadoPago    @default(PENDIENTE)
   /// Referencia con la que la pasarela identifica la transacción.
-  referencia String        @unique
-  monto      Decimal       @db.Decimal(12, 2)
+  referencia     String        @unique
+  monto          Decimal       @db.Decimal(12, 2)
   /// Carga cruda del webhook, para auditoría y conciliación.
   datosProveedor Json?
 
@@ -312,10 +316,12 @@ model OfertaPlan {
   plan PlanTenant @id
 
   /// Pesos colombianos al mes. 0 = gratis.
-  precio    Int
-  resumen   String
-  incluye   String[]
-  destacado Boolean  @default(false)
+  precio      Int
+  /// Pesos colombianos por un año pagado de una vez. 0 = sin pago anual.
+  precioAnual Int      @default(0)
+  resumen     String
+  incluye     String[]
+  destacado   Boolean  @default(false)
 
   actualizadoEn DateTime @updatedAt
 
@@ -340,9 +346,9 @@ model Cupon {
   codigo String
   tipo   TipoCupon
   /// Porcentaje (1-100) o pesos, según el tipo. Ignorado en envío gratis.
-  valor  Decimal    @default(0) @db.Decimal(12, 2)
+  valor  Decimal   @default(0) @db.Decimal(12, 2)
   /// Subtotal mínimo para que aplique.
-  minimo Decimal?   @db.Decimal(12, 2)
+  minimo Decimal?  @db.Decimal(12, 2)
 
   usosMaximos Int?
   usos        Int       @default(0)
@@ -380,4 +386,42 @@ model VisitaDiaria {
 
   @@unique([tiendaId, fecha])
   @@map("visitas_diarias")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Suscripciones (cobradas con Bold)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum PeriodoSuscripcion {
+  MENSUAL
+  ANUAL
+}
+
+/// Cada intento de pagar un plan. Se crea al abrir el checkout de Bold y lo
+/// confirma el webhook (o la consulta a Bold al volver del pago).
+model PagoSuscripcion {
+  id       String @id @default(cuid())
+  tenantId String
+
+  plan       PlanTenant
+  periodo    PeriodoSuscripcion
+  /// Pesos colombianos, tal como se le cobró.
+  monto      Int
+  /// Order id que viaja a Bold y vuelve en el webhook.
+  referencia String             @unique
+  estado     EstadoPago         @default(PENDIENTE)
+  /// Id de la transacción en Bold, cuando llega.
+  idBold     String?
+  /// Carga cruda del webhook, para conciliación.
+  datosBold  Json?
+  /// Hasta dónde dejó pago el plan este cobro (sólo si se aprobó).
+  cubreHasta DateTime?
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, creadoEn])
+  @@map("pagos_suscripcion")
 }

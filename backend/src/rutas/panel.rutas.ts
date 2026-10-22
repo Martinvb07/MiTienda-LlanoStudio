@@ -24,6 +24,22 @@ import {
 } from '../controladores/panel.controlador.js'
 import { obtenerAvisos, obtenerMetricas } from '../controladores/metricas.controlador.js'
 import {
+  agregarDominio,
+  esquemaDominio,
+  listarDominios,
+  quitarDominio,
+  verificarDominio,
+} from '../controladores/dominios.controlador.js'
+import {
+  agregarMiembro,
+  cambiarMiembro,
+  esquemaCambioMiembro,
+  esquemaMiembro,
+  exigirRolActual,
+  listarEquipo,
+  quitarMiembro,
+} from '../controladores/equipo.controlador.js'
+import {
   actualizarCupon,
   crearCupon,
   eliminarCupon,
@@ -73,13 +89,26 @@ enrutador.put('/categorias', validar(esquemaCategoria), renombrarCategoria)
 enrutador.put('/productos/:id', validar(esquemaProducto), actualizarProductoPanel)
 enrutador.delete('/productos/:id', eliminarProductoPanel)
 
-enrutador.get('/metricas', obtenerMetricas)
+// Lo de dinero y personas, sólo para dueña y administradores.
+const gestion = exigirRolActual('PROPIETARIO', 'ADMINISTRADOR')
+
+enrutador.get('/metricas', gestion, obtenerMetricas)
 enrutador.get('/avisos', obtenerAvisos)
 
-enrutador.get('/cupones', listarCupones)
-enrutador.post('/cupones', validar(esquemaCupon), crearCupon)
-enrutador.put('/cupones/:id', validar(esquemaCupon), actualizarCupon)
-enrutador.delete('/cupones/:id', eliminarCupon)
+enrutador.get('/cupones', gestion, listarCupones)
+enrutador.post('/cupones', gestion, validar(esquemaCupon), crearCupon)
+enrutador.put('/cupones/:id', gestion, validar(esquemaCupon), actualizarCupon)
+enrutador.delete('/cupones/:id', gestion, eliminarCupon)
+
+enrutador.get('/dominios', gestion, listarDominios)
+enrutador.post('/dominios', gestion, validar(esquemaDominio), agregarDominio)
+enrutador.post('/dominios/:id/verificar', gestion, verificarDominio)
+enrutador.delete('/dominios/:id', gestion, quitarDominio)
+
+enrutador.get('/equipo', gestion, listarEquipo)
+enrutador.post('/equipo', gestion, validar(esquemaMiembro), agregarMiembro)
+enrutador.patch('/equipo/:id', gestion, validar(esquemaCambioMiembro), cambiarMiembro)
+enrutador.delete('/equipo/:id', gestion, quitarMiembro)
 
 enrutador.get('/pedidos', listarPedidosPanel)
 enrutador.patch('/pedidos/:id', validar(esquemaActualizarPedido), actualizarPedidoPanel)

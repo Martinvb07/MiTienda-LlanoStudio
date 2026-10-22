@@ -234,6 +234,51 @@ export interface Avisos {
 
 export const obtenerAvisos = () => pedir<Avisos>('/avisos')
 
+// ── Equipo ──
+
+export type RolPanel = 'PROPIETARIO' | 'ADMINISTRADOR' | 'EDITOR'
+
+export interface Miembro {
+  id: string
+  nombre: string
+  email: string
+  rol: RolPanel
+  activo: boolean
+  ultimoAccesoEn: string | null
+  creadoEn: string
+}
+
+export const listarEquipo = () => pedir<{ usuarios: Miembro[] }>('/equipo').then((respuesta) => respuesta.usuarios)
+
+export const agregarMiembro = (datos: { nombre: string; email: string; rol: 'ADMINISTRADOR' | 'EDITOR'; contrasena: string }) =>
+  pedir<{ usuario: Miembro }>('/equipo', { method: 'POST', body: JSON.stringify(datos) }).then((respuesta) => respuesta.usuario)
+
+export const cambiarMiembro = (id: string, cambios: { rol?: 'ADMINISTRADOR' | 'EDITOR'; activo?: boolean }) =>
+  pedir<{ usuario: Miembro }>(`/equipo/${id}`, { method: 'PATCH', body: JSON.stringify(cambios) }).then((respuesta) => respuesta.usuario)
+
+export const quitarMiembro = (id: string) => pedir<void>(`/equipo/${id}`, { method: 'DELETE' })
+
+// ── Dominio propio ──
+
+export interface DominioPropio {
+  id: string
+  dominio: string
+  verificado: boolean
+  esPrincipal: boolean
+  creadoEn: string
+}
+
+export const listarDominios = () =>
+  pedir<{ dominios: DominioPropio[]; instrucciones: { cname: string; ip: string | null } }>('/dominios')
+
+export const agregarDominio = (dominio: string) =>
+  pedir<{ dominio: DominioPropio }>('/dominios', { method: 'POST', body: JSON.stringify({ dominio }) }).then((respuesta) => respuesta.dominio)
+
+export const verificarDominio = (id: string) =>
+  pedir<{ dominio: DominioPropio }>(`/dominios/${id}/verificar`, { method: 'POST' }).then((respuesta) => respuesta.dominio)
+
+export const quitarDominio = (id: string) => pedir<void>(`/dominios/${id}`, { method: 'DELETE' })
+
 // ── Cupones ──
 
 export const listarCupones = () => pedir<{ cupones: Cupon[] }>('/cupones').then((respuesta) => respuesta.cupones)

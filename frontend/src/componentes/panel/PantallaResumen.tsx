@@ -15,6 +15,7 @@ import {
   PackageX,
   Palette,
   Plus,
+  QrCode,
   Share2,
   Sparkles,
   Ticket,
@@ -28,6 +29,7 @@ import { limitesDe } from '@/utilidades/planes'
 import { cn } from '@/utilidades/clases'
 import { useSesion } from './SesionPanel'
 import { Aparecer, Contador, SALIDA } from './ui/movimiento'
+import { ModalCodigoQr } from './CodigoQr'
 import { ESTADOS, fechaCorta } from './PantallaPedidos'
 import { Etiqueta } from './ui/basicos'
 
@@ -56,6 +58,7 @@ export function PantallaResumen() {
   const [productos, setProductos] = useState<ProductoPanel[] | null>(null)
   const [copiado, setCopiado] = useState(false)
   const [pedidos, setPedidos] = useState<Pedido[]>([])
+  const [qr, setQr] = useState(false)
 
   useEffect(() => {
     listarProductos()
@@ -394,6 +397,14 @@ export function PantallaResumen() {
                 >
                   X
                 </a>
+                <button
+                  type="button"
+                  onClick={() => setQr(true)}
+                  className="col-span-2 flex h-10 items-center justify-center gap-2 rounded-lg border border-sitio-borde bg-white/[0.03] text-[12.5px] transition-colors hover:border-white/25 hover:bg-white/[0.06]"
+                >
+                  <QrCode aria-hidden="true" className="h-3.5 w-3.5" />
+                  Código QR para imprimir
+                </button>
               </div>
             </section>
           </Aparecer>
@@ -435,6 +446,10 @@ export function PantallaResumen() {
           </Aparecer>
         </div>
       </div>
+
+      <AnimatePresence>
+        {qr && <ModalCodigoQr url={direccion} nombre={nombreTienda} alCerrar={() => setQr(false)} />}
+      </AnimatePresence>
 
       {/* ── Últimos pedidos ── */}
       {pedidos.length > 0 && (

@@ -26,6 +26,8 @@ export interface LimitesPlan {
   importarProductos: boolean
   diasMetricas: number
   metricasAvanzadas: boolean
+  usuarios: number
+  dominioPropio: boolean
 }
 
 const BLOQUES_EMPRENDE = [
@@ -64,6 +66,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     importarProductos: false,
     diasMetricas: 7,
     metricasAvanzadas: false,
+    usuarios: 1,
+    dominioPropio: false,
   },
   EMPRENDE: {
     nombre: 'Emprende',
@@ -79,6 +83,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     importarProductos: false,
     diasMetricas: 30,
     metricasAvanzadas: false,
+    usuarios: 2,
+    dominioPropio: false,
   },
   NEGOCIO: {
     nombre: 'Negocio',
@@ -94,6 +100,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     importarProductos: true,
     diasMetricas: 90,
     metricasAvanzadas: true,
+    usuarios: 5,
+    dominioPropio: true,
   },
   PRO: {
     nombre: 'Pro',
@@ -109,6 +117,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     importarProductos: true,
     diasMetricas: 365,
     metricasAvanzadas: true,
+    usuarios: 15,
+    dominioPropio: true,
   },
 }
 

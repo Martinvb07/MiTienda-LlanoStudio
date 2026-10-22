@@ -47,6 +47,10 @@ export interface LimitesPlan {
   diasMetricas: number
   /** Productos más vistos y vendidos, conversión y clics a WhatsApp. */
   metricasAvanzadas: boolean
+  /** Personas que pueden entrar al panel, contando a la dueña. */
+  usuarios: number
+  /** Conectar www.tutienda.com. */
+  dominioPropio: boolean
 }
 
 /**
@@ -110,6 +114,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     importarProductos: false,
     diasMetricas: 7,
     metricasAvanzadas: false,
+    usuarios: 1,
+    dominioPropio: false,
     exportarPedidos: false,
   },
   EMPRENDE: {
@@ -136,6 +142,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     importarProductos: false,
     diasMetricas: 30,
     metricasAvanzadas: false,
+    usuarios: 2,
+    dominioPropio: false,
     exportarPedidos: true,
   },
   NEGOCIO: {
@@ -162,6 +170,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     importarProductos: true,
     diasMetricas: 90,
     metricasAvanzadas: true,
+    usuarios: 5,
+    dominioPropio: true,
     exportarPedidos: true,
   },
   PRO: {
@@ -188,6 +198,8 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     importarProductos: true,
     diasMetricas: 365,
     metricasAvanzadas: true,
+    usuarios: 15,
+    dominioPropio: true,
     exportarPedidos: true,
   },
 }

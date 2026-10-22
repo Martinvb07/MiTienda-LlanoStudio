@@ -24,6 +24,11 @@ const esquema = z.object({
   // nombre de qué Host pregunta. Vacío = anulación deshabilitada.
   TOKEN_INTERNO: z.string().default(''),
 
+  // Dominios propios: a dónde deben apuntar. El CNAME sirve para www.tienda.com;
+  // la IP, para el dominio raíz (tienda.com) que no admite CNAME.
+  CNAME_DOMINIOS: z.string().default('tiendas.llanostudio.co'),
+  IP_SERVIDOR: z.string().default(''),
+
   // Panel de administración de la plataforma (Llano Studio). Sin estos dos
   // valores el acceso de admin queda deshabilitado. El hash se genera con
   // `npm run admin:clave -- "tu-contraseña"`.

@@ -64,6 +64,9 @@ const GRUPOS: { titulo: string; enlaces: Enlace[] }[] = [
 
 const TODOS = GRUPOS.flatMap((grupo) => grupo.enlaces).filter((enlace) => enlace.movil !== false)
 
+/** Secciones de dinero y personas: un editor no las ve (la API tampoco se las da). */
+const SOLO_GESTION = new Set(['/panel/descuentos', '/panel/estadisticas'])
+
 const esActivo = (href: string, ruta: string) => (href === '/panel' ? ruta === '/panel' : ruta.startsWith(href))
 
 export function iniciales(texto: string) {
@@ -174,7 +177,9 @@ export function NavegacionPanel() {
             <div key={grupo.titulo}>
               <p className="px-3 pb-2 text-[10px] tracking-[0.18em] text-sitio-tenue uppercase">{grupo.titulo}</p>
               <ul className="flex flex-col gap-0.5">
-                {grupo.enlaces.map((enlace) => {
+                {grupo.enlaces
+                  .filter((enlace) => sesion.usuario.rol !== 'EDITOR' || !SOLO_GESTION.has(enlace.href))
+                  .map((enlace) => {
                   const activo = esActivo(enlace.href, ruta)
                   return (
                     <li key={enlace.href}>
@@ -362,6 +367,7 @@ export function NavegacionPanel() {
               <ul className="flex flex-col gap-1">
                 {GRUPOS.flatMap((grupo) => grupo.enlaces)
                   .filter((enlace) => enlace.movil === false || enlace.href === '/panel/configuracion')
+                  .filter((enlace) => sesion.usuario.rol !== 'EDITOR' || !SOLO_GESTION.has(enlace.href))
                   .map((enlace) => (
                     <li key={enlace.href}>
                       <Link

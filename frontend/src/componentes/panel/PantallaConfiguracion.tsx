@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowUpRight, Check, Copy, Globe, CreditCard, KeyRound, LogOut, Sparkles, UserRound, X } from 'lucide-react'
+import { ArrowUpRight, Check, Copy, Globe, CreditCard, KeyRound, Link2, LogOut, Sparkles, UserRound, Users, X } from 'lucide-react'
 import {
   ErrorPanel,
   actualizarCuenta,
@@ -18,6 +18,7 @@ import { CabeceraPanel } from './CabeceraPanel'
 import { useSesion } from './SesionPanel'
 import { BotonPanel, Campo, Etiqueta } from './ui/basicos'
 import { Aparecer, SALIDA } from './ui/movimiento'
+import { GestionDominio, GestionEquipo } from './GestionEquipo'
 
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
@@ -199,6 +200,7 @@ function FormularioContrasena() {
 export function PantallaConfiguracion() {
   const { sesion } = useSesion()
   const plan = limitesDe(sesion.tenant.plan)
+  const gestiona = sesion.usuario.rol !== 'EDITOR'
   const [productos, setProductos] = useState<number | null>(null)
   const [copiado, setCopiado] = useState(false)
   const direccion = `${sesion.tenant.subdominio}.${configuracionDominios.dominioBase}`
@@ -242,6 +244,7 @@ export function PantallaConfiguracion() {
           <FormularioContrasena />
         </Bloque>
 
+        {gestiona && (
         <Bloque titulo={`Plan ${plan.nombre}`} descripcion="Lo que incluye tu plan hoy." Icono={Sparkles} orden={3}>
           {uso !== null && (
             <div className="mb-5">
@@ -283,6 +286,7 @@ export function PantallaConfiguracion() {
             </Link>
           )}
         </Bloque>
+        )}
 
         <Bloque titulo="Dirección de la tienda" descripcion="Viene incluida con tu cuenta." Icono={Globe} orden={4}>
           <div className="flex items-center gap-2 rounded-lg border border-sitio-borde bg-[#121214] p-1.5 pl-3">
@@ -307,17 +311,25 @@ export function PantallaConfiguracion() {
             </Link>
             .
           </p>
-          <div className="mt-5 flex items-center justify-between gap-3 border-t border-sitio-borde pt-4">
-            <span className="text-[13px] text-sitio-suave">Dominio propio (www.tutienda.com)</span>
-            <Etiqueta tono="azul">Próximamente</Etiqueta>
-          </div>
         </Bloque>
 
-        <Bloque titulo="Pagos" descripcion="Cobros con Wompi y PSE, directo a tu cuenta, sin comisión." Icono={CreditCard} orden={5}>
+        {gestiona && (
+          <>
+            <Bloque titulo="Equipo" descripcion="Quién más puede entrar a administrar la tienda." Icono={Users} orden={5}>
+              <GestionEquipo />
+            </Bloque>
+
+            <Bloque titulo="Dominio propio" descripcion="Tu tienda en www.tutienda.com." Icono={Link2} orden={6}>
+              <GestionDominio />
+            </Bloque>
+          </>
+        )}
+
+        <Bloque titulo="Pagos" descripcion="Cobros con Wompi y PSE, directo a tu cuenta, sin comisión." Icono={CreditCard} orden={7}>
           <Etiqueta tono="azul">Próximamente</Etiqueta>
         </Bloque>
 
-        <Bloque titulo="Sesión" descripcion={`Conectado como ${sesion.usuario.email}.`} Icono={LogOut} orden={6}>
+        <Bloque titulo="Sesión" descripcion={`Conectado como ${sesion.usuario.email}.`} Icono={LogOut} orden={8}>
           <BotonPanel
             variante="peligro"
             onClick={() => {

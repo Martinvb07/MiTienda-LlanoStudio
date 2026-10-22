@@ -32,6 +32,12 @@ export function middleware(peticion: NextRequest) {
   const url = peticion.nextUrl.clone()
   const ruta = url.pathname
 
+  // Detrás de nginx con HTTPS, nextUrl llega con el protocolo de
+  // X-Forwarded-Proto (https), pero Next escucha en http. Con https en el
+  // destino, Next cree que el rewrite va a otro servidor e intenta hacerse
+  // proxy por TLS a sí mismo (EPROTO). El rewrite siempre es interno: http.
+  url.protocol = 'http:'
+
   switch (clasificacion.tipo) {
     case 'sitio':
       // La web comercial vive en las rutas reales de (sitio): nada que reescribir.

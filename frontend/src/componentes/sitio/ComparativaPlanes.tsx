@@ -31,6 +31,15 @@ const GRUPOS: { titulo: string; filas: Fila[] }[] = [
       { etiqueta: 'Terminar la compra por WhatsApp', valor: () => true },
       { etiqueta: 'Cupones de descuento activos', valor: (l) => (l.cupones === null ? 'Ilimitados' : l.cupones || false) },
       { etiqueta: 'Exportar pedidos a Excel', valor: (l) => l.exportarPedidos },
+      { etiqueta: 'Estadísticas de ventas y visitas', valor: (l) => (l.diasMetricas >= 365 ? '1 año' : `${l.diasMetricas} días`) },
+      { etiqueta: 'Más vistos, más vendidos y conversión', valor: (l) => l.metricasAvanzadas },
+    ],
+  },
+  {
+    titulo: 'Cuenta',
+    filas: [
+      { etiqueta: 'Personas en el panel', valor: (l) => l.usuarios },
+      { etiqueta: 'Dominio propio (www.tutienda.com)', valor: (l) => l.dominioPropio },
     ],
   },
   {

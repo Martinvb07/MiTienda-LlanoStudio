@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowUpRight, Check, Copy, Globe, CreditCard, KeyRound, Link2, LogOut, Sparkles, UserRound, Users, X } from 'lucide-react'
+import { ArrowUpRight, Check, ChevronDown, Copy, Globe, CreditCard, KeyRound, Link2, LogOut, Sparkles, UserRound, Users, X } from 'lucide-react'
 import {
   ErrorPanel,
   actualizarCuenta,
@@ -22,34 +22,69 @@ import { GestionDominio, GestionEquipo } from './GestionEquipo'
 
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
+/**
+ * Sección plegable de la configuración: una fila con ícono, título y un
+ * resumen corto a la derecha; al abrirla se despliega el contenido.
+ */
 function Bloque({
   titulo,
   descripcion,
+  resumen,
   Icono,
   orden,
-  className,
+  abierto: abiertoInicial = false,
   children,
 }: {
   titulo: string
   descripcion?: string
+  resumen?: ReactNode
   Icono: typeof UserRound
   orden: number
-  className?: string
+  abierto?: boolean
   children: ReactNode
 }) {
+  const [abierto, setAbierto] = useState(abiertoInicial)
+
   return (
-    <Aparecer orden={orden} className={className}>
-      <section className="h-full rounded-[16px] border border-sitio-borde bg-sitio-superficie p-6">
-        <div className="flex items-start gap-3">
+    <Aparecer orden={orden}>
+      <section
+        className={cn(
+          'rounded-[14px] border bg-sitio-superficie transition-colors duration-300',
+          abierto ? 'border-sitio-borde-fuerte' : 'border-sitio-borde hover:border-sitio-borde-fuerte',
+        )}
+      >
+        <button
+          type="button"
+          aria-expanded={abierto}
+          onClick={() => setAbierto((valor) => !valor)}
+          className="flex w-full items-center gap-4 px-5 py-4 text-left"
+        >
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-sitio-borde bg-white/[0.03]">
             <Icono aria-hidden="true" className="h-4 w-4" strokeWidth={1.6} />
           </span>
-          <div>
-            <h2 className="text-[15px] font-medium tracking-[-0.01em]">{titulo}</h2>
-            {descripcion && <p className="mt-0.5 text-[12.5px] text-sitio-tenue">{descripcion}</p>}
-          </div>
-        </div>
-        <div className="mt-5">{children}</div>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[14.5px] font-medium tracking-[-0.01em]">{titulo}</span>
+            {descripcion && <span className="mt-0.5 block truncate text-[12.5px] text-sitio-tenue">{descripcion}</span>}
+          </span>
+          {resumen && <span className="hidden shrink-0 text-[12.5px] text-sitio-suave sm:block">{resumen}</span>}
+          <ChevronDown
+            aria-hidden="true"
+            className={cn('h-4 w-4 shrink-0 text-sitio-tenue transition-transform duration-500 ease-salida', abierto && 'rotate-180')}
+          />
+        </button>
+        <AnimatePresence initial={false}>
+          {abierto && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.45, ease: SALIDA }}
+              className="overflow-hidden"
+            >
+              <div className="border-t border-sitio-borde px-5 pt-5 pb-6">{children}</div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
     </Aparecer>
   )
@@ -235,8 +270,14 @@ export function PantallaConfiguracion() {
     <>
       <CabeceraPanel titulo="Configuración" descripcion="Tu cuenta, tu plan y la dirección de tu tienda." />
 
-      <div className="grid gap-4 md:gap-5 lg:grid-cols-2">
-        <Bloque titulo="Perfil" descripcion="Con estos datos entras al panel." Icono={UserRound} orden={1}>
+      <div className="flex max-w-3xl flex-col gap-2.5">
+        <Bloque
+          titulo="Perfil"
+          descripcion="Con estos datos entras al panel."
+          resumen={sesion.usuario.nombre}
+          Icono={UserRound}
+          orden={1}
+        >
           <FormularioPerfil />
         </Bloque>
 
@@ -245,7 +286,13 @@ export function PantallaConfiguracion() {
         </Bloque>
 
         {gestiona && (
-        <Bloque titulo={`Plan ${plan.nombre}`} descripcion="Lo que incluye tu plan hoy." Icono={Sparkles} orden={3}>
+        <Bloque
+          titulo="Tu plan"
+          descripcion="Lo que incluye tu plan hoy."
+          resumen={uso !== null ? `${plan.nombre} · ${productos} de ${plan.productos} productos` : plan.nombre}
+          Icono={Sparkles}
+          orden={3}
+        >
           {uso !== null && (
             <div className="mb-5">
               <div className="flex justify-between text-[12px] text-sitio-tenue">
@@ -288,7 +335,13 @@ export function PantallaConfiguracion() {
         </Bloque>
         )}
 
-        <Bloque titulo="Dirección de la tienda" descripcion="Viene incluida con tu cuenta." Icono={Globe} orden={4}>
+        <Bloque
+          titulo="Dirección de la tienda"
+          descripcion="Viene incluida con tu cuenta."
+          resumen={<span className="font-mono text-[12px]">{direccion}</span>}
+          Icono={Globe}
+          orden={4}
+        >
           <div className="flex items-center gap-2 rounded-lg border border-sitio-borde bg-sitio-campo p-1.5 pl-3">
             <span className="min-w-0 flex-1 truncate font-mono text-[13px]">{direccion}</span>
             <BotonPanel onClick={() => void copiar()} aria-label="Copiar dirección">
@@ -325,8 +378,17 @@ export function PantallaConfiguracion() {
           </>
         )}
 
-        <Bloque titulo="Pagos" descripcion="Cobros con Wompi y PSE, directo a tu cuenta, sin comisión." Icono={CreditCard} orden={7}>
-          <Etiqueta tono="azul">Próximamente</Etiqueta>
+        <Bloque
+          titulo="Pagos en línea"
+          descripcion="Conecta tu cuenta de Wompi, ePayco o Bold para cobrar en la tienda."
+          resumen={<Etiqueta tono="azul">Próximamente</Etiqueta>}
+          Icono={CreditCard}
+          orden={7}
+        >
+          <p className="text-[13px] leading-relaxed text-sitio-tenue">
+            Muy pronto vas a poder conectar tu propia pasarela y recibir el dinero directo en tu cuenta. Mientras
+            tanto tus clientes te pagan por WhatsApp, transferencia o contra entrega.
+          </p>
         </Bloque>
 
         <Bloque titulo="Sesión" descripcion={`Conectado como ${sesion.usuario.email}.`} Icono={LogOut} orden={8}>

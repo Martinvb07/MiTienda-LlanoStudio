@@ -99,9 +99,39 @@ export async function consultarEnBold(referencia: string) {
     headers: { Authorization: `x-api-key ${entorno.BOLD_LLAVE_IDENTIDAD}` },
     signal: AbortSignal.timeout(10_000),
   })
-  if (!respuesta.ok) return null
+  if (!respuesta.ok) {
+    registro.warn({ referencia, estadoHttp: respuesta.status }, 'Bold no respondió la consulta del pago')
+    return null
+  }
   const datos = (await respuesta.json()) as { payment_status?: string; payment_id?: string; transaction_id?: string }
+  registro.info({ referencia, estadoBold: datos.payment_status }, 'Consulta de pago en Bold')
   return { estado: datos.payment_status ?? 'PENDING', idBold: datos.payment_id ?? datos.transaction_id ?? null, datos }
+}
+
+/** Consulta en Bold un pago pendiente y lo aplica o lo marca según lo que diga. */
+export async function sincronizarPago(referencia: string) {
+  try {
+    const consulta = await consultarEnBold(referencia)
+    if (consulta?.estado === 'APPROVED') await aplicarPago(referencia, consulta.idBold, consulta.datos)
+    else if (consulta?.estado === 'REJECTED' || consulta?.estado === 'FAILED') await marcarPago(referencia, 'RECHAZADO', consulta.datos)
+  } catch (error) {
+    registro.warn({ err: error, referencia }, 'No se pudo consultar el pago en Bold')
+  }
+}
+
+/**
+ * Pagos de los últimos días que siguen pendientes: por si la persona no volvió
+ * al panel desde Bold y el webhook tampoco llegó.
+ */
+export async function sincronizarPendientes(tenantId: string) {
+  if (!boldConfigurado()) return
+  const pendientes = await prisma.pagoSuscripcion.findMany({
+    where: { tenantId, estado: 'PENDIENTE', creadoEn: { gt: new Date(Date.now() - 3 * DIA) } },
+    orderBy: { creadoEn: 'desc' },
+    take: 5,
+    select: { referencia: true },
+  })
+  await Promise.all(pendientes.map((pago) => sincronizarPago(pago.referencia)))
 }
 
 export type EstadoSuscripcion = 'sin-vencimiento' | 'activa' | 'por-vencer' | 'gracia'

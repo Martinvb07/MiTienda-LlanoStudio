@@ -7,12 +7,13 @@ import {
   aplicarPago,
   aplicarVencimientos,
   boldConfigurado,
-  consultarEnBold,
   estadoSuscripcion,
   firmaIntegridad,
   firmaWebhookValida,
   marcarPago,
   nuevaReferencia,
+  sincronizarPago,
+  sincronizarPendientes,
   urlPanel,
 } from '../servicios/suscripciones.servicio.js'
 import { ErrorHttp, noAutorizado, noEncontrado, solicitudInvalida } from '../utilidades/errores.js'
@@ -37,6 +38,7 @@ const PAGO_PUBLICO = {
 /** Plan actual, cuándo vence, los precios para pagar y el historial de cobros. */
 export async function obtenerSuscripcion(req: Request, res: Response): Promise<void> {
   const tenantId = req.sesion!.tenantId
+  await sincronizarPendientes(tenantId)
   await aplicarVencimientos(tenantId)
 
   const [tenant, ofertas, pagos] = await Promise.all([
@@ -100,13 +102,7 @@ export async function verificarPago(req: Request, res: Response): Promise<void> 
   if (!pago) throw noEncontrado('Ese pago no existe')
 
   if (pago.estado === 'PENDIENTE' && boldConfigurado()) {
-    try {
-      const consulta = await consultarEnBold(referencia)
-      if (consulta?.estado === 'APPROVED') await aplicarPago(referencia, consulta.idBold, consulta.datos)
-      else if (consulta?.estado === 'REJECTED' || consulta?.estado === 'FAILED') await marcarPago(referencia, 'RECHAZADO', consulta.datos)
-    } catch (error) {
-      registro.warn({ err: error, referencia }, 'No se pudo consultar el pago en Bold')
-    }
+    await sincronizarPago(referencia)
     pago = await prisma.pagoSuscripcion.findUniqueOrThrow({ where: { referencia }, select: PAGO_PUBLICO })
   }
 
@@ -124,10 +120,14 @@ interface EventoBold {
  */
 export async function webhookBold(req: Request, res: Response): Promise<void> {
   const crudo = req.cuerpoCrudo
-  if (!crudo || !firmaWebhookValida(crudo, req.header('x-bold-signature'))) throw noAutorizado('Firma inválida')
+  if (!crudo || !firmaWebhookValida(crudo, req.header('x-bold-signature'))) {
+    registro.warn({ firma: Boolean(req.header('x-bold-signature')) }, 'Webhook de Bold con firma inválida')
+    throw noAutorizado('Firma inválida')
+  }
 
   const evento = req.body as EventoBold
   const referencia = evento.data?.metadata?.reference
+  registro.info({ tipo: evento.type, referencia }, 'Webhook de Bold recibido')
   if (referencia) {
     if (evento.type === 'SALE_APPROVED') await aplicarPago(referencia, evento.data?.payment_id ?? null, evento)
     else if (evento.type === 'SALE_REJECTED') await marcarPago(referencia, 'RECHAZADO', evento)

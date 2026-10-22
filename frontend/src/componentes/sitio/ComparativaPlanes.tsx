@@ -19,6 +19,18 @@ const GRUPOS: { titulo: string; filas: Fila[] }[] = [
       { etiqueta: 'Productos', valor: (l) => l.productos ?? 'Ilimitados' },
       { etiqueta: 'Fotos por producto', valor: (l) => l.fotosPorProducto },
       { etiqueta: 'Pedir por WhatsApp en cada producto', valor: () => true },
+      { etiqueta: 'Variantes (talla, color…) por producto', valor: (l) => (l.opcionesVariantes ? `${l.opcionesVariantes} opciones` : false) },
+      { etiqueta: 'Acciones en grupo', valor: (l) => l.accionesLote },
+      { etiqueta: 'Importar productos desde Excel', valor: (l) => l.importarProductos },
+    ],
+  },
+  {
+    titulo: 'Ventas',
+    filas: [
+      { etiqueta: 'Carrito, pedidos y pago contra entrega', valor: () => true },
+      { etiqueta: 'Terminar la compra por WhatsApp', valor: () => true },
+      { etiqueta: 'Cupones de descuento activos', valor: (l) => (l.cupones === null ? 'Ilimitados' : l.cupones || false) },
+      { etiqueta: 'Exportar pedidos a Excel', valor: (l) => l.exportarPedidos },
     ],
   },
   {

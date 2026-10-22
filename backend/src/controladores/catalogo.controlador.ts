@@ -17,7 +17,8 @@ export const esquemaLote = z.object({
 
 /** Lo mismo a varios productos a la vez, siempre dentro de la tienda de la sesión. */
 export async function loteProductos(req: Request, res: Response): Promise<void> {
-  const tiendaId = await tiendaDeLaSesion(req)
+  const [tiendaId, plan] = await Promise.all([tiendaDeLaSesion(req), planDeLaSesion(req)])
+  if (!plan.accionesLote) throw fueraDelPlan(`Las acciones en grupo no están incluidas en tu plan ${plan.nombre}`)
   const { ids, accion, categoria } = req.body as z.infer<typeof esquemaLote>
   const donde = { tiendaId, id: { in: ids } }
 
@@ -84,6 +85,7 @@ function slugDe(texto: string) {
 export async function importarProductos(req: Request, res: Response): Promise<void> {
   const [tiendaId, plan] = await Promise.all([tiendaDeLaSesion(req), planDeLaSesion(req)])
   const { productos } = req.body as z.infer<typeof esquemaImportar>
+  if (!plan.importarProductos) throw fueraDelPlan(`Importar productos no está incluido en tu plan ${plan.nombre}`)
 
   const existentes = await prisma.producto.findMany({ where: { tiendaId }, select: { slug: true } })
   if (plan.productos !== null && existentes.length + productos.length > plan.productos) {

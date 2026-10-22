@@ -15,6 +15,26 @@ export type ResultadoPedido =
  * lo fija el middleware (no lo manda el navegador), así que un pedido sólo
  * puede ir a la tienda en la que se hizo.
  */
+export interface CuponAplicado {
+  codigo: string
+  descuento: number
+  envioGratis: boolean
+  descripcion: string
+}
+
+/** Revisa un código de descuento antes de confirmar (el pedido lo vuelve a validar). */
+export async function validarCupon(
+  codigo: string,
+  subtotal: number,
+): Promise<{ ok: true; cupon: CuponAplicado } | { ok: false; mensaje: string }> {
+  const host = (await headers()).get(CABECERA_HOST)
+  if (!host) return { ok: false, mensaje: 'No sabemos en qué tienda estás.' }
+  const respuesta = await enviarApi<{ cupon: CuponAplicado }>('/api/pedidos/cupon', { codigo, subtotal }, host)
+  return respuesta.ok
+    ? { ok: true, cupon: respuesta.datos.cupon }
+    : { ok: false, mensaje: respuesta.campos.cupon ?? respuesta.mensaje }
+}
+
 export async function crearPedido(solicitud: SolicitudPedido): Promise<ResultadoPedido> {
   const host = (await headers()).get(CABECERA_HOST)
   if (!host) return { ok: false, mensaje: 'No sabemos en qué tienda estás.', campos: {} }

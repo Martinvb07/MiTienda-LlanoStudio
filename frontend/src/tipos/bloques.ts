@@ -103,6 +103,8 @@ export interface PropsGrillaProductos {
   categoria?: string
   /** 'tarjeta': con borde, precio destacado y presentación, como un supermercado. */
   estilo?: 'simple' | 'tarjeta'
+  /** Sólo los productos marcados como destacados. */
+  soloDestacados?: boolean
 }
 
 export interface PropsImagenTexto {

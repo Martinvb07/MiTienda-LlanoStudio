@@ -61,3 +61,28 @@ export const ETIQUETAS_PAGO: Record<MetodoPago, string> = {
   transferencia: 'Transferencia',
   acordar: 'Acordar por WhatsApp',
 }
+
+export type TipoCupon = 'PORCENTAJE' | 'FIJO' | 'ENVIO_GRATIS'
+
+export interface Cupon {
+  id: string
+  codigo: string
+  tipo: TipoCupon
+  valor: string
+  minimo: string | null
+  usosMaximos: number | null
+  usos: number
+  venceEn: string | null
+  activo: boolean
+  creadoEn: string
+}
+
+export interface DatosCupon {
+  codigo: string
+  tipo: TipoCupon
+  valor: number
+  minimo: number | null
+  usosMaximos: number | null
+  venceEn: string | null
+  activo: boolean
+}

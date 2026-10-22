@@ -18,7 +18,10 @@ export interface LineaCarrito {
   foto?: string
   cantidad: number
   stock: number
+  /** Id de la variante elegida (lo que entiende la API). */
   variante?: string
+  /** "M / Rojo", para mostrar. */
+  varianteNombre?: string
 }
 
 interface ContextoCarrito {
@@ -294,7 +297,7 @@ function CajonCarrito() {
                         </Link>
                         <div className="flex min-w-0 flex-1 flex-col">
                           <p className="truncate font-medium">{linea.nombre}</p>
-                          {linea.variante && <p className="text-sm text-tinta/55">{linea.variante}</p>}
+                          {linea.varianteNombre && <p className="text-sm text-tinta/55">{linea.varianteNombre}</p>}
                           <p className="text-sm text-tinta/70">{formatearPrecio(linea.precio, moneda)}</p>
                           <div className="mt-auto flex items-center justify-between pt-2">
                             <SelectorCantidad

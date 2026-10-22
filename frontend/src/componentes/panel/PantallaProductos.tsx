@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'motion/react'
-import { Copy, Eye, EyeOff, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
+import { Check, CheckSquare, Copy, Eye, EyeOff, FileUp, Folders, MoreHorizontal, Pencil, Plus, Search, Star, Trash2, X } from 'lucide-react'
 import {
   actualizarProducto,
   crearProducto,
@@ -22,6 +22,7 @@ import { CabeceraPanel } from './CabeceraPanel'
 import { EditorProducto } from './editor/EditorProducto'
 import { Aviso, BotonPanel, CURVA, Candado, Etiqueta, Segmentado } from './ui/basicos'
 import { MenuAcciones } from './ui/flotantes'
+import { BarraSeleccion, ModalCategorias, ModalImportar } from './HerramientasCatalogo'
 import { Aparecer } from './ui/movimiento'
 
 const FILTROS = [
@@ -87,6 +88,25 @@ export function PantallaProductos() {
     return FILTROS.some((opcion) => opcion.valor === pedido) ? (pedido as Filtro) : 'todos'
   })
   const [orden, setOrden] = useState<Orden>('recientes')
+  const [seleccionando, setSeleccionando] = useState(false)
+  const [seleccion, setSeleccion] = useState<Set<string>>(new Set())
+  const [herramienta, setHerramienta] = useState<'importar' | 'categorias' | null>(null)
+  const [aviso, setAviso] = useState('')
+
+  function recargar() {
+    listarProductos()
+      .then(setProductos)
+      .catch((problema: Error) => setError(problema.message))
+  }
+
+  function alternarSeleccion(id: string) {
+    setSeleccion((actual) => {
+      const nueva = new Set(actual)
+      if (nueva.has(id)) nueva.delete(id)
+      else nueva.add(id)
+      return nueva
+    })
+  }
 
   // "Nuevo producto" desde el resumen abre el editor en cuanto hay tienda.
   useEffect(() => {
@@ -170,14 +190,42 @@ export function PantallaProductos() {
             : `Llevas ${total} de ${limites.productos} en tu plan ${limites.nombre}.`
         }
         accion={
-          <BotonPanel variante="primario" onClick={() => setAbierto(null)} disabled={!tienda || lleno} className="h-10 px-5">
-            <Plus aria-hidden="true" className="h-3.5 w-3.5" />
-            Nuevo producto
-          </BotonPanel>
+          <div className="flex flex-wrap gap-2">
+            <BotonPanel
+              onClick={() => setHerramienta('importar')}
+              disabled={!limites.importarProductos}
+              title={limites.importarProductos ? 'Importar desde Excel o CSV' : `Importar: desde el plan ${planMinimo((plan) => plan.importarProductos)}`}
+              className="h-10 px-3.5"
+            >
+              <FileUp aria-hidden="true" className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Importar</span>
+            </BotonPanel>
+            <BotonPanel onClick={() => setHerramienta('categorias')} disabled={!productos?.length} className="h-10 px-3.5" title="Categorías">
+              <Folders aria-hidden="true" className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Categorías</span>
+            </BotonPanel>
+            <BotonPanel
+              onClick={() => {
+                setSeleccionando((valor) => !valor)
+                setSeleccion(new Set())
+              }}
+              disabled={!limites.accionesLote || !productos?.length}
+              title={limites.accionesLote ? 'Seleccionar varios' : `Acciones en grupo: desde el plan ${planMinimo((plan) => plan.accionesLote)}`}
+              className={cn('h-10 px-3.5', seleccionando && '!border-white/40 !text-white')}
+            >
+              <CheckSquare aria-hidden="true" className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{seleccionando ? 'Listo' : 'Seleccionar'}</span>
+            </BotonPanel>
+            <BotonPanel variante="primario" onClick={() => setAbierto(null)} disabled={!tienda || lleno} className="h-10 px-5">
+              <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+              Nuevo producto
+            </BotonPanel>
+          </div>
         }
       />
 
       <AnimatePresence>{error && abierto === undefined && <Aviso>{error}</Aviso>}</AnimatePresence>
+      <AnimatePresence>{aviso && <Aviso tono="nota">{aviso}</Aviso>}</AnimatePresence>
 
       {lleno && (
         <div className="mb-5">
@@ -291,10 +339,29 @@ export function PantallaProductos() {
               >
                 <button
                   type="button"
-                  onClick={() => setAbierto(producto)}
-                  aria-label={`Editar ${producto.nombre}`}
-                  className="group relative block aspect-square overflow-hidden bg-sitio-superficie-2"
+                  onClick={() => (seleccionando ? alternarSeleccion(producto.id) : setAbierto(producto))}
+                  aria-label={seleccionando ? `Seleccionar ${producto.nombre}` : `Editar ${producto.nombre}`}
+                  aria-pressed={seleccionando ? seleccion.has(producto.id) : undefined}
+                  className={cn(
+                    'group relative block aspect-square overflow-hidden bg-sitio-superficie-2',
+                    seleccionando && seleccion.has(producto.id) && 'ring-2 ring-inset ring-white',
+                  )}
                 >
+                  {seleccionando && (
+                    <span
+                      className={cn(
+                        'absolute top-2.5 left-2.5 z-10 grid h-6 w-6 place-items-center rounded-md border-2 transition-colors',
+                        seleccion.has(producto.id) ? 'border-white bg-white text-black' : 'border-white/70 bg-black/40',
+                      )}
+                    >
+                      {seleccion.has(producto.id) && <Check aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={3} />}
+                    </span>
+                  )}
+                  {producto.destacado && !seleccionando && (
+                    <span className="absolute bottom-2.5 left-2.5 z-10 grid h-6 w-6 place-items-center rounded-full bg-black/60 text-amber-300 backdrop-blur" title="Destacado">
+                      <Star aria-hidden="true" className="h-3.5 w-3.5 fill-current" />
+                    </span>
+                  )}
                   {producto.fotos[0] ? (
                     <img
                       src={producto.fotos[0]}
@@ -308,7 +375,7 @@ export function PantallaProductos() {
                   ) : (
                     <span className="grid h-full place-items-center text-xs text-sitio-tenue">Sin foto</span>
                   )}
-                  <span className="absolute inset-0 grid place-items-center bg-black/55 opacity-0 backdrop-blur-[2px] transition-opacity duration-500 group-hover:opacity-100">
+                  <span className={cn('absolute inset-0 grid place-items-center bg-black/55 opacity-0 backdrop-blur-[2px] transition-opacity duration-500 group-hover:opacity-100', seleccionando && 'hidden')}>
                     <span className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[11px] tracking-[0.1em] text-black uppercase">
                       <Pencil aria-hidden="true" className="h-3 w-3" />
                       Editar
@@ -375,6 +442,45 @@ export function PantallaProductos() {
           </AnimatePresence>
         </ul>
       )}
+
+      <AnimatePresence>
+        {seleccionando && seleccion.size > 0 && (
+          <BarraSeleccion
+            ids={[...seleccion]}
+            categorias={[...new Set((productos ?? []).map((producto) => producto.categoria).filter((c): c is string => Boolean(c)))]}
+            alTerminar={() => {
+              setSeleccion(new Set())
+              recargar()
+            }}
+            alLimpiar={() => setSeleccion(new Set())}
+            alError={setError}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {herramienta === 'importar' && (
+          <ModalImportar
+            alCerrar={() => setHerramienta(null)}
+            alTerminar={(creados) => {
+              setHerramienta(null)
+              setAviso(`Se importaron ${creados} productos.`)
+              setTimeout(() => setAviso(''), 4000)
+              recargar()
+            }}
+          />
+        )}
+        {herramienta === 'categorias' && productos && (
+          <ModalCategorias
+            productos={productos}
+            alCerrar={() => setHerramienta(null)}
+            alTerminar={() => {
+              setHerramienta(null)
+              recargar()
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {abierto !== undefined && tienda && (

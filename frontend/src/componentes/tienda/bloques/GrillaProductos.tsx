@@ -22,12 +22,13 @@ export function GrillaProductos({
   columnas = 3,
   categoria,
   estilo = 'simple',
+  soloDestacados = false,
   productos,
   moneda,
 }: Props) {
-  const filtrados = categoria
-    ? productos.filter((producto) => producto.categoria?.toLowerCase() === categoria.toLowerCase())
-    : productos
+  const filtrados = productos
+    .filter((producto) => !categoria || producto.categoria?.toLowerCase() === categoria.toLowerCase())
+    .filter((producto) => !soloDestacados || producto.destacado)
   const visibles = filtrados.slice(0, limite)
 
   return (

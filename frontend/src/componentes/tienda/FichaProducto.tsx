@@ -30,6 +30,12 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
       ? Math.round((1 - Number(producto.precio) / Number(producto.precioComparacion)) * 100)
       : 0
 
+  // Si alguna variante cuesta menos, el precio se anuncia "desde".
+  const precioMinimo = Math.min(
+    Number(producto.precio),
+    ...(producto.variantes ?? []).filter((variante) => variante.precio != null).map((variante) => Number(variante.precio)),
+  )
+
   const relacionados = plantilla.relacionados
     ? [
         ...catalogo.filter((otro) => otro.id !== producto.id && producto.categoria && otro.categoria === producto.categoria),
@@ -42,7 +48,10 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
     presentacion: producto.presentacion ? <p className="text-sm text-tinta/55">{producto.presentacion}</p> : null,
     precio: (
       <div className="flex flex-wrap items-baseline gap-3">
-        <span className="text-2xl">{formatearPrecio(producto.precio, moneda)}</span>
+        <span className="text-2xl">
+          {precioMinimo < Number(producto.precio) ? 'Desde ' : ''}
+          {formatearPrecio(Math.min(precioMinimo, Number(producto.precio)), moneda)}
+        </span>
         {producto.precioComparacion && (
           <s className="text-tinta/40">{formatearPrecio(producto.precioComparacion, moneda)}</s>
         )}
@@ -63,7 +72,7 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
     descripcion: producto.descripcion ? (
       <p className="leading-relaxed whitespace-pre-line text-tinta/80">{producto.descripcion}</p>
     ) : null,
-    comprar: <BotonComprar producto={producto} />,
+    comprar: <BotonComprar producto={producto} moneda={moneda} />,
     whatsapp:
       ajustes.whatsapp && producto.stock > 0 ? (
         <a

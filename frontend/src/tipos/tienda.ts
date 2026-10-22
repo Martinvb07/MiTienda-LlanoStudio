@@ -146,6 +146,27 @@ export interface Producto {
   categoria?: string | null
   /** "500 gr", "Paquete x 10"… */
   presentacion?: string | null
+  /** Sale primero en el catálogo y en las secciones de destacados. */
+  destacado?: boolean
+  opciones?: OpcionProducto[]
+  variantes?: VarianteProducto[]
+}
+
+/** Una característica que el cliente elige: Talla (S, M, L), Color (Rojo, Azul)… */
+export interface OpcionProducto {
+  nombre: string
+  valores: string[]
+}
+
+/** Una combinación concreta de valores, con su stock y, si cambia, su precio. */
+export interface VarianteProducto {
+  id: string
+  /** "M / Rojo". */
+  nombre: string
+  valores: Record<string, string>
+  /** null o ausente = el precio del producto. */
+  precio?: string | number | null
+  stock: number
 }
 
 /** Producto tal como lo ve el panel: incluye los que están ocultos. */

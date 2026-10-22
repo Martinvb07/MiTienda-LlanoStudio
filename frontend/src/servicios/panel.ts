@@ -1,7 +1,7 @@
 'use client'
 
 import { normalizarBloques } from '@/tipos/bloques'
-import type { EstadoPedido, Pedido } from '@/tipos/pedidos'
+import type { Cupon, DatosCupon, EstadoPedido, Pedido } from '@/tipos/pedidos'
 import type { ProductoPanel, Tienda } from '@/tipos/tienda'
 
 /**
@@ -190,6 +190,42 @@ export const actualizarPedido = (id: string, cambios: { estado?: EstadoPedido; n
   pedir<{ pedido: Pedido }>(`/pedidos/${id}`, { method: 'PATCH', body: JSON.stringify(cambios) }).then(
     (respuesta) => respuesta.pedido,
   )
+
+// ── Cupones ──
+
+export const listarCupones = () => pedir<{ cupones: Cupon[] }>('/cupones').then((respuesta) => respuesta.cupones)
+
+export const guardarCupon = (datos: DatosCupon, id?: string) =>
+  pedir<{ cupon: Cupon }>(id ? `/cupones/${id}` : '/cupones', {
+    method: id ? 'PUT' : 'POST',
+    body: JSON.stringify(datos),
+  }).then((respuesta) => respuesta.cupon)
+
+export const eliminarCupon = (id: string) => pedir<void>(`/cupones/${id}`, { method: 'DELETE' })
+
+// ── Catálogo en grupo ──
+
+export type AccionLote = 'mostrar' | 'ocultar' | 'destacar' | 'quitar-destacado' | 'categoria' | 'eliminar'
+
+export const loteProductos = (ids: string[], accion: AccionLote, categoria?: string | null) =>
+  pedir<{ afectados: number }>('/productos/lote', { method: 'POST', body: JSON.stringify({ ids, accion, categoria }) })
+
+export interface FilaImportada {
+  nombre: string
+  precio: number
+  precioComparacion?: number | null
+  stock?: number
+  categoria?: string | null
+  presentacion?: string | null
+  descripcion?: string | null
+  fotos?: string[]
+}
+
+export const importarProductos = (productos: FilaImportada[]) =>
+  pedir<{ creados: number }>('/productos/importar', { method: 'POST', body: JSON.stringify({ productos }) })
+
+export const renombrarCategoria = (de: string, a: string | null) =>
+  pedir<{ afectados: number }>('/categorias', { method: 'PUT', body: JSON.stringify({ de, a }) })
 
 // ── Medios ──
 

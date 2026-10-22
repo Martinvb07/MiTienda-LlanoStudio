@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
 import { CheckCircle2, MessageCircle } from 'lucide-react'
-import { crearPedido } from '@/app/(tienda)/[subdominio]/carrito/acciones'
+import { crearPedido, validarCupon, type CuponAplicado } from '@/app/(tienda)/[subdominio]/carrito/acciones'
 import { ETIQUETAS_PAGO, type MetodoPago, type PedidoCreado } from '@/tipos/pedidos'
 import { formatearPrecio } from '@/utilidades/formato'
 import { esMedioLocal } from '@/utilidades/medios'
@@ -76,11 +76,40 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
     'acordar',
   ]
   const [metodo, setMetodo] = useState<MetodoPago>(metodos[0]!)
+  const [codigo, setCodigo] = useState('')
+  const [cupon, setCupon] = useState<CuponAplicado | null>(null)
+  const [errorCupon, setErrorCupon] = useState('')
+  const [revisandoCupon, setRevisandoCupon] = useState(false)
+  const subtotalActual = carrito?.subtotal ?? 0
+
+  // Si cambia el carrito, el descuento ya no es el mismo: se vuelve a pedir.
+  useEffect(() => {
+    setCupon(null)
+  }, [subtotalActual])
 
   if (!carrito) return null
   const { lineas, subtotal, moneda } = carrito
+  const descuento = cupon?.descuento ?? 0
   const envio =
-    ajustes.costoEnvio && !(ajustes.envioGratisDesde && subtotal >= ajustes.envioGratisDesde) ? ajustes.costoEnvio : 0
+    cupon?.envioGratis
+      ? 0
+      : ajustes.costoEnvio && !(ajustes.envioGratisDesde && subtotal - descuento >= ajustes.envioGratisDesde)
+        ? ajustes.costoEnvio
+        : 0
+  const total = subtotal - descuento + envio
+
+  async function aplicarCupon() {
+    if (!codigo.trim()) return
+    setRevisandoCupon(true)
+    setErrorCupon('')
+    const resultado = await validarCupon(codigo.trim(), subtotal)
+    setRevisandoCupon(false)
+    if (resultado.ok) setCupon(resultado.cupon)
+    else {
+      setCupon(null)
+      setErrorCupon(resultado.mensaje)
+    }
+  }
   const porWhatsapp = Boolean(ajustes.pedidosWhatsapp && ajustes.whatsapp)
   const faltaMinimo = ajustes.pedidoMinimo && subtotal < ajustes.pedidoMinimo ? ajustes.pedidoMinimo - subtotal : 0
 
@@ -106,6 +135,7 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
       items: carrito.lineas.map((linea) => ({ productoId: linea.productoId, cantidad: linea.cantidad, variante: linea.variante })),
       metodoPago: metodo,
       canal: porWhatsapp ? 'whatsapp' : 'web',
+      cupon: cupon?.codigo,
     })
     setEnviando(false)
 
@@ -251,7 +281,7 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
               ? `Faltan ${formatearPrecio(faltaMinimo, moneda)} para el pedido mínimo`
               : porWhatsapp
                 ? 'Pedir por WhatsApp'
-                : `Confirmar pedido · ${formatearPrecio(subtotal + envio, moneda)}`}
+                : `Confirmar pedido · ${formatearPrecio(total, moneda)}`}
         </button>
       </form>
 
@@ -265,7 +295,10 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
               </span>
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <div className="flex justify-between gap-3">
-                  <span className="truncate">{linea.nombre}</span>
+                  <span className="truncate">
+                    {linea.nombre}
+                    {linea.varianteNombre && <span className="text-tinta/55"> · {linea.varianteNombre}</span>}
+                  </span>
                   <span className="shrink-0 tabular-nums">{formatearPrecio(Number(linea.precio) * linea.cantidad, moneda)}</span>
                 </div>
                 <div className="self-start">
@@ -283,18 +316,61 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
         <div className="mt-2 border-t border-tinta/10 pt-4">
           <MetaEnvioGratis subtotal={subtotal} ajustes={ajustes} moneda={moneda} />
         </div>
+        <div className="mt-4 border-t border-tinta/10 pt-4">
+          {cupon ? (
+            <div className="flex items-center justify-between gap-3 rounded-(--radius-marca) bg-emerald-500/10 px-3.5 py-2.5 text-sm">
+              <span>
+                <strong className="font-semibold">{cupon.codigo}</strong> · {cupon.descripcion}
+              </span>
+              <button type="button" onClick={() => setCupon(null)} className="text-tinta/60 underline underline-offset-2 hover:text-tinta">
+                Quitar
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                value={codigo}
+                onChange={(evento) => setCodigo(evento.target.value.toUpperCase())}
+                onKeyDown={(evento) => {
+                  if (evento.key === 'Enter') {
+                    evento.preventDefault()
+                    void aplicarCupon()
+                  }
+                }}
+                placeholder="Código de descuento"
+                aria-label="Código de descuento"
+                className="min-w-0 flex-1 rounded-(--radius-marca) border border-tinta/15 bg-transparent px-3.5 py-2.5 text-sm uppercase outline-none focus:border-tinta/60"
+              />
+              <button
+                type="button"
+                onClick={() => void aplicarCupon()}
+                disabled={revisandoCupon || !codigo.trim()}
+                className="boton-tienda rounded-(--radius-marca) border border-tinta/20 px-4 text-sm font-medium transition hover:bg-tinta/5 disabled:opacity-40"
+              >
+                {revisandoCupon ? '…' : 'Aplicar'}
+              </button>
+            </div>
+          )}
+          {errorCupon && <p className="mt-2 text-xs text-red-600">{errorCupon}</p>}
+        </div>
         <dl className="mt-4 flex flex-col gap-2 text-sm">
           <div className="flex justify-between">
             <dt className="text-tinta/65">Subtotal</dt>
             <dd className="tabular-nums">{formatearPrecio(subtotal, moneda)}</dd>
           </div>
+          {descuento > 0 && (
+            <div className="flex justify-between text-emerald-700">
+              <dt>Descuento</dt>
+              <dd className="tabular-nums">-{formatearPrecio(descuento, moneda)}</dd>
+            </div>
+          )}
           <div className="flex justify-between">
             <dt className="text-tinta/65">Envío</dt>
             <dd className="tabular-nums">{envio ? formatearPrecio(envio, moneda) : 'Gratis'}</dd>
           </div>
           <div className="mt-2 flex justify-between border-t border-tinta/10 pt-3 text-base font-semibold">
             <dt>Total</dt>
-            <dd className="tabular-nums">{formatearPrecio(subtotal + envio, moneda)}</dd>
+            <dd className="tabular-nums">{formatearPrecio(total, moneda)}</dd>
           </div>
         </dl>
       </aside>

@@ -2,7 +2,8 @@ import type { Request, Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../config/prisma.js'
 import { Prisma } from '../generado/prisma/client.js'
-import { tiendaDeLaSesion } from '../servicios/sesion.servicio.js'
+import { planDeLaSesion, tiendaDeLaSesion } from '../servicios/sesion.servicio.js'
+import { fueraDelPlan } from '../utilidades/planes.js'
 import { ErrorHttp, noEncontrado, solicitudInvalida } from '../utilidades/errores.js'
 
 export const esquemaCupon = z
@@ -61,9 +62,21 @@ export async function listarCupones(req: Request, res: Response): Promise<void> 
   res.json({ cupones: cupones.map(serializar) })
 }
 
+/** Cuenta los cupones activos (sin `excepto`) y frena si el plan no deja uno más. */
+async function revisarLimiteCupones(req: Request, tiendaId: string, excepto?: string) {
+  const plan = await planDeLaSesion(req)
+  if (plan.cupones === null) return
+  if (plan.cupones === 0) throw fueraDelPlan(`Los cupones de descuento no están incluidos en tu plan ${plan.nombre}`)
+  const activos = await prisma.cupon.count({ where: { tiendaId, activo: true, ...(excepto ? { id: { not: excepto } } : {}) } })
+  if (activos >= plan.cupones) {
+    throw fueraDelPlan(`Tu plan ${plan.nombre} admite ${plan.cupones} cupones activos a la vez. Desactiva uno o mejora tu plan.`)
+  }
+}
+
 export async function crearCupon(req: Request, res: Response): Promise<void> {
   const tiendaId = await tiendaDeLaSesion(req)
   const datos = req.body as z.infer<typeof esquemaCupon>
+  if (datos.activo) await revisarLimiteCupones(req, tiendaId)
   const cupon = await prisma.cupon.create({ data: { ...datos, tiendaId }, select: campos }).catch(siCodigoRepetido)
   res.status(201).json({ cupon: serializar(cupon) })
 }
@@ -73,6 +86,7 @@ export async function actualizarCupon(req: Request, res: Response): Promise<void
   const id = req.params.id as string
   const existe = await prisma.cupon.findFirst({ where: { id, tiendaId }, select: { id: true } })
   if (!existe) throw noEncontrado('Ese cupón no existe')
+  if ((req.body as z.infer<typeof esquemaCupon>).activo) await revisarLimiteCupones(req, tiendaId, id)
   const cupon = await prisma.cupon
     .update({ where: { id }, data: req.body as z.infer<typeof esquemaCupon>, select: campos })
     .catch(siCodigoRepetido)

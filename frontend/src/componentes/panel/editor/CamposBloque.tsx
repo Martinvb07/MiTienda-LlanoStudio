@@ -380,8 +380,12 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
               Tarjetas con borde, 5 columnas y productos de una sola categoría.
             </Candado>
           )}
+          <Interruptor activo={bloque.props.soloDestacados ?? false} alCambiar={(soloDestacados) => alCambiar({ soloDestacados })}>
+            Sólo los destacados
+            <small className="block text-[11.5px] text-sitio-tenue">Marca productos como destacados al editarlos.</small>
+          </Interruptor>
           <p className="text-[11.5px] leading-relaxed text-sitio-tenue">
-            Se muestran tus productos visibles, del más nuevo al más antiguo.
+            Se muestran tus productos visibles: primero los destacados, luego del más nuevo al más antiguo.
           </p>
         </>
       )

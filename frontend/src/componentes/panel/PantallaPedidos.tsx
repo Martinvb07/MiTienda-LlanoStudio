@@ -7,6 +7,7 @@ import { Check, Download, Mail, MapPin, MessageCircle, Phone, Search, X } from '
 import { actualizarPedido, listarPedidos } from '@/servicios/panel'
 import { ETIQUETAS_PAGO, type EstadoPedido, type Pedido } from '@/tipos/pedidos'
 import { formatearPrecio } from '@/utilidades/formato'
+import { limitesDe, planMinimo } from '@/utilidades/planes'
 import { enlaceWhatsapp } from '@/utilidades/whatsapp'
 import { cn } from '@/utilidades/clases'
 import { CabeceraPanel } from './CabeceraPanel'
@@ -81,6 +82,7 @@ export function PantallaPedidos() {
   const [filtro, setFiltro] = useState<(typeof FILTROS)[number]['valor']>('todos')
   const [busqueda, setBusqueda] = useState('')
   const [abierto, setAbierto] = useState<string | null>(null)
+  const limites = limitesDe(useSesion().sesion.tenant.plan)
 
   useEffect(() => {
     listarPedidos()
@@ -121,7 +123,12 @@ export function PantallaPedidos() {
         descripcion="Lo que te compran en la tienda. Cambia el estado a medida que lo preparas y lo envías."
         accion={
           lista.length > 0 ? (
-            <BotonPanel onClick={() => exportarCsv(filtrados)} className="h-10 px-4">
+            <BotonPanel
+              onClick={() => exportarCsv(filtrados)}
+              disabled={!limites.exportarPedidos}
+              title={limites.exportarPedidos ? undefined : `Desde el plan ${planMinimo((plan) => plan.exportarPedidos)}`}
+              className="h-10 px-4"
+            >
               <Download aria-hidden="true" className="h-3.5 w-3.5" />
               Exportar a Excel
             </BotonPanel>

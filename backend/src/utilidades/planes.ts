@@ -18,6 +18,12 @@ export interface LimitesPlan {
   /** Colores, letra y esquinas a mano; si no, sólo los estilos predefinidos. */
   temaLibre: boolean
   quitarMarca: boolean
+  /** Cupones activos a la vez; null = sin límite. */
+  cupones: number | null
+  /** Opciones de variante por producto; 0 = sin variantes. */
+  opcionesVariantes: number
+  accionesLote: boolean
+  importarProductos: boolean
 }
 
 const BLOQUES_EMPRENDE = [
@@ -50,6 +56,10 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     bloques: ['hero', 'grilla-productos', 'texto', 'pie', 'espaciador'],
     temaLibre: false,
     quitarMarca: false,
+    cupones: 0,
+    opcionesVariantes: 0,
+    accionesLote: false,
+    importarProductos: false,
   },
   EMPRENDE: {
     nombre: 'Emprende',
@@ -59,6 +69,10 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     bloques: BLOQUES_EMPRENDE,
     temaLibre: true,
     quitarMarca: true,
+    cupones: 3,
+    opcionesVariantes: 1,
+    accionesLote: true,
+    importarProductos: false,
   },
   NEGOCIO: {
     nombre: 'Negocio',
@@ -68,6 +82,10 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     bloques: BLOQUES_NEGOCIO,
     temaLibre: true,
     quitarMarca: true,
+    cupones: 20,
+    opcionesVariantes: 2,
+    accionesLote: true,
+    importarProductos: true,
   },
   PRO: {
     nombre: 'Pro',
@@ -77,6 +95,10 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     bloques: TODOS_LOS_BLOQUES,
     temaLibre: true,
     quitarMarca: true,
+    cupones: null,
+    opcionesVariantes: 3,
+    accionesLote: true,
+    importarProductos: true,
   },
 }
 

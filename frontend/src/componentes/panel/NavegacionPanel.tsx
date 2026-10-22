@@ -14,6 +14,7 @@ import {
   Receipt,
   Settings,
   Sparkles,
+  Ticket,
 } from 'lucide-react'
 import { cerrarSesion } from '@/servicios/panel'
 import { urlTienda } from '@/utilidades/dominios'
@@ -28,6 +29,8 @@ interface Enlace {
   /** Nombre corto para las pestañas del celular. */
   corta: string
   Icono: typeof LayoutGrid
+  /** false = no va en las pestañas del celular (sólo hay espacio para cinco). */
+  movil?: boolean
 }
 
 const GRUPOS: { titulo: string; enlaces: Enlace[] }[] = [
@@ -41,7 +44,10 @@ const GRUPOS: { titulo: string; enlaces: Enlace[] }[] = [
   },
   {
     titulo: 'Ventas',
-    enlaces: [{ href: '/panel/pedidos', etiqueta: 'Pedidos', corta: 'Pedidos', Icono: Receipt }],
+    enlaces: [
+      { href: '/panel/pedidos', etiqueta: 'Pedidos', corta: 'Pedidos', Icono: Receipt },
+      { href: '/panel/descuentos', etiqueta: 'Descuentos', corta: 'Cupones', Icono: Ticket, movil: false },
+    ],
   },
   {
     titulo: 'Cuenta',
@@ -49,7 +55,7 @@ const GRUPOS: { titulo: string; enlaces: Enlace[] }[] = [
   },
 ]
 
-const TODOS = GRUPOS.flatMap((grupo) => grupo.enlaces)
+const TODOS = GRUPOS.flatMap((grupo) => grupo.enlaces).filter((enlace) => enlace.movil !== false)
 
 const esActivo = (href: string, ruta: string) => (href === '/panel' ? ruta === '/panel' : ruta.startsWith(href))
 

@@ -12,12 +12,12 @@ import {
   EyeOff,
   ImageOff,
   LayoutTemplate,
-  Package,
   PackageX,
   Palette,
   Plus,
   Share2,
   Sparkles,
+  Ticket,
 } from 'lucide-react'
 import { listarPedidos, listarProductos } from '@/servicios/panel'
 import type { Pedido } from '@/tipos/pedidos'
@@ -478,7 +478,7 @@ export function PantallaResumen() {
         {[
           { href: '/panel/plantillas', titulo: 'Cambiar plantilla', texto: 'Seis diseños listos', Icono: LayoutTemplate },
           { href: '/panel/plantillas?editar=1', titulo: 'Logo y colores', texto: 'Tu marca en la tienda', Icono: Palette },
-          { href: '/panel/productos', titulo: 'Catálogo', texto: 'Precios, stock y fotos', Icono: Package },
+          { href: '/panel/descuentos', titulo: 'Descuentos', texto: 'Cupones para tus clientes', Icono: Ticket },
           { href: '/precios', titulo: 'Planes', texto: `Estás en ${plan.nombre}`, Icono: Sparkles, externo: true },
         ].map((acceso, indice) => (
           <Aparecer key={acceso.titulo} orden={8 + indice}>

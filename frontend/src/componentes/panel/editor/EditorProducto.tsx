@@ -8,11 +8,12 @@ import {
   crearProducto,
   type DatosProducto,
 } from '@/servicios/panel'
-import type { Producto, ProductoPanel, Tienda } from '@/tipos/tienda'
+import type { OpcionProducto, Producto, ProductoPanel, Tienda, VarianteProducto } from '@/tipos/tienda'
 import { formatearPrecio, generarSlug } from '@/utilidades/formato'
-import { limitesDe } from '@/utilidades/planes'
+import { limitesDe, planMinimo } from '@/utilidades/planes'
 import { useSesion } from '../SesionPanel'
-import { Aviso, Campo, CampoArea, Interruptor, Seccion, Segmentado } from '../ui/basicos'
+import { Aviso, Campo, CampoArea, Candado, Interruptor, Seccion, Segmentado } from '../ui/basicos'
+import { CamposVariantes } from './CamposVariantes'
 import { Galeria } from '../ui/imagenes'
 import { MarcoEditor, useAtajosEditor } from './MarcoEditor'
 import { VistaPrevia, type Dispositivo } from './VistaPrevia'
@@ -28,6 +29,9 @@ interface Borrador {
   categoria: string
   presentacion: string
   activo: boolean
+  destacado: boolean
+  opciones: OpcionProducto[]
+  variantes: VarianteProducto[]
 }
 
 function borradorDe(producto: ProductoPanel | null): Borrador {
@@ -43,6 +47,9 @@ function borradorDe(producto: ProductoPanel | null): Borrador {
       categoria: '',
       presentacion: '',
       activo: true,
+      destacado: false,
+      opciones: [],
+      variantes: [],
     }
   }
   return {
@@ -57,6 +64,9 @@ function borradorDe(producto: ProductoPanel | null): Borrador {
     categoria: producto.categoria ?? '',
     presentacion: producto.presentacion ?? '',
     activo: producto.activo,
+    destacado: producto.destacado ?? false,
+    opciones: producto.opciones ?? [],
+    variantes: producto.variantes ?? [],
   }
 }
 
@@ -91,6 +101,11 @@ export function EditorProducto({ producto, tienda, catalogo, alGuardar, alCerrar
   const cambiar = (cambios: Partial<Borrador>) => setBorrador((anterior) => ({ ...anterior, ...cambios }))
   const alSubiendo = useCallback((delta: number) => setSubiendo((valor) => valor + delta), [])
 
+  // Con variantes, el stock es la suma de las suyas (igual que en la API).
+  const stockTotal = borrador.variantes.length
+    ? borrador.variantes.reduce((suma, variante) => suma + variante.stock, 0)
+    : Number(borrador.stock) || 0
+
   const comoProducto = useMemo<Producto>(
     () => ({
       id: actual?.id ?? 'borrador',
@@ -99,12 +114,15 @@ export function EditorProducto({ producto, tienda, catalogo, alGuardar, alCerrar
       descripcion: borrador.descripcion || null,
       precio: borrador.precio || '0',
       precioComparacion: borrador.precioComparacion || null,
-      stock: Number(borrador.stock) || 0,
+      stock: stockTotal,
       fotos: borrador.fotos,
       categoria: borrador.categoria.trim() || null,
       presentacion: borrador.presentacion.trim() || null,
+      destacado: borrador.destacado,
+      opciones: borrador.opciones,
+      variantes: borrador.variantes,
     }),
-    [actual, borrador],
+    [actual, borrador, stockTotal],
   )
 
   const guardar = useCallback(async () => {
@@ -125,11 +143,20 @@ export function EditorProducto({ producto, tienda, catalogo, alGuardar, alCerrar
       descripcion: borrador.descripcion.trim() || null,
       precio: borrador.precio,
       precioComparacion: borrador.precioComparacion || null,
-      stock: Number(borrador.stock) || 0,
+      stock: stockTotal,
       fotos: borrador.fotos,
       categoria: borrador.categoria.trim() || null,
       presentacion: borrador.presentacion.trim() || null,
       activo: borrador.activo,
+      destacado: borrador.destacado,
+      // Sólo se mandan si el plan las admite: así ocultar o editar un producto
+      // creado en un plan mayor no choca con el límite.
+      ...(limites.opcionesVariantes > 0 || borrador.opciones.length === 0
+        ? {
+            opciones: borrador.opciones.filter((opcion) => opcion.nombre.trim() && opcion.valores.length),
+            variantes: borrador.variantes,
+          }
+        : {}),
     }
 
     setError('')
@@ -150,7 +177,7 @@ export function EditorProducto({ producto, tienda, catalogo, alGuardar, alCerrar
     } finally {
       setGuardando(false)
     }
-  }, [actual, alGuardar, borrador, guardando, subiendo])
+  }, [actual, alGuardar, borrador, guardando, subiendo, stockTotal, limites.opcionesVariantes])
 
   useAtajosEditor(sucio, () => void guardar())
 
@@ -305,20 +332,54 @@ export function EditorProducto({ producto, tienda, catalogo, alGuardar, alCerrar
                 ayuda={descuento > 0 ? `${descuento}% de descuento` : 'Sale tachado'}
               />
             </div>
-            <Campo
-              etiqueta="Unidades disponibles"
-              tipo="number"
-              min={0}
-              valor={borrador.stock}
-              error={errores.stock}
-              alCambiar={(stock) => cambiar({ stock: soloDigitos(stock).slice(0, 7) })}
-              ayuda={Number(borrador.stock) === 0 ? 'En 0 se muestra como agotado' : undefined}
-            />
+            {borrador.variantes.length === 0 ? (
+              <Campo
+                etiqueta="Unidades disponibles"
+                tipo="number"
+                min={0}
+                valor={borrador.stock}
+                error={errores.stock}
+                alCambiar={(stock) => cambiar({ stock: soloDigitos(stock).slice(0, 7) })}
+                ayuda={Number(borrador.stock) === 0 ? 'En 0 se muestra como agotado' : undefined}
+              />
+            ) : (
+              <p className="text-[12px] text-sitio-tenue">El stock se maneja por variante, abajo.</p>
+            )}
+          </Seccion>
+
+          <Seccion titulo="Variantes" abierta={borrador.opciones.length > 0}>
+            {limites.opcionesVariantes > 0 ? (
+              <>
+                <p className="text-[11.5px] leading-relaxed text-sitio-tenue">
+                  Si lo vendes en varias tallas, colores o tamaños, agrega las opciones y pon el stock de cada combinación.
+                </p>
+                <CamposVariantes
+                  opciones={borrador.opciones}
+                  variantes={borrador.variantes}
+                  precioBase={borrador.precio}
+                  maximo={limites.opcionesVariantes}
+                  alCambiar={(opciones, variantes) => cambiar({ opciones, variantes })}
+                />
+                {limites.opcionesVariantes < 3 && (
+                  <Candado plan={planMinimo((plan) => plan.opcionesVariantes > limites.opcionesVariantes)}>
+                    Tu plan admite {limites.opcionesVariantes} {limites.opcionesVariantes === 1 ? 'opción' : 'opciones'} por producto.
+                  </Candado>
+                )}
+              </>
+            ) : (
+              <Candado plan={planMinimo((plan) => plan.opcionesVariantes > 0)}>
+                Tallas, colores y otras variantes con stock y precio propios.
+              </Candado>
+            )}
           </Seccion>
 
           <Seccion titulo="Publicación" abierta>
             <Interruptor activo={borrador.activo} alCambiar={(activo) => cambiar({ activo })}>
               {borrador.activo ? 'Visible en la tienda' : 'Oculto de la tienda'}
+            </Interruptor>
+            <Interruptor activo={borrador.destacado} alCambiar={(destacado) => cambiar({ destacado })}>
+              Producto destacado
+              <small className="block text-[11.5px] text-sitio-tenue">Sale primero y en las secciones de destacados.</small>
             </Interruptor>
           </Seccion>
         </>

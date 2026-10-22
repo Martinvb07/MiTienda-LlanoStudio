@@ -516,6 +516,17 @@ async function slugLibre(tiendaId: string, slug: string, excepto?: string): Prom
   }
 }
 
+function revisarVariantes(datos: z.infer<typeof esquemaProducto>, plan: ReturnType<typeof limitesDe>) {
+  const usadas = datos.opciones?.length ?? 0
+  if (usadas > plan.opcionesVariantes) {
+    throw fueraDelPlan(
+      plan.opcionesVariantes === 0
+        ? `Las variantes (tallas, colores…) no están incluidas en tu plan ${plan.nombre}`
+        : `Tu plan ${plan.nombre} admite ${plan.opcionesVariantes} ${plan.opcionesVariantes === 1 ? 'opción' : 'opciones'} de variante por producto`,
+    )
+  }
+}
+
 function revisarFotos(fotos: string[], plan: ReturnType<typeof limitesDe>) {
   if (fotos.length > plan.fotosPorProducto) {
     throw fueraDelPlan(`Tu plan ${plan.nombre} admite hasta ${plan.fotosPorProducto} fotos por producto`)
@@ -526,6 +537,7 @@ export async function crearProductoPanel(req: Request, res: Response): Promise<v
   const datos = req.body as z.infer<typeof esquemaProducto>
   const [tiendaId, plan] = await Promise.all([tiendaDeLaSesion(req), planDeLaSesion(req)])
   revisarFotos(datos.fotos, plan)
+  revisarVariantes(datos, plan)
   if (plan.productos !== null) {
     const total = await prisma.producto.count({ where: { tiendaId } })
     if (total >= plan.productos) {
@@ -558,7 +570,9 @@ async function productoPropio(req: Request) {
 export async function actualizarProductoPanel(req: Request, res: Response): Promise<void> {
   const datos = req.body as z.infer<typeof esquemaProducto>
   const { tiendaId, id } = await productoPropio(req)
-  revisarFotos(datos.fotos, await planDeLaSesion(req))
+  const plan = await planDeLaSesion(req)
+  revisarFotos(datos.fotos, plan)
+  revisarVariantes(datos, plan)
   await slugLibre(tiendaId, datos.slug, id)
 
   const producto = await prisma.producto.update({

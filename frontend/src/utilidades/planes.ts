@@ -35,6 +35,14 @@ export interface LimitesPlan {
   estiloSeccion: NivelEstilo
   /** Elementos por lista en las secciones nuevas (columnas, testimonios, fotos…). */
   itemsLista: number
+  /** Cupones activos a la vez; null = sin límite. */
+  cupones: number | null
+  /** Opciones de variante por producto (Talla, Color…); 0 = sin variantes. */
+  opcionesVariantes: number
+  /** Ocultar, destacar, mover o borrar varios productos de una vez. */
+  accionesLote: boolean
+  importarProductos: boolean
+  exportarPedidos: boolean
 }
 
 /**
@@ -92,6 +100,11 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     grillaAvanzada: false,
     estiloSeccion: 'ninguno',
     itemsLista: 0,
+    cupones: 0,
+    opcionesVariantes: 0,
+    accionesLote: false,
+    importarProductos: false,
+    exportarPedidos: false,
   },
   EMPRENDE: {
     nombre: 'Emprende',
@@ -111,6 +124,11 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     grillaAvanzada: true,
     estiloSeccion: 'basico',
     itemsLista: 6,
+    cupones: 3,
+    opcionesVariantes: 1,
+    accionesLote: true,
+    importarProductos: false,
+    exportarPedidos: true,
   },
   NEGOCIO: {
     nombre: 'Negocio',
@@ -130,6 +148,11 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     grillaAvanzada: true,
     estiloSeccion: 'avanzado',
     itemsLista: 12,
+    cupones: 20,
+    opcionesVariantes: 2,
+    accionesLote: true,
+    importarProductos: true,
+    exportarPedidos: true,
   },
   PRO: {
     nombre: 'Pro',
@@ -149,6 +172,11 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     grillaAvanzada: true,
     estiloSeccion: 'completo',
     itemsLista: 30,
+    cupones: null,
+    opcionesVariantes: 3,
+    accionesLote: true,
+    importarProductos: true,
+    exportarPedidos: true,
   },
 }
 

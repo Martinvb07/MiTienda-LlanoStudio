@@ -71,7 +71,9 @@ const TODOS = GRUPOS.flatMap((grupo) => grupo.enlaces).filter((enlace) => enlace
 /** Secciones de dinero y personas: un editor no las ve (la API tampoco se las da). */
 const SOLO_GESTION = new Set(['/panel/descuentos', '/panel/estadisticas'])
 
-const esActivo = (href: string, ruta: string) => (href === '/panel' ? ruta === '/panel' : ruta.startsWith(href))
+// Por segmento completo: /panel/plantillas no debe marcar /panel/plan.
+const esActivo = (href: string, ruta: string) =>
+  href === '/panel' ? ruta === '/panel' : ruta === href || ruta.startsWith(`${href}/`)
 
 export function iniciales(texto: string) {
   return texto
@@ -340,7 +342,7 @@ export function NavegacionPanel() {
           onClick={() => setMas(true)}
           className={cn(
             'relative flex flex-col items-center gap-1 rounded-xl py-2 text-[10.5px] transition-colors duration-300',
-            ['/panel/configuracion', '/panel/descuentos', '/panel/estadisticas'].some((href) => ruta.startsWith(href))
+            ['/panel/configuracion', '/panel/descuentos', '/panel/estadisticas', '/panel/plan'].some((href) => esActivo(href, ruta))
               ? 'text-white'
               : 'text-sitio-tenue',
           )}

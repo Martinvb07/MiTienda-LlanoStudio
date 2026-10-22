@@ -1,5 +1,5 @@
 import type { Bloque } from '@/tipos/bloques'
-import type { TemaTienda } from '@/tipos/tienda'
+import type { TemaBase } from '@/tipos/tienda'
 import type { Plan } from './planes'
 import { ESTILOS_PREDEFINIDOS } from './tema'
 
@@ -19,7 +19,7 @@ export interface PlantillaTienda {
   plan: Plan
   /** Valor que se guarda en Tienda.plantilla: un estilo predefinido o la clave propia. */
   estilo: string
-  tema: Required<TemaTienda>
+  tema: TemaBase
   destacada?: boolean
   /** Columnas de la grilla, para la miniatura. */
   columnas: 2 | 3 | 4

@@ -1,26 +1,50 @@
 'use client'
 
-import { ArrowUpRight, Redo2, Undo2 } from 'lucide-react'
+import { ArrowUpRight, LayoutTemplate, Palette, Redo2, Settings2, Undo2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AnimatePresence } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import type { AccionSeccion } from '@/app/panel/vista-previa/mensajes'
 import { guardarTienda, listarProductos, type DatosTienda } from '@/servicios/panel'
 import { duplicarBloque } from '@/tipos/bloques'
 import type { AjustesTienda, Producto, TemaTienda, Tienda } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
-import { ESTILOS_PREDEFINIDOS, FUENTES_TITULOS, RADIOS } from '@/utilidades/tema'
+import { ESTILOS_PREDEFINIDOS, RADIOS, esquemasIniciales } from '@/utilidades/tema'
 import { cn } from '@/utilidades/clases'
 import { PLANES, limitesDe, planIncluye, planMinimo } from '@/utilidades/planes'
 import { PLANTILLAS_TIENDA, type PlantillaTienda } from '@/utilidades/plantillas'
 import { useSesion } from '../SesionPanel'
-import { Aviso, Campo, CampoArea, CampoColor, Candado, Interruptor, PlanRequerido, Seccion, Segmentado } from '../ui/basicos'
+import { Aviso, CURVA, Campo, CampoArea, CampoColor, Candado, Interruptor, PlanRequerido, Seccion, Segmentado } from '../ui/basicos'
+import { Selector } from '../ui/flotantes'
 import { ZonaImagen } from '../ui/imagenes'
 import { CamposCabecera, CamposContacto } from './CamposAjustes'
+import { CamposFicha } from './CamposFicha'
+import { CamposTema } from './CamposTema'
+import { CamposVentas } from './CamposVentas'
 import { ListaBloques } from './ListaBloques'
 import { MarcoEditor, useAtajosEditor } from './MarcoEditor'
 import { VistaPrevia, type Dispositivo } from './VistaPrevia'
 
 const TEMA_BASE = ESTILOS_PREDEFINIDOS[0]!.tema
+
+const PESTANAS = [
+  { valor: 'pagina', etiqueta: 'Página', Icono: LayoutTemplate },
+  { valor: 'tema', etiqueta: 'Tema', Icono: Palette },
+  { valor: 'ajustes', etiqueta: 'Ajustes', Icono: Settings2 },
+] as const
+
+/** Producto de muestra para ver la plantilla cuando la tienda aún no tiene productos. */
+const PRODUCTO_EJEMPLO: Producto = {
+  id: 'ejemplo',
+  nombre: 'Producto de ejemplo',
+  slug: 'ejemplo',
+  descripcion: 'Así se ve la descripción de tus productos: materiales, medidas y lo que lo hace especial.',
+  precio: '89000',
+  precioComparacion: '120000',
+  stock: 4,
+  fotos: [],
+  categoria: null,
+  presentacion: 'Talla única',
+}
 
 function borradorDe(tienda: Tienda): DatosTienda {
   return {
@@ -53,6 +77,8 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
   const [inicial, setInicial] = useState(() => JSON.stringify(borradorDe(tienda)))
   const [abierto, setAbierto] = useState<string | null>(null)
   const [dispositivo, setDispositivo] = useState<Dispositivo>('escritorio')
+  const [pestana, setPestana] = useState<(typeof PESTANAS)[number]['valor']>('pagina')
+  const [plantillaEditada, setPlantillaEditada] = useState<'portada' | 'producto'>('portada')
   const [productos, setProductos] = useState<Producto[]>([])
   const [error, setError] = useState('')
   const [guardando, setGuardando] = useState(false)
@@ -190,6 +216,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     () => [...new Set(productos.map((producto) => producto.categoria?.trim()).filter((c): c is string => Boolean(c)))],
     [productos],
   )
+  const esquemas = borrador.tema.esquemas ?? esquemasIniciales(borrador.tema)
   const alSubiendo = useCallback((delta: number) => setSubiendo((valor) => valor + delta), [])
 
   const guardar = useCallback(async () => {
@@ -246,11 +273,12 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
         plan,
       },
       productos,
-      vista: 'tienda' as const,
+      vista: plantillaEditada === 'producto' ? ('producto' as const) : ('tienda' as const),
+      producto: productos[0] ?? PRODUCTO_EJEMPLO,
       enfocar: abierto,
       editable: true,
     }),
-    [borrador, productos, abierto, tienda.moneda, plan],
+    [borrador, productos, abierto, tienda.moneda, plan, plantillaEditada],
   )
 
   const estiloActivo = ESTILOS_PREDEFINIDOS.find(
@@ -308,192 +336,248 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       }
       lateral={
         <>
-          <AnimatePresence>{error && <Aviso>{error}</Aviso>}</AnimatePresence>
-
-          <Seccion titulo="Plantillas">
-            <p className="text-[12px] leading-relaxed text-sitio-tenue">
-              Un diseño completo de un clic: estilo y secciones con textos de ejemplo para que solo cambies lo tuyo.
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {PLANTILLAS_TIENDA.map((plantilla) => {
-                const incluida = planIncluye(plan, plantilla.plan)
-                return (
-                  <button
-                    key={plantilla.clave}
-                    type="button"
-                    disabled={!incluida}
-                    onClick={() => aplicarPlantilla(plantilla)}
-                    title={incluida ? `Usar ${plantilla.nombre}` : `Desde el plan ${PLANES[plantilla.plan].nombre}`}
-                    className="group flex flex-col gap-2 rounded-[10px] border border-sitio-borde bg-[#121214] p-2 text-left transition-colors enabled:hover:border-white/30 disabled:cursor-not-allowed"
-                  >
-                    <span
-                      className={cn(
-                        'relative block aspect-[16/10] overflow-hidden rounded-md bg-black transition-opacity',
-                        !incluida && 'opacity-40',
-                      )}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element -- miniatura estática */}
-                      <img src={plantilla.captura} alt="" className="h-full w-full object-cover object-top" />
-                    </span>
-                    <span className="flex items-center justify-between gap-1.5 px-0.5">
-                      <span className="truncate text-[11.5px] text-white">{plantilla.nombre}</span>
-                      {!incluida && <PlanRequerido plan={PLANES[plantilla.plan].nombre} />}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </Seccion>
-
-          <Seccion titulo="Secciones de la página" abierta>
-            <ListaBloques
-              bloques={borrador.configuracionBloques}
-              alCambiar={(configuracionBloques) => cambiar({ configuracionBloques })}
-              abierto={abierto}
-              alAbrir={setAbierto}
-              alError={setError}
-              alSubiendo={alSubiendo}
-              limites={limites}
-              categorias={categorias}
-            />
-          </Seccion>
-
-          <Seccion titulo="Cabecera y menú">
-            <CamposCabecera ajustes={borrador.ajustes} alCambiar={cambiarAjustes} categorias={categorias} limites={limites} />
-          </Seccion>
-
-          <Seccion titulo="Contacto y redes">
-            <CamposContacto ajustes={borrador.ajustes} alCambiar={cambiarAjustes} limites={limites} />
-          </Seccion>
-
-          <Seccion titulo="Estilo">
-            <span className="text-[11.5px] text-sitio-suave">Punto de partida</span>
-            <div className="grid grid-cols-5 gap-1.5">
-              {ESTILOS_PREDEFINIDOS.map((estilo) => (
+          <div className="sticky -top-3.5 z-20 -mx-3.5 -mt-3.5 mb-1 border-b border-sitio-borde bg-[#0a0a0b]/95 px-3.5 pt-3.5 pb-3 backdrop-blur">
+            <div className="grid grid-cols-3 gap-1 rounded-[10px] border border-sitio-borde bg-white/[0.03] p-1">
+              {PESTANAS.map((opcion) => (
                 <button
-                  key={estilo.clave}
+                  key={opcion.valor}
                   type="button"
-                  title={estilo.nombre}
-                  onClick={() => cambiar({ tema: { ...estilo.tema }, plantilla: estilo.clave })}
+                  onClick={() => setPestana(opcion.valor)}
                   className={cn(
-                    'flex flex-col items-center gap-1.5 rounded-lg border p-1.5 transition-colors',
-                    estiloActivo === estilo.clave ? 'border-white/50 bg-white/[0.06]' : 'border-sitio-borde hover:border-white/25',
+                    'relative flex h-9 items-center justify-center gap-1.5 rounded-[7px] text-[12.5px] transition-colors',
+                    pestana === opcion.valor ? 'text-white' : 'text-sitio-tenue hover:text-sitio-suave',
                   )}
                 >
-                  <span
-                    className="relative block h-9 w-full overflow-hidden rounded-[5px] border border-white/10"
-                    style={{ background: estilo.tema.colorFondo }}
-                  >
-                    <span
-                      className="absolute right-1.5 bottom-1.5 left-1.5 h-2.5 rounded-[3px]"
-                      style={{ background: estilo.tema.colorMarca }}
+                  {pestana === opcion.valor && (
+                    <motion.span
+                      layoutId="pestana-editor"
+                      transition={{ duration: 0.45, ease: CURVA }}
+                      className="absolute inset-0 rounded-[7px] bg-white/[0.09]"
                     />
-                    <span
-                      className="absolute top-1.5 left-1.5 h-1 w-5 rounded-full opacity-70"
-                      style={{ background: estilo.tema.colorTexto }}
-                    />
-                  </span>
-                  <span className="text-[10px] text-sitio-suave">{estilo.nombre}</span>
+                  )}
+                  <opcion.Icono aria-hidden="true" className="relative h-3.5 w-3.5" />
+                  <span className="relative">{opcion.etiqueta}</span>
                 </button>
               ))}
             </div>
-            {!limites.temaLibre && (
-              <Candado plan={planMinimo((plan) => plan.temaLibre)}>
-                Colores, letra y esquinas a tu medida.
-              </Candado>
+            {pestana === 'pagina' && (
+              <div className="mt-2.5">
+                <Selector
+                  etiqueta="Plantilla que estás editando"
+                  valor={plantillaEditada}
+                  alCambiar={(valor) => {
+                    setPlantillaEditada(valor)
+                    setAbierto(null)
+                  }}
+                  opciones={[
+                    { valor: 'portada', etiqueta: 'Portada', detalle: 'La página de inicio de tu tienda' },
+                    { valor: 'producto', etiqueta: 'Página de producto', detalle: 'Cómo se ve cada producto' },
+                  ]}
+                />
+              </div>
             )}
-            <fieldset disabled={!limites.temaLibre} className="flex flex-col gap-3.5 disabled:pointer-events-none disabled:opacity-40">
-            <div className="grid grid-cols-2 gap-2.5">
-              <CampoColor
-                etiqueta="Color de marca"
-                valor={borrador.tema.colorMarca ?? TEMA_BASE.colorMarca}
-                alCambiar={(colorMarca) => cambiarTema({ colorMarca })}
-              />
-              <CampoColor
-                etiqueta="Texto sobre la marca"
-                valor={borrador.tema.colorContraste ?? TEMA_BASE.colorContraste}
-                alCambiar={(colorContraste) => cambiarTema({ colorContraste })}
-              />
-              <CampoColor
-                etiqueta="Fondo"
-                valor={borrador.tema.colorFondo ?? TEMA_BASE.colorFondo}
-                alCambiar={(colorFondo) => cambiarTema({ colorFondo })}
-              />
-              <CampoColor
-                etiqueta="Texto"
-                valor={borrador.tema.colorTexto ?? TEMA_BASE.colorTexto}
-                alCambiar={(colorTexto) => cambiarTema({ colorTexto })}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[11.5px] text-sitio-suave">Letra de los títulos</span>
-              <Segmentado
-                opciones={Object.entries(FUENTES_TITULOS).map(([valor, fuente]) => ({
-                  valor: valor as keyof typeof FUENTES_TITULOS,
-                  etiqueta: fuente.etiqueta,
-                }))}
-                valor={borrador.tema.fuenteTitulos ?? 'moderna'}
-                alCambiar={(fuenteTitulos) => cambiarTema({ fuenteTitulos })}
-                chico
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[11.5px] text-sitio-suave">Esquinas</span>
-              <Segmentado
-                opciones={RADIOS}
-                valor={(borrador.tema.radio ?? TEMA_BASE.radio) as (typeof RADIOS)[number]['valor']}
-                alCambiar={(radio) => cambiarTema({ radio })}
-                chico
-              />
-            </div>
-            </fieldset>
-          </Seccion>
+          </div>
 
-          <Seccion titulo="Identidad">
-            <Campo
-              etiqueta="Nombre de la tienda"
-              valor={borrador.nombre}
-              alCambiar={(nombre) => cambiar({ nombre })}
-              maximo={80}
-            />
-            <CampoArea
-              etiqueta="Descripción (sale en Google y al compartir)"
-              valor={borrador.descripcion ?? ''}
-              alCambiar={(descripcion) => cambiar({ descripcion })}
-              filas={3}
-              maximo={300}
-            />
-            <span className="text-[11.5px] text-sitio-suave">Logo</span>
-            <div className="w-28">
-              <ZonaImagen
-                url={borrador.logoUrl}
-                alCambiar={(logoUrl) => cambiar({ logoUrl })}
-                proporcion="aspect-square"
-                texto="Logo"
-                alError={setError}
-                alSubiendo={alSubiendo}
-              />
-            </div>
-          </Seccion>
+          <AnimatePresence>{error && <Aviso>{error}</Aviso>}</AnimatePresence>
 
-          <Seccion titulo="Publicación" abierta>
-            <Interruptor activo={borrador.publicada} alCambiar={(publicada) => cambiar({ publicada })}>
-              {borrador.publicada ? 'Tienda publicada' : 'Tienda en borrador'}
-              <small className="block text-[11.5px] text-sitio-tenue">
-                {borrador.publicada
-                  ? 'Cualquiera puede verla en tu dirección.'
-                  : 'Sólo tú la ves aquí; la dirección muestra “no encontrada”.'}
-              </small>
-            </Interruptor>
-            <a
-              href={urlTienda(subdominio)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="truncate font-mono text-[12px] text-sitio-azul-claro hover:underline"
-            >
-              {urlTienda(subdominio).replace(/^https?:\/\//, '')}
-            </a>
-          </Seccion>
+          {pestana === 'pagina' && plantillaEditada === 'portada' && (
+            <>
+              <Seccion titulo="Encabezado">
+                <CamposCabecera ajustes={borrador.ajustes} alCambiar={cambiarAjustes} categorias={categorias} limites={limites} />
+              </Seccion>
+
+              <Seccion titulo="Secciones" abierta>
+                <ListaBloques
+                  bloques={borrador.configuracionBloques}
+                  alCambiar={(configuracionBloques) => cambiar({ configuracionBloques })}
+                  abierto={abierto}
+                  alAbrir={setAbierto}
+                  alError={setError}
+                  alSubiendo={alSubiendo}
+                  limites={limites}
+                  categorias={categorias}
+                  esquemas={esquemas}
+                />
+              </Seccion>
+            </>
+          )}
+
+          {pestana === 'pagina' && plantillaEditada === 'producto' && (
+            <CamposFicha
+              plantilla={borrador.ajustes.paginaProducto}
+              alCambiar={(paginaProducto) => cambiarAjustes({ paginaProducto })}
+            />
+          )}
+
+          {pestana === 'tema' && (
+            <>
+              <Seccion titulo="Plantillas de diseño">
+                <p className="text-[12px] leading-relaxed text-sitio-tenue">
+                  Un diseño completo de un clic: estilo y secciones con textos de ejemplo para que solo cambies lo tuyo.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {PLANTILLAS_TIENDA.map((plantilla) => {
+                    const incluida = planIncluye(plan, plantilla.plan)
+                    return (
+                      <button
+                        key={plantilla.clave}
+                        type="button"
+                        disabled={!incluida}
+                        onClick={() => aplicarPlantilla(plantilla)}
+                        title={incluida ? `Usar ${plantilla.nombre}` : `Desde el plan ${PLANES[plantilla.plan].nombre}`}
+                        className="group flex flex-col gap-2 rounded-[10px] border border-sitio-borde bg-[#121214] p-2 text-left transition-colors enabled:hover:border-white/30 disabled:cursor-not-allowed"
+                      >
+                        <span
+                          className={cn(
+                            'relative block aspect-[16/10] overflow-hidden rounded-md bg-black transition-opacity',
+                            !incluida && 'opacity-40',
+                          )}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element -- miniatura estática */}
+                          <img src={plantilla.captura} alt="" className="h-full w-full object-cover object-top" />
+                        </span>
+                        <span className="flex items-center justify-between gap-1.5 px-0.5">
+                          <span className="truncate text-[11.5px] text-white">{plantilla.nombre}</span>
+                          {!incluida && <PlanRequerido plan={PLANES[plantilla.plan].nombre} />}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </Seccion>
+
+              <Seccion titulo="Colores" abierta>
+                <span className="text-[11.5px] text-sitio-suave">Punto de partida</span>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {ESTILOS_PREDEFINIDOS.map((estilo) => (
+                    <button
+                      key={estilo.clave}
+                      type="button"
+                      title={estilo.nombre}
+                      onClick={() => cambiar({ tema: { ...estilo.tema }, plantilla: estilo.clave })}
+                      className={cn(
+                        'flex flex-col items-center gap-1.5 rounded-lg border p-1.5 transition-colors',
+                        estiloActivo === estilo.clave ? 'border-white/50 bg-white/[0.06]' : 'border-sitio-borde hover:border-white/25',
+                      )}
+                    >
+                      <span
+                        className="relative block h-9 w-full overflow-hidden rounded-[5px] border border-white/10"
+                        style={{ background: estilo.tema.colorFondo }}
+                      >
+                        <span
+                          className="absolute right-1.5 bottom-1.5 left-1.5 h-2.5 rounded-[3px]"
+                          style={{ background: estilo.tema.colorMarca }}
+                        />
+                        <span
+                          className="absolute top-1.5 left-1.5 h-1 w-5 rounded-full opacity-70"
+                          style={{ background: estilo.tema.colorTexto }}
+                        />
+                      </span>
+                      <span className="text-[10px] text-sitio-suave">{estilo.nombre}</span>
+                    </button>
+                  ))}
+                </div>
+                {!limites.temaLibre && (
+                  <Candado plan={planMinimo((plan) => plan.temaLibre)}>
+                    Colores, letra y esquinas a tu medida.
+                  </Candado>
+                )}
+                <fieldset disabled={!limites.temaLibre} className="flex flex-col gap-3.5 disabled:pointer-events-none disabled:opacity-40">
+                <div className="grid grid-cols-2 gap-2.5">
+                  <CampoColor
+                    etiqueta="Color de marca"
+                    valor={borrador.tema.colorMarca ?? TEMA_BASE.colorMarca}
+                    alCambiar={(colorMarca) => cambiarTema({ colorMarca })}
+                  />
+                  <CampoColor
+                    etiqueta="Texto sobre la marca"
+                    valor={borrador.tema.colorContraste ?? TEMA_BASE.colorContraste}
+                    alCambiar={(colorContraste) => cambiarTema({ colorContraste })}
+                  />
+                  <CampoColor
+                    etiqueta="Fondo"
+                    valor={borrador.tema.colorFondo ?? TEMA_BASE.colorFondo}
+                    alCambiar={(colorFondo) => cambiarTema({ colorFondo })}
+                  />
+                  <CampoColor
+                    etiqueta="Texto"
+                    valor={borrador.tema.colorTexto ?? TEMA_BASE.colorTexto}
+                    alCambiar={(colorTexto) => cambiarTema({ colorTexto })}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[11.5px] text-sitio-suave">Esquinas</span>
+                  <Segmentado
+                    opciones={RADIOS}
+                    valor={(borrador.tema.radio ?? TEMA_BASE.radio) as (typeof RADIOS)[number]['valor']}
+                    alCambiar={(radio) => cambiarTema({ radio })}
+                    chico
+                  />
+                </div>
+                </fieldset>
+              </Seccion>
+
+              <CamposTema tema={borrador.tema} alCambiar={cambiarTema} limites={limites} />
+            </>
+          )}
+
+          {pestana === 'ajustes' && (
+            <>
+              <Seccion titulo="Contacto y redes">
+                <CamposContacto ajustes={borrador.ajustes} alCambiar={cambiarAjustes} limites={limites} />
+              </Seccion>
+
+              <Seccion titulo="Ventas y envíos" abierta>
+                <CamposVentas ajustes={borrador.ajustes} alCambiar={cambiarAjustes} />
+              </Seccion>
+
+              <Seccion titulo="Identidad">
+                <Campo
+                  etiqueta="Nombre de la tienda"
+                  valor={borrador.nombre}
+                  alCambiar={(nombre) => cambiar({ nombre })}
+                  maximo={80}
+                />
+                <CampoArea
+                  etiqueta="Descripción (sale en Google y al compartir)"
+                  valor={borrador.descripcion ?? ''}
+                  alCambiar={(descripcion) => cambiar({ descripcion })}
+                  filas={3}
+                  maximo={300}
+                />
+                <span className="text-[11.5px] text-sitio-suave">Logo</span>
+                <div className="w-28">
+                  <ZonaImagen
+                    url={borrador.logoUrl}
+                    alCambiar={(logoUrl) => cambiar({ logoUrl })}
+                    proporcion="aspect-square"
+                    texto="Logo"
+                    alError={setError}
+                    alSubiendo={alSubiendo}
+                  />
+                </div>
+              </Seccion>
+
+              <Seccion titulo="Publicación" abierta>
+                <Interruptor activo={borrador.publicada} alCambiar={(publicada) => cambiar({ publicada })}>
+                  {borrador.publicada ? 'Tienda publicada' : 'Tienda en borrador'}
+                  <small className="block text-[11.5px] text-sitio-tenue">
+                    {borrador.publicada
+                      ? 'Cualquiera puede verla en tu dirección.'
+                      : 'Sólo tú la ves aquí; la dirección muestra “no encontrada”.'}
+                  </small>
+                </Interruptor>
+                <a
+                  href={urlTienda(subdominio)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="truncate font-mono text-[12px] text-sitio-azul-claro hover:underline"
+                >
+                  {urlTienda(subdominio).replace(/^https?:\/\//, '')}
+                </a>
+              </Seccion>
+            </>
+          )}
         </>
       }
       vista={<VistaPrevia datos={datosVista} dispositivo={dispositivo} alAccion={alAccionVista} />}

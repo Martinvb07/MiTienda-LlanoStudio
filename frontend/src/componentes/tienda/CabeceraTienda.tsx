@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { MessageCircle, Search, ShoppingBag } from 'lucide-react'
+import { BotonCarrito } from './carrito/Carrito'
 import type { AjustesTienda } from '@/tipos/tienda'
 import { esMedioLocal } from '@/utilidades/medios'
 import { enlaceWhatsapp, telefonoLegible } from '@/utilidades/whatsapp'
@@ -11,7 +12,20 @@ interface Props {
   ajustes?: AjustesTienda
 }
 
-function Logo({ nombre, logoUrl, grande }: { nombre: string; logoUrl: string | null; grande?: boolean }) {
+const ALTO_LOGO = { chico: 'h-7 max-w-[130px]', medio: 'h-9 max-w-[160px]', grande: 'h-12 max-w-[220px]' } as const
+
+function Logo({
+  nombre,
+  logoUrl,
+  grande,
+  tamano,
+}: {
+  nombre: string
+  logoUrl: string | null
+  grande?: boolean
+  tamano?: keyof typeof ALTO_LOGO
+}) {
+  const alto = ALTO_LOGO[tamano ?? (grande ? 'grande' : 'medio')]
   return (
     <Link href="/" className="flex min-w-0 shrink-0 items-center gap-3">
       {logoUrl ? (
@@ -21,7 +35,7 @@ function Logo({ nombre, logoUrl, grande }: { nombre: string; logoUrl: string | n
           width={240}
           height={96}
           unoptimized={esMedioLocal(logoUrl)}
-          className={grande ? 'h-12 w-auto max-w-[220px] object-contain' : 'h-9 w-auto max-w-[160px] object-contain'}
+          className={`${alto} w-auto object-contain`}
         />
       ) : (
         <span className={`truncate font-display font-semibold tracking-tight ${grande ? 'text-2xl' : 'text-lg'}`}>{nombre}</span>
@@ -54,12 +68,38 @@ function Buscador({ ancho }: { ancho?: boolean }) {
  */
 export function CabeceraTienda({ nombre, logoUrl, ajustes = {} }: Props) {
   const menu = ajustes.menu?.filter((item) => item.texto.trim()) ?? []
+  // Fija al bajar: pegada arriba, con el fondo de la tienda para que no se transparente.
+  const fija = ajustes.cabeceraFija ? 'sticky top-0 z-50 bg-superficie/95 backdrop-blur' : ''
 
   if (ajustes.cabecera !== 'completa') {
+    if (ajustes.logoCentrado) {
+      return (
+        <header className={`border-b border-tinta/10 ${fija}`}>
+          <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-6 px-6 py-4">
+            <nav className="flex min-w-0 items-center gap-5 overflow-x-auto text-sm text-tinta/70 [scrollbar-width:none]">
+              {(menu.length > 0 ? menu : [{ texto: 'Productos', enlace: '/#productos' }]).map((item) => (
+                <a key={item.texto + item.enlace} href={item.enlace || '#'} className="shrink-0 transition hover:text-tinta">
+                  {item.texto}
+                </a>
+              ))}
+            </nav>
+            <Logo nombre={nombre} logoUrl={logoUrl} tamano={ajustes.tamanoLogo} />
+            <div className="flex items-center justify-end gap-5 text-tinta/75">
+              {ajustes.buscador && (
+                <Link href="/buscar" aria-label="Buscar" className="transition hover:text-tinta">
+                  <Search aria-hidden="true" className="h-5 w-5" />
+                </Link>
+              )}
+              <BotonCarrito className="transition hover:text-tinta" />
+            </div>
+          </div>
+        </header>
+      )
+    }
     return (
-      <header className="border-b border-tinta/10">
+      <header className={`border-b border-tinta/10 ${fija}`}>
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-6">
-          <Logo nombre={nombre} logoUrl={logoUrl} />
+          <Logo nombre={nombre} logoUrl={logoUrl} tamano={ajustes.tamanoLogo} />
           <nav className="flex min-w-0 items-center gap-5 overflow-x-auto text-sm text-tinta/70">
             {menu.length > 0 ? (
               menu.map((item) => (
@@ -77,6 +117,7 @@ export function CabeceraTienda({ nombre, logoUrl, ajustes = {} }: Props) {
                 <Search aria-hidden="true" className="h-4 w-4" />
               </Link>
             )}
+            <BotonCarrito className="shrink-0 text-tinta/75 transition hover:text-tinta" />
           </nav>
         </div>
       </header>
@@ -86,17 +127,15 @@ export function CabeceraTienda({ nombre, logoUrl, ajustes = {} }: Props) {
   const barra = ajustes.colorBarra ?? '#000000'
 
   return (
-    <header>
+    <header className={fija}>
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-8 gap-y-4 px-6 py-6">
-        <Logo nombre={nombre} logoUrl={logoUrl} grande />
+        <Logo nombre={nombre} logoUrl={logoUrl} grande tamano={ajustes.tamanoLogo} />
         {ajustes.buscador !== false && (
           <div className="order-3 flex w-full justify-center md:order-none md:w-auto md:flex-1">
             <Buscador ancho />
           </div>
         )}
-        <Link href="/#productos" aria-label="Ver productos" className="text-tinta/80 transition hover:text-tinta">
-          <ShoppingBag aria-hidden="true" className="h-6 w-6" strokeWidth={1.6} />
-        </Link>
+        <BotonCarrito className="text-tinta/80 transition hover:text-tinta" />
       </div>
 
       <div style={{ background: barra }} className="text-white">
@@ -104,7 +143,7 @@ export function CabeceraTienda({ nombre, logoUrl, ajustes = {} }: Props) {
           {ajustes.botonDestacado?.texto && (
             <a
               href={ajustes.botonDestacado.enlace || '#productos'}
-              className="flex shrink-0 items-center gap-2 rounded-(--radius-marca) bg-marca px-5 py-2.5 text-sm font-medium text-marca-contraste transition hover:opacity-90"
+              className="boton-tienda flex shrink-0 items-center gap-2 rounded-(--radius-marca) bg-marca px-5 py-2.5 text-sm font-medium text-marca-contraste transition hover:opacity-90"
             >
               <ShoppingBag aria-hidden="true" className="h-4 w-4" />
               {ajustes.botonDestacado.texto}

@@ -57,7 +57,7 @@ export function GrillaProductos({
         <div className="mt-10 text-center">
           <Link
             href={categoria ? `/categoria/${generarSlug(categoria)}` : '/buscar'}
-            className="inline-flex rounded-(--radius-marca) bg-marca px-7 py-3 text-sm font-medium text-marca-contraste transition hover:opacity-90"
+            className="boton-tienda inline-flex rounded-(--radius-marca) bg-marca px-7 py-3 text-sm font-medium text-marca-contraste transition hover:opacity-90"
           >
             Ver más productos
           </Link>

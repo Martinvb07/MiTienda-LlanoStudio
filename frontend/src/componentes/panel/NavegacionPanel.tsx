@@ -40,6 +40,10 @@ const GRUPOS: { titulo: string; enlaces: Enlace[] }[] = [
     ],
   },
   {
+    titulo: 'Ventas',
+    enlaces: [{ href: '/panel/pedidos', etiqueta: 'Pedidos', corta: 'Pedidos', Icono: Receipt }],
+  },
+  {
     titulo: 'Cuenta',
     enlaces: [{ href: '/panel/configuracion', etiqueta: 'Configuración', corta: 'Ajustes', Icono: Settings }],
   },
@@ -170,16 +174,6 @@ export function NavegacionPanel() {
               </ul>
             </div>
           ))}
-          <div>
-            <p className="px-3 pb-2 text-[10px] tracking-[0.18em] text-sitio-tenue uppercase">Ventas</p>
-            <span className="flex cursor-default items-center gap-3 rounded-lg px-3 py-[9px] text-[13.5px] text-sitio-tenue">
-              <Receipt aria-hidden="true" strokeWidth={1.6} className="h-4 w-4 shrink-0" />
-              Pedidos
-              <span className="ml-auto rounded-full border border-sitio-azul-claro/30 bg-sitio-azul/10 px-1.5 py-px text-[9.5px] font-semibold text-sitio-azul-claro">
-                Pronto
-              </span>
-            </span>
-          </div>
         </nav>
 
         <div className="mt-auto p-4">
@@ -263,7 +257,7 @@ export function NavegacionPanel() {
       {/* ── Celular: pestañas abajo ── */}
       <nav
         aria-label="Secciones del panel"
-        className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 rounded-2xl border border-white/10 bg-[#0e0e0f]/90 p-1.5 shadow-[0_20px_60px_-10px_rgba(0,0,0,1)] backdrop-blur-xl md:hidden"
+        className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-2xl border border-white/10 bg-[#0e0e0f]/90 p-1.5 shadow-[0_20px_60px_-10px_rgba(0,0,0,1)] backdrop-blur-xl md:hidden"
         style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
       >
         {TODOS.map((enlace) => {

@@ -372,3 +372,50 @@ html:has(.marco-oscuro)::-webkit-scrollbar-corner,
     transform: translateX(-50%);
   }
 }
+
+/* ── Configuración del tema de cada tienda (atributosTema) ── */
+[data-tienda] .boton-tienda {
+  border-radius: var(--radio-boton, var(--radio));
+}
+[data-botones='contorno'] .boton-tienda.bg-marca {
+  background: transparent;
+  color: var(--marca);
+  box-shadow: inset 0 0 0 1.5px var(--marca);
+}
+[data-botones='contorno'] .boton-tienda.bg-marca:hover {
+  background: var(--marca);
+  color: var(--marca-contraste);
+}
+[data-boton-mayus] .boton-tienda {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.86em;
+}
+[data-titulos-peso='normal'] .font-display {
+  font-weight: 400;
+}
+[data-titulos-peso='negrita'] .font-display {
+  font-weight: 800;
+}
+[data-titulos-mayus] :is(h1, h2, h3).font-display {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+[data-ancho-pagina='amplio'] .max-w-6xl {
+  max-width: 84rem;
+}
+[data-ancho-pagina='completo'] .max-w-6xl {
+  max-width: none;
+}
+[data-tarjeta='vertical'] .tarjeta-foto {
+  aspect-ratio: 4 / 5;
+}
+[data-tarjeta='horizontal'] .tarjeta-foto {
+  aspect-ratio: 4 / 3;
+}
+[data-tarjeta-centro] .tarjeta-producto {
+  text-align: center;
+}
+[data-segunda-foto] .tarjeta-producto:hover .foto-alterna {
+  opacity: 1;
+}

@@ -19,7 +19,8 @@ import {
   Share2,
   Sparkles,
 } from 'lucide-react'
-import { listarProductos } from '@/servicios/panel'
+import { listarPedidos, listarProductos } from '@/servicios/panel'
+import type { Pedido } from '@/tipos/pedidos'
 import type { ProductoPanel } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
 import { formatearPrecio } from '@/utilidades/formato'
@@ -27,6 +28,8 @@ import { limitesDe } from '@/utilidades/planes'
 import { cn } from '@/utilidades/clases'
 import { useSesion } from './SesionPanel'
 import { Aparecer, Contador, SALIDA } from './ui/movimiento'
+import { ESTADOS, fechaCorta } from './PantallaPedidos'
+import { Etiqueta } from './ui/basicos'
 
 function saludo() {
   const hora = new Date().getHours()
@@ -52,19 +55,28 @@ export function PantallaResumen() {
   const { sesion } = useSesion()
   const [productos, setProductos] = useState<ProductoPanel[] | null>(null)
   const [copiado, setCopiado] = useState(false)
+  const [pedidos, setPedidos] = useState<Pedido[]>([])
 
   useEffect(() => {
     listarProductos()
       .then(setProductos)
       .catch(() => setProductos([]))
+    listarPedidos()
+      .then(setPedidos)
+      .catch(() => setPedidos([]))
   }, [])
+
+  const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime()
+  const ventasMes = pedidos
+    .filter((pedido) => !['CANCELADO', 'REEMBOLSADO'].includes(pedido.estado) && new Date(pedido.creadoEn).getTime() >= inicioMes)
+    .reduce((suma, pedido) => suma + Number(pedido.total), 0)
+  const nuevos = pedidos.filter((pedido) => pedido.estado === 'PENDIENTE').length
 
   const lista = productos ?? []
   const visibles = lista.filter((producto) => producto.activo)
   const agotados = lista.filter((producto) => producto.activo && producto.stock === 0)
   const sinFoto = lista.filter((producto) => producto.fotos.length === 0)
   const ocultos = lista.filter((producto) => !producto.activo)
-  const inventario = lista.reduce((suma, producto) => suma + Number(producto.precio) * producto.stock, 0)
   const recientes = [...lista]
     .sort((a, b) => new Date(b.actualizadoEn).getTime() - new Date(a.actualizadoEn).getTime())
     .slice(0, 4)
@@ -209,18 +221,18 @@ export function PantallaResumen() {
             pie: plan.productos === null ? 'Sin límite en tu plan' : `de ${plan.productos} en plan ${plan.nombre}`,
             uso: plan.productos === null ? null : lista.length / plan.productos,
           },
-          { etiqueta: 'Visibles en la tienda', valor: visibles.length, pie: ocultos.length === 1 ? '1 oculto' : `${ocultos.length} ocultos` },
+          {
+            etiqueta: 'Ventas del mes',
+            valor: ventasMes,
+            pie: `${pedidos.length} pedidos en total`,
+            formato: (numero: number) => formatearPrecio(Math.round(numero)),
+          },
+          { etiqueta: 'Pedidos nuevos', valor: nuevos, pie: nuevos ? 'Por confirmar y preparar' : 'Todo al día', alerta: nuevos > 0 },
           {
             etiqueta: 'Agotados',
             valor: agotados.length,
             pie: agotados.length ? 'Repón stock u ocúltalos' : 'Todo con stock',
             alerta: agotados.length > 0,
-          },
-          {
-            etiqueta: 'Valor del inventario',
-            valor: inventario,
-            pie: 'Precio × unidades en stock',
-            formato: (numero: number) => formatearPrecio(Math.round(numero)),
           },
         ].map((cifra, indice) => (
           <Aparecer key={cifra.etiqueta} orden={indice + 1}>
@@ -423,6 +435,43 @@ export function PantallaResumen() {
           </Aparecer>
         </div>
       </div>
+
+      {/* ── Últimos pedidos ── */}
+      {pedidos.length > 0 && (
+        <Aparecer orden={8}>
+          <section className={cn(TARJETA, 'p-6')}>
+            <div className="flex items-baseline justify-between gap-4">
+              <h2 className="text-[15px] font-medium">Últimos pedidos</h2>
+              <Link href="/panel/pedidos" className="enlace-flecha !text-[11px] text-sitio-suave hover:text-white">
+                Ver todos
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            </div>
+            <ul className="mt-3 divide-y divide-sitio-borde">
+              {pedidos.slice(0, 5).map((pedido) => {
+                const estado = ESTADOS.find((opcion) => opcion.valor === pedido.estado)!
+                return (
+                  <li key={pedido.id}>
+                    <Link href="/panel/pedidos" className="group grid grid-cols-[auto_1fr_auto] items-center gap-4 py-3">
+                      <span className="font-mono text-[12.5px] text-sitio-tenue">#{pedido.numero}</span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-[13.5px] group-hover:text-white">{pedido.clienteNombre}</span>
+                        <span className="text-[11.5px] text-sitio-tenue">{fechaCorta(pedido.creadoEn)}</span>
+                      </span>
+                      <span className="flex items-center gap-3">
+                        <span className="hidden sm:inline">
+                          <Etiqueta tono={estado.tono}>{estado.etiqueta}</Etiqueta>
+                        </span>
+                        <span className="text-[13.5px] tabular-nums">{formatearPrecio(pedido.total)}</span>
+                      </span>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        </Aparecer>
+      )}
 
       {/* ── Accesos rápidos ── */}
       <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">

@@ -1,6 +1,8 @@
 'use client'
 
 import type { EstiloSeccion } from '@/tipos/bloques'
+import type { EsquemaColor } from '@/tipos/tienda'
+import { cn } from '@/utilidades/clases'
 import { generarSlug } from '@/utilidades/formato'
 import { nivelIncluye, planMinimo, type LimitesPlan } from '@/utilidades/planes'
 import { Campo, CampoColor, Candado, Interruptor, Segmentado } from '../ui/basicos'
@@ -12,6 +14,7 @@ interface Props {
   limites: LimitesPlan
   alError: (mensaje: string) => void
   alSubiendo: (delta: number) => void
+  esquemas: EsquemaColor[]
 }
 
 function Grupo({ titulo, children }: { titulo: string; children: React.ReactNode }) {
@@ -27,7 +30,7 @@ function Grupo({ titulo, children }: { titulo: string; children: React.ReactNode
  * Apariencia de la sección: lo mismo para todos los tipos. Cada nivel del plan
  * abre un grupo más; lo que no está incluido se ve con su candado.
  */
-export function CamposEstilo({ estilo, alCambiar, limites, alError, alSubiendo }: Props) {
+export function CamposEstilo({ estilo, alCambiar, limites, alError, alSubiendo, esquemas }: Props) {
   const nivel = limites.estiloSeccion
   const cambiar = (cambios: Partial<EstiloSeccion>) => alCambiar({ ...estilo, ...cambios })
 
@@ -41,6 +44,38 @@ export function CamposEstilo({ estilo, alCambiar, limites, alError, alSubiendo }
 
   return (
     <>
+      <Grupo titulo="Esquema de color">
+        <div className="grid grid-cols-5 gap-1.5">
+          <button
+            type="button"
+            onClick={() => cambiar({ esquema: undefined })}
+            title="El del tema"
+            className={cn(
+              'grid h-10 place-items-center rounded-lg border text-[10px] text-sitio-tenue transition-colors',
+              !estilo.esquema ? 'border-white/60' : 'border-sitio-borde hover:border-white/25',
+            )}
+          >
+            Tema
+          </button>
+          {esquemas.map((esquema) => (
+            <button
+              key={esquema.id}
+              type="button"
+              title={esquema.nombre}
+              onClick={() => cambiar({ esquema: esquema.id })}
+              className={cn(
+                'relative grid h-10 place-items-center rounded-lg border text-[12px] font-semibold transition-colors',
+                estilo.esquema === esquema.id ? 'border-white ring-2 ring-white/30' : 'border-white/10 hover:border-white/30',
+              )}
+              style={{ background: esquema.fondo, color: esquema.texto }}
+            >
+              Aa
+              <span className="absolute right-1 bottom-1 h-2 w-2 rounded-full" style={{ background: esquema.marca }} />
+            </button>
+          ))}
+        </div>
+      </Grupo>
+
       <Interruptor
         activo={Boolean(estilo.fondo)}
         alCambiar={(activo) => cambiar({ fondo: activo ? '#f4f4f5' : undefined })}

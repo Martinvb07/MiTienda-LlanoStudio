@@ -38,6 +38,7 @@ import {
   type EstiloSeccion,
   type TipoBloque,
 } from '@/tipos/bloques'
+import type { EsquemaColor } from '@/tipos/tienda'
 import { cn } from '@/utilidades/clases'
 import { planMinimo, type LimitesPlan } from '@/utilidades/planes'
 import { CURVA, Candado, PlanRequerido, Segmentado } from '../ui/basicos'
@@ -54,6 +55,8 @@ interface Props {
   alSubiendo: (delta: number) => void
   limites: LimitesPlan
   categorias?: string[]
+  /** Esquemas de color del tema, para la pestaña Estilo. */
+  esquemas: EsquemaColor[]
 }
 
 const PREFIJO_NUEVO = 'nuevo:'
@@ -94,6 +97,7 @@ export function ListaBloques({
   alSubiendo,
   limites,
   categorias,
+  esquemas,
 }: Props) {
   const [paleta, setPaleta] = useState(false)
   const [arrastrando, setArrastrando] = useState<string | null>(null)
@@ -192,6 +196,7 @@ export function ListaBloques({
                 alSubiendo={alSubiendo}
                 limites={limites}
                 categorias={categorias}
+                esquemas={esquemas}
               />
             ))}
           </ul>
@@ -336,6 +341,7 @@ function FilaBloque({
   alSubiendo,
   limites,
   categorias,
+  esquemas,
 }: {
   bloque: Bloque
   abierto: boolean
@@ -351,6 +357,7 @@ function FilaBloque({
   alSubiendo: (delta: number) => void
   limites: LimitesPlan
   categorias?: string[]
+  esquemas: EsquemaColor[]
 }) {
   // Misma curva y duración que el reordenamiento del editor de llanostudio.co.
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -470,6 +477,7 @@ function FilaBloque({
                   limites={limites}
                   alError={alError}
                   alSubiendo={alSubiendo}
+                  esquemas={esquemas}
                 />
               )}
               <button

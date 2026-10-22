@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import type { EstiloSeccion } from '@/tipos/bloques'
+import type { EsquemaColor } from '@/tipos/tienda'
+import { variablesEsquema } from '@/utilidades/tema'
 
 /**
  * Aplica a una sección la apariencia que se eligió en el editor. El espaciado
@@ -11,14 +13,22 @@ import type { EstiloSeccion } from '@/tipos/bloques'
 export function EnvolturaSeccion({
   id,
   estilo,
+  esquemas,
+  animarPorDefecto = false,
   children,
 }: {
   id: string
   estilo?: EstiloSeccion
+  /** Esquemas de color del tema, para resolver estilo.esquema. */
+  esquemas?: EsquemaColor[]
+  /** El tema pide animar todas las secciones que no digan otra cosa. */
+  animarPorDefecto?: boolean
   children: ReactNode
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const animacion = estilo?.animacion && estilo.animacion !== 'ninguna' ? estilo.animacion : null
+  const elegida = estilo?.animacion ?? (animarPorDefecto ? 'aparecer' : 'ninguna')
+  const animacion = elegida !== 'ninguna' ? elegida : null
+  const esquema = estilo?.esquema ? esquemas?.find((opcion) => opcion.id === estilo.esquema) : undefined
   const [visible, setVisible] = useState(!animacion)
 
   useEffect(() => {
@@ -43,6 +53,7 @@ export function EnvolturaSeccion({
 
   const tarjeta = estilo?.forma === 'tarjeta'
   const variables: CSSProperties = {
+    ...(esquema ? variablesEsquema(esquema) : {}),
     ...(estilo?.fondo ? { background: estilo.fondo } : {}),
     ...(estilo?.texto ? ({ '--tinta': estilo.texto, color: estilo.texto } as CSSProperties) : {}),
   }

@@ -85,7 +85,7 @@ export function Carrusel({ diapositivas, intervalo = 5, alto = 'medio' }: PropsC
                 {diapositiva.textoBoton && (
                   <a
                     href={diapositiva.enlaceBoton || '#productos'}
-                    className="mt-7 inline-block rounded-(--radius-marca) bg-white px-6 py-3 font-medium text-black transition hover:opacity-90"
+                    className="boton-tienda mt-7 inline-block rounded-(--radius-marca) bg-white px-6 py-3 font-medium text-black transition hover:opacity-90"
                   >
                     {diapositiva.textoBoton}
                   </a>

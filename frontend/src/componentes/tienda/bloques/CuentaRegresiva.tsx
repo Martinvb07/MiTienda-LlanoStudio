@@ -58,7 +58,7 @@ export function CuentaRegresiva({ titulo, subtitulo, fecha, textoBoton, enlaceBo
       {textoBoton && !terminado && (
         <a
           href={enlaceBoton || '#productos'}
-          className="mt-10 inline-block rounded-(--radius-marca) border border-tinta/20 px-6 py-3 font-medium transition hover:bg-tinta/5"
+          className="boton-tienda mt-10 inline-block rounded-(--radius-marca) border border-tinta/20 px-6 py-3 font-medium transition hover:bg-tinta/5"
         >
           {textoBoton}
         </a>

@@ -1,6 +1,17 @@
 import type { Bloque } from './bloques'
 
-export type FuenteTitulos = 'moderna' | 'clasica' | 'redondeada'
+/** Clave de utilidades/fuentes.ts: 'moderna', 'clasica', 'redondeada' o una de Google Fonts. */
+export type FuenteTitulos = string
+
+/** Paleta con nombre que cada sección puede usar, como los esquemas de color de Shopify. */
+export interface EsquemaColor {
+  id: string
+  nombre: string
+  fondo: string
+  texto: string
+  marca: string
+  contraste: string
+}
 
 /** Sobrescrituras de tema por tienda; se inyectan como variables CSS. */
 export interface TemaTienda {
@@ -11,11 +22,63 @@ export interface TemaTienda {
   colorTexto?: string
   fuenteTitulos?: FuenteTitulos
   radio?: string
+
+  // ── Configuración del tema (como la de Shopify) ──
+  fuenteCuerpo?: string
+  pesoTitulos?: 'normal' | 'medio' | 'negrita'
+  titulosMayusculas?: boolean
+  anchoPagina?: 'normal' | 'amplio' | 'completo'
+  botonForma?: 'recto' | 'suave' | 'pildora'
+  botonEstilo?: 'relleno' | 'contorno'
+  botonMayusculas?: boolean
+  tarjetaProporcion?: 'cuadrada' | 'vertical' | 'horizontal'
+  tarjetaAlineacion?: 'izquierda' | 'centro'
+  /** Al pasar el cursor, la tarjeta muestra la segunda foto del producto. */
+  tarjetaSegundaFoto?: boolean
+  /** Todas las secciones aparecen con una animación suave al bajar. */
+  animarSecciones?: boolean
+  esquemas?: EsquemaColor[]
 }
+
+/** Lo mínimo de un tema: colores, letra de títulos y esquinas. */
+export type TemaBase = Required<
+  Pick<TemaTienda, 'colorMarca' | 'colorContraste' | 'colorFondo' | 'colorTexto' | 'fuenteTitulos' | 'radio'>
+>
 
 export interface EnlaceMenu {
   texto: string
   enlace: string
+}
+
+/** Piezas de la página de producto, en el orden en que se muestran. */
+export type BloqueFicha =
+  | 'titulo'
+  | 'precio'
+  | 'presentacion'
+  | 'stock'
+  | 'descripcion'
+  | 'comprar'
+  | 'whatsapp'
+  | 'envio'
+  | 'acordeones'
+  | 'compartir'
+
+export interface AcordeonFicha {
+  id: string
+  titulo: string
+  texto: string
+}
+
+/** Plantilla de la página de producto, como la plantilla "product" de Shopify. */
+export interface PlantillaProducto {
+  orden?: { id: BloqueFicha; visible: boolean }[]
+  galeria?: 'miniaturas' | 'cuadricula' | 'apiladas'
+  /** La columna de información acompaña al bajar por las fotos. */
+  fijarInfo?: boolean
+  textoEnvio?: string
+  acordeones?: AcordeonFicha[]
+  relacionados?: boolean
+  tituloRelacionados?: string
 }
 
 /** Cabecera, contacto y redes. Todo opcional: sin nada, la cabecera es la simple. */
@@ -34,6 +97,24 @@ export interface AjustesTienda {
   instagram?: string
   facebook?: string
   tiktok?: string
+
+  // Cabecera
+  /** La cabecera se queda pegada arriba al bajar. */
+  cabeceraFija?: boolean
+  logoCentrado?: boolean
+  tamanoLogo?: 'chico' | 'medio' | 'grande'
+
+  // Ventas y envíos
+  costoEnvio?: number
+  envioGratisDesde?: number
+  pedidoMinimo?: number
+  pagoContraEntrega?: boolean
+  pagoTransferencia?: boolean
+  datosTransferencia?: string
+  /** El cliente termina la compra mandando el pedido por WhatsApp. */
+  pedidosWhatsapp?: boolean
+
+  paginaProducto?: PlantillaProducto
 }
 
 export interface Tienda {

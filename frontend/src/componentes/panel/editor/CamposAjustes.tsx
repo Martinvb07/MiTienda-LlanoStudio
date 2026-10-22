@@ -52,6 +52,30 @@ export function CamposCabecera({ ajustes, alCambiar, categorias, limites }: Prop
         </span>
       </div>
 
+      <Interruptor activo={ajustes.cabeceraFija ?? false} alCambiar={(cabeceraFija) => alCambiar({ cabeceraFija })}>
+        Fija arriba al bajar
+        <small className="block text-[11.5px] text-sitio-tenue">El menú y el carrito siempre a mano.</small>
+      </Interruptor>
+      {!completa && (
+        <Interruptor activo={ajustes.logoCentrado ?? false} alCambiar={(logoCentrado) => alCambiar({ logoCentrado })}>
+          Logo al centro
+          <small className="block text-[11.5px] text-sitio-tenue">Menú a la izquierda, buscador y carrito a la derecha.</small>
+        </Interruptor>
+      )}
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[11.5px] text-sitio-suave">Tamaño del logo</span>
+        <Segmentado
+          opciones={[
+            { valor: 'chico', etiqueta: 'Chico' },
+            { valor: 'medio', etiqueta: 'Medio' },
+            { valor: 'grande', etiqueta: 'Grande' },
+          ]}
+          valor={ajustes.tamanoLogo ?? (completa ? 'grande' : 'medio')}
+          alCambiar={(tamanoLogo) => alCambiar({ tamanoLogo })}
+          chico
+        />
+      </div>
+
       {limites.buscador ? (
         <Interruptor activo={ajustes.buscador ?? completa} alCambiar={(buscador) => alCambiar({ buscador })}>
           Buscador de productos

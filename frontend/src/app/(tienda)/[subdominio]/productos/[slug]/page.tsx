@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { obtenerProducto, obtenerTienda } from '@/servicios/tiendas.servicio'
+import { listarProductos, obtenerProducto, obtenerTienda } from '@/servicios/tiendas.servicio'
 import { hostDesdeIdentificador } from '@/utilidades/dominios'
 import { FichaProducto } from '@/componentes/tienda/FichaProducto'
 import { CabeceraTienda } from '@/componentes/tienda/CabeceraTienda'
@@ -35,9 +35,10 @@ export default async function PaginaProducto({ params }: Props) {
   const { subdominio, slug } = await params
   const host = hostDesdeIdentificador(subdominio)
 
-  const [tienda, producto] = await Promise.all([
+  const [tienda, producto, catalogo] = await Promise.all([
     obtenerTienda(host),
     obtenerProducto(host, slug),
+    listarProductos(host),
   ])
 
   if (!tienda || !producto) notFound()
@@ -45,7 +46,7 @@ export default async function PaginaProducto({ params }: Props) {
   return (
     <>
       <CabeceraTienda nombre={tienda.nombre} logoUrl={tienda.logoUrl} ajustes={tienda.ajustes} />
-      <FichaProducto producto={producto} nombreTienda={tienda.nombre} moneda={tienda.moneda} ajustes={tienda.ajustes} />
+      <FichaProducto producto={producto} nombreTienda={tienda.nombre} moneda={tienda.moneda} ajustes={tienda.ajustes} catalogo={catalogo} />
     </>
   )
 }

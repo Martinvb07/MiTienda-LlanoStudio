@@ -1,6 +1,7 @@
 'use client'
 
 import { normalizarBloques } from '@/tipos/bloques'
+import type { EstadoPedido, Pedido } from '@/tipos/pedidos'
 import type { ProductoPanel, Tienda } from '@/tipos/tienda'
 
 /**
@@ -179,6 +180,16 @@ export const actualizarProducto = (id: string, datos: DatosProducto) =>
 
 export const eliminarProducto = (id: string) =>
   pedir<void>(`/productos/${id}`, { method: 'DELETE' })
+
+// ── Pedidos ──
+
+export const listarPedidos = () =>
+  pedir<{ pedidos: Pedido[] }>('/pedidos').then((respuesta) => respuesta.pedidos)
+
+export const actualizarPedido = (id: string, cambios: { estado?: EstadoPedido; notaInterna?: string | null }) =>
+  pedir<{ pedido: Pedido }>(`/pedidos/${id}`, { method: 'PATCH', body: JSON.stringify(cambios) }).then(
+    (respuesta) => respuesta.pedido,
+  )
 
 // ── Medios ──
 

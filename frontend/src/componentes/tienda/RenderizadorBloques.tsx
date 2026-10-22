@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Bloque } from '@/tipos/bloques'
-import type { AjustesTienda, Producto } from '@/tipos/tienda'
+import type { AjustesTienda, Producto, TemaTienda } from '@/tipos/tienda'
 import { Anuncio } from './bloques/Anuncio'
 import { Hero } from './bloques/Hero'
 import { Carrusel } from './bloques/Carrusel'
@@ -21,6 +21,7 @@ import { Llamado } from './bloques/Llamado'
 import { Mapa } from './bloques/Mapa'
 import { Espaciador } from './bloques/Espaciador'
 import { EnvolturaSeccion } from './EnvolturaSeccion'
+import { esquemasIniciales } from '@/utilidades/tema'
 import { categoriasDe } from './ListadoProductos'
 
 interface Props {
@@ -34,6 +35,7 @@ interface Props {
   /** Contacto y redes: el pie los usa para armar sus columnas. */
   ajustes?: AjustesTienda
   nombreTienda?: string
+  tema?: TemaTienda
 }
 
 interface Contexto {
@@ -109,8 +111,10 @@ export function RenderizadorBloques({
   quitarMarca = false,
   ajustes = {},
   nombreTienda,
+  tema,
 }: Props) {
   const categorias = categoriasDe(productos)
+  const esquemas = tema ? (tema.esquemas ?? esquemasIniciales(tema)) : undefined
   const contexto: Contexto = { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda }
   const visibles = bloques.filter((bloque) => bloque.visible !== false)
   const anunciosIniciales = visibles.findIndex((bloque) => bloque.tipo !== 'anuncio')
@@ -121,7 +125,12 @@ export function RenderizadorBloques({
       {visibles.map((bloque, indice) => (
         <div key={bloque.id}>
           {indice === corte && cabecera}
-          <EnvolturaSeccion id={bloque.id} estilo={bloque.estilo}>
+          <EnvolturaSeccion
+            id={bloque.id}
+            estilo={bloque.estilo}
+            esquemas={esquemas}
+            animarPorDefecto={tema?.animarSecciones}
+          >
             {pintar(bloque, contexto)}
           </EnvolturaSeccion>
         </div>

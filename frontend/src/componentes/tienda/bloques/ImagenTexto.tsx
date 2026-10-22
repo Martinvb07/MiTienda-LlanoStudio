@@ -39,7 +39,7 @@ export function ImagenTexto({
         {textoBoton && (
           <a
             href={enlaceBoton || '#productos'}
-            className="mt-8 inline-block rounded-(--radius-marca) bg-marca px-6 py-3 font-medium text-marca-contraste transition hover:opacity-90"
+            className="boton-tienda mt-8 inline-block rounded-(--radius-marca) bg-marca px-6 py-3 font-medium text-marca-contraste transition hover:opacity-90"
           >
             {textoBoton}
           </a>

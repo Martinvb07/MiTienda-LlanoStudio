@@ -1,11 +1,18 @@
 import type { CSSProperties } from 'react'
-import type { FuenteTitulos, TemaTienda } from '@/tipos/tienda'
+import type { EsquemaColor, FuenteTitulos, TemaBase, TemaTienda } from '@/tipos/tienda'
+import { FUENTES } from './fuentes'
 
-export const FUENTES_TITULOS: Record<FuenteTitulos, { etiqueta: string; pila: string }> = {
-  moderna: { etiqueta: 'Moderna', pila: 'var(--fuente-sans)' },
-  clasica: { etiqueta: 'Clásica', pila: 'Georgia, "Times New Roman", serif' },
-  redondeada: { etiqueta: 'Redondeada', pila: 'ui-rounded, "SF Pro Rounded", "Nunito", var(--fuente-sans)' },
-}
+/** Etiqueta y pila de cada tipografía, para quien sólo necesita mostrarlas. */
+export const FUENTES_TITULOS: Record<FuenteTitulos, { etiqueta: string; pila: string }> = Object.fromEntries(
+  Object.entries(FUENTES).map(([clave, fuente]) => [
+    clave,
+    { etiqueta: clave === 'moderna' ? 'Moderna' : clave === 'clasica' ? 'Clásica' : fuente.nombre, pila: fuente.pila },
+  ]),
+)
+
+const pilaDe = (clave: string | undefined) => (clave ? FUENTES[clave]?.pila : undefined)
+
+const RADIO_BOTON = { recto: '0px', suave: 'var(--radio)', pildora: '999px' } as const
 
 export const RADIOS = [
   { valor: '0rem', etiqueta: 'Recto' },
@@ -14,7 +21,7 @@ export const RADIOS = [
 ] as const
 
 /** Puntos de partida del editor: aplican un tema completo de un clic. */
-export const ESTILOS_PREDEFINIDOS: { clave: string; nombre: string; tema: Required<TemaTienda> }[] = [
+export const ESTILOS_PREDEFINIDOS: { clave: string; nombre: string; tema: TemaBase }[] = [
   {
     clave: 'clasica',
     nombre: 'Clásica',
@@ -54,6 +61,49 @@ export function variablesTema(tema: TemaTienda): CSSProperties {
     ...(tema.colorFondo ? { '--superficie': tema.colorFondo } : {}),
     ...(tema.colorTexto ? { '--tinta': tema.colorTexto } : {}),
     ...(tema.radio ? { '--radio': tema.radio } : {}),
-    ...(tema.fuenteTitulos ? { '--fuente-display': FUENTES_TITULOS[tema.fuenteTitulos].pila } : {}),
+    ...(pilaDe(tema.fuenteTitulos) ? { '--fuente-display': pilaDe(tema.fuenteTitulos) } : {}),
+    ...(pilaDe(tema.fuenteCuerpo) ? { fontFamily: pilaDe(tema.fuenteCuerpo) } : {}),
+    ...(tema.botonForma ? { '--radio-boton': RADIO_BOTON[tema.botonForma] } : {}),
   } as CSSProperties
+}
+
+/**
+ * El resto de la configuración del tema viaja como atributos data-* del marco
+ * de la tienda; las reglas de globals.css (bajo [data-tienda]) los aplican.
+ */
+export function atributosTema(tema: TemaTienda): Record<string, string> {
+  const atributos: Record<string, string> = { 'data-tienda': '' }
+  if (tema.pesoTitulos && tema.pesoTitulos !== 'medio') atributos['data-titulos-peso'] = tema.pesoTitulos
+  if (tema.titulosMayusculas) atributos['data-titulos-mayus'] = ''
+  if (tema.anchoPagina && tema.anchoPagina !== 'normal') atributos['data-ancho-pagina'] = tema.anchoPagina
+  if (tema.botonEstilo === 'contorno') atributos['data-botones'] = 'contorno'
+  if (tema.botonMayusculas) atributos['data-boton-mayus'] = ''
+  if (tema.tarjetaProporcion && tema.tarjetaProporcion !== 'cuadrada') atributos['data-tarjeta'] = tema.tarjetaProporcion
+  if (tema.tarjetaAlineacion === 'centro') atributos['data-tarjeta-centro'] = ''
+  if (tema.tarjetaSegundaFoto) atributos['data-segunda-foto'] = ''
+  return atributos
+}
+
+/** Variables de un esquema de color, para el marco de una sección. */
+export function variablesEsquema(esquema: EsquemaColor): CSSProperties {
+  return {
+    '--superficie': esquema.fondo,
+    '--tinta': esquema.texto,
+    '--marca': esquema.marca,
+    '--marca-contraste': esquema.contraste,
+    background: esquema.fondo,
+    color: esquema.texto,
+  } as CSSProperties
+}
+
+/** Esquemas con los que arranca una tienda: el suyo, uno claro, uno oscuro y el de marca. */
+export function esquemasIniciales(tema: TemaTienda): EsquemaColor[] {
+  const marca = tema.colorMarca ?? '#0f172a'
+  const contraste = tema.colorContraste ?? '#ffffff'
+  return [
+    { id: 'e1', nombre: 'Principal', fondo: tema.colorFondo ?? '#ffffff', texto: tema.colorTexto ?? '#0f172a', marca, contraste },
+    { id: 'e2', nombre: 'Suave', fondo: '#f4f4f1', texto: tema.colorTexto ?? '#0f172a', marca, contraste },
+    { id: 'e3', nombre: 'Oscuro', fondo: '#0b0b0c', texto: '#f5f5f5', marca: '#ffffff', contraste: '#000000' },
+    { id: 'e4', nombre: 'Marca', fondo: marca, texto: contraste, marca: contraste, contraste: marca },
+  ]
 }

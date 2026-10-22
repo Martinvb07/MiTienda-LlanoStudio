@@ -2,8 +2,10 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { obtenerTienda } from '@/servicios/tiendas.servicio'
 import { hostDesdeIdentificador } from '@/utilidades/dominios'
-import { variablesTema } from '@/utilidades/tema'
+import { atributosTema, variablesTema } from '@/utilidades/tema'
+import { FuentesTema } from '@/componentes/tienda/FuentesTema'
 import { BotonWhatsapp } from '@/componentes/tienda/BotonWhatsapp'
+import { ProveedorCarrito } from '@/componentes/tienda/carrito/Carrito'
 
 /** Revalidación ISR: las tiendas se sirven de caché y se refrescan solas. */
 export const revalidate = 60
@@ -54,8 +56,15 @@ export default async function LayoutTienda({ children, params }: Props) {
   if (!tienda) notFound()
 
   return (
-    <div style={variablesTema(tienda.tema)} className="min-h-screen bg-superficie font-sans text-tinta">
-      {children}
+    <div
+      style={variablesTema(tienda.tema)}
+      {...atributosTema(tienda.tema)}
+      className="min-h-screen bg-superficie font-sans text-tinta"
+    >
+      <FuentesTema tema={tienda.tema} />
+      <ProveedorCarrito clave={subdominio} moneda={tienda.moneda} ajustes={tienda.ajustes}>
+        {children}
+      </ProveedorCarrito>
       {tienda.ajustes.whatsappFlotante && tienda.ajustes.whatsapp && (
         <BotonWhatsapp numero={tienda.ajustes.whatsapp} tienda={tienda.nombre} />
       )}

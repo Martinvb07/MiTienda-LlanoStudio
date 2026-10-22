@@ -33,6 +33,8 @@ export type TipoBloque =
  * envolviendo el bloque; cada plan desbloquea una parte (utilidades/planes.ts).
  */
 export interface EstiloSeccion {
+  /** Id de un esquema de color del tema: pone fondo, texto, marca y botones. */
+  esquema?: string
   /** Color de fondo de la sección. */
   fondo?: string
   /** Color del texto: reemplaza el del tema sólo dentro de la sección. */

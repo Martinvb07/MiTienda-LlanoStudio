@@ -26,7 +26,7 @@ export function Llamado({
             href={enlace}
             target={aWhatsapp ? '_blank' : undefined}
             rel={aWhatsapp ? 'noopener noreferrer' : undefined}
-            className="shrink-0 rounded-(--radius-marca) bg-marca-contraste px-7 py-3.5 font-semibold text-marca transition hover:opacity-90"
+            className="boton-tienda shrink-0 rounded-(--radius-marca) bg-marca-contraste px-7 py-3.5 font-semibold text-marca transition hover:opacity-90"
           >
             {textoBoton}
           </a>

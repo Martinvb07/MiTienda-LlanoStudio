@@ -48,6 +48,31 @@ const esquemaTema = z.object({
   colorTexto: colorHex.optional(),
   fuenteTitulos: z.string().max(40).optional(),
   radio: z.string().max(12).optional(),
+  // Configuración del tema
+  fuenteCuerpo: z.string().max(40).optional(),
+  pesoTitulos: z.enum(['normal', 'medio', 'negrita']).optional(),
+  titulosMayusculas: z.boolean().optional(),
+  anchoPagina: z.enum(['normal', 'amplio', 'completo']).optional(),
+  botonForma: z.enum(['recto', 'suave', 'pildora']).optional(),
+  botonEstilo: z.enum(['relleno', 'contorno']).optional(),
+  botonMayusculas: z.boolean().optional(),
+  tarjetaProporcion: z.enum(['cuadrada', 'vertical', 'horizontal']).optional(),
+  tarjetaAlineacion: z.enum(['izquierda', 'centro']).optional(),
+  tarjetaSegundaFoto: z.boolean().optional(),
+  animarSecciones: z.boolean().optional(),
+  esquemas: z
+    .array(
+      z.object({
+        id: z.string().min(1).max(20),
+        nombre: z.string().trim().max(30),
+        fondo: colorHex,
+        texto: colorHex,
+        marca: colorHex,
+        contraste: colorHex,
+      }),
+    )
+    .max(8)
+    .optional(),
 })
 
 /**
@@ -92,6 +117,25 @@ const esquemaAjustes = z.object({
   pagoTransferencia: z.boolean().optional(),
   datosTransferencia: z.string().trim().max(400).optional(),
   pedidosWhatsapp: z.boolean().optional(),
+  // Cabecera
+  cabeceraFija: z.boolean().optional(),
+  logoCentrado: z.boolean().optional(),
+  tamanoLogo: z.enum(['chico', 'medio', 'grande']).optional(),
+  // Plantilla de la página de producto
+  paginaProducto: z
+    .object({
+      orden: z.array(z.object({ id: z.string().max(30), visible: z.boolean() })).max(20).optional(),
+      galeria: z.enum(['miniaturas', 'cuadricula', 'apiladas']).optional(),
+      fijarInfo: z.boolean().optional(),
+      textoEnvio: z.string().trim().max(200).optional(),
+      acordeones: z
+        .array(z.object({ id: z.string().max(20), titulo: z.string().trim().max(60), texto: z.string().trim().max(1000) }))
+        .max(8)
+        .optional(),
+      relacionados: z.boolean().optional(),
+      tituloRelacionados: z.string().trim().max(60).optional(),
+    })
+    .optional(),
 })
 
 export const esquemaTienda = z.object({

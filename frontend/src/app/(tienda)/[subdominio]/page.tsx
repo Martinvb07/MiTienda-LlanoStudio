@@ -33,6 +33,7 @@ export default async function PaginaTienda({ params }: Props) {
         quitarMarca={limitesDe(tienda.plan).quitarMarca}
         ajustes={tienda.ajustes}
         nombreTienda={tienda.nombre}
+        tema={tienda.tema}
       />
     </main>
   )

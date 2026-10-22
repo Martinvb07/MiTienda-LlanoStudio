@@ -248,8 +248,9 @@ export function ajustarAlPlan(
 /** Deja del estilo de una sección sólo lo que el nivel del plan incluye. */
 export function estiloDelPlan(estilo: EstiloSeccion | undefined, nivel: NivelEstilo): EstiloSeccion | undefined {
   if (!estilo || nivel === 'ninguno') return undefined
-  const { fondo, texto, espaciado, ancla, ancho, animacion, dispositivos, forma, imagenFondo, oscurecer } = estilo
+  const { esquema, fondo, texto, espaciado, ancla, ancho, animacion, dispositivos, forma, imagenFondo, oscurecer } = estilo
   return {
+    esquema,
     fondo,
     texto,
     espaciado,

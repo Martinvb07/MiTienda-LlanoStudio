@@ -6,7 +6,8 @@ import { CabeceraTienda } from '@/componentes/tienda/CabeceraTienda'
 import { FichaProducto } from '@/componentes/tienda/FichaProducto'
 import { RenderizadorBloques } from '@/componentes/tienda/RenderizadorBloques'
 import { ajustarAlPlan, limitesDe } from '@/utilidades/planes'
-import { variablesTema } from '@/utilidades/tema'
+import { atributosTema, variablesTema } from '@/utilidades/tema'
+import { FuentesTema } from '@/componentes/tienda/FuentesTema'
 import { BarraSeccion } from './BarraSeccion'
 import type { MensajeVistaPrevia } from './mensajes'
 
@@ -53,14 +54,19 @@ export function LienzoVistaPrevia() {
   const cabecera = <CabeceraTienda nombre={tienda.nombre || 'Mi tienda'} logoUrl={tienda.logoUrl} ajustes={ajustes} />
 
   return (
-    <div style={variablesTema(tienda.tema)} className="min-h-screen bg-superficie font-sans text-tinta">
+    <div
+      style={variablesTema(tienda.tema)}
+      {...atributosTema(tienda.tema)}
+      className="min-h-screen bg-superficie font-sans text-tinta"
+    >
+      <FuentesTema tema={tienda.tema} />
       {enfocar && (
         <style>{`[data-bloque="${enfocar.replace(/"/g, '')}"]{outline:1.5px dashed color-mix(in srgb,var(--tinta) 45%,transparent);outline-offset:-6px;animation:mt-enfoque .6s cubic-bezier(.22,1,.36,1)}@keyframes mt-enfoque{from{outline-color:transparent;outline-offset:2px}}`}</style>
       )}
       {datos.vista === 'producto' && datos.producto ? (
         <>
           {cabecera}
-          <FichaProducto producto={datos.producto} nombreTienda={tienda.nombre} moneda={tienda.moneda} ajustes={ajustes} />
+          <FichaProducto producto={datos.producto} nombreTienda={tienda.nombre} moneda={tienda.moneda} ajustes={ajustes} catalogo={datos.productos} />
         </>
       ) : (
         <RenderizadorBloques
@@ -71,6 +77,7 @@ export function LienzoVistaPrevia() {
           quitarMarca={limitesDe(tienda.plan).quitarMarca}
           ajustes={ajustes}
           nombreTienda={tienda.nombre}
+          tema={tienda.tema}
         />
       )}
       {datos.editable && datos.vista !== 'producto' && <BarraSeccion bloques={bloques.filter((bloque) => bloque.visible !== false)} />}

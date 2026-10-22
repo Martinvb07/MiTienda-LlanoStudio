@@ -91,6 +91,7 @@ const camposPedido = {
       precioUnitario: true,
       cantidad: true,
       subtotal: true,
+      producto: { select: { slug: true } },
     },
   },
 } as const
@@ -105,8 +106,9 @@ function serializarPedido(pedido: PedidoBd) {
     descuento: pedido.descuento.toString(),
     envio: pedido.envio.toString(),
     total: pedido.total.toString(),
-    items: pedido.items.map((item) => ({
+    items: pedido.items.map(({ producto, ...item }) => ({
       ...item,
+      slug: producto?.slug ?? null,
       precioUnitario: item.precioUnitario.toString(),
       subtotal: item.subtotal.toString(),
     })),

@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { AvisoSinConectar, CampoContrasena, CampoTexto } from './CamposFormulario'
+import { useRouter } from 'next/navigation'
+import { ingresar } from '@/servicios/panel'
+import { AvisoFormulario, CampoContrasena, CampoTexto } from './CamposFormulario'
 
 interface Errores {
   email?: string
@@ -16,13 +18,14 @@ export function FormularioIngreso() {
   const [contrasena, setContrasena] = useState('')
   const [errores, setErrores] = useState<Errores>({})
   const [enviando, setEnviando] = useState(false)
-  const [intentado, setIntentado] = useState(false)
+  const [errorServidor, setErrorServidor] = useState('')
+  const router = useRouter()
 
   function validar(): Errores {
     const encontrados: Errores = {}
-    if (!email.trim()) encontrados.email = 'Escribí tu correo'
+    if (!email.trim()) encontrados.email = 'Escribe tu correo'
     else if (!CORREO.test(email)) encontrados.email = 'Ese correo no parece válido'
-    if (!contrasena) encontrados.contrasena = 'Escribí tu contraseña'
+    if (!contrasena) encontrados.contrasena = 'Escribe tu contraseña'
     return encontrados
   }
 
@@ -33,20 +36,23 @@ export function FormularioIngreso() {
     if (Object.keys(encontrados).length > 0) return
 
     setEnviando(true)
-    // TODO: autenticar con NextAuth/Auth.js contra el modelo Usuario. Se simula
-    // la espera para que el estado de carga ya sea el definitivo.
-    await new Promise((listo) => setTimeout(listo, 700))
-    setEnviando(false)
-    setIntentado(true)
+    setErrorServidor('')
+    try {
+      await ingresar(email.trim(), contrasena)
+      router.push('/panel')
+    } catch (error) {
+      setErrorServidor(error instanceof Error ? error.message : 'No pudimos iniciar tu sesión')
+      setEnviando(false)
+    }
   }
 
   return (
     <>
-      <h1 className="font-display text-3xl font-bold tracking-[-0.03em] text-sitio-tinta">
-        Entrá a tu tienda
+      <h1 className="text-[32px] leading-[1.05] font-normal tracking-[-0.04em]">
+        Entra a tu tienda
       </h1>
-      <p className="mt-2 text-sitio-suave">
-        Administrá productos, diseño y pedidos desde un solo lugar.
+      <p className="mt-2 text-sm text-sitio-tenue">
+        Administra productos, diseño y pedidos desde un solo lugar.
       </p>
 
       <form onSubmit={alEnviar} noValidate className="mt-8 space-y-5">
@@ -72,42 +78,37 @@ export function FormularioIngreso() {
           enlaceOlvido={
             <Link
               href="/panel/recuperar"
-              className="text-sm text-sitio-azul transition-colors hover:text-sitio-azul-fuerte"
+              className="text-[12px] text-sitio-suave transition-colors hover:text-white"
             >
               ¿La olvidaste?
             </Link>
           }
         />
 
-        {intentado && (
-          <AvisoSinConectar>
-            El ingreso todavía no está conectado. Falta la autenticación con NextAuth sobre el
-            modelo de usuarios, que ya existe en la base de datos.
-          </AvisoSinConectar>
-        )}
+        {errorServidor && <AvisoFormulario>{errorServidor}</AvisoFormulario>}
 
         <button
           type="submit"
           disabled={enviando}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-sitio-azul px-6 py-3 font-medium text-white transition-colors hover:bg-sitio-azul-fuerte disabled:opacity-60"
+          className="boton boton-primario w-full"
         >
           {enviando && (
             <span
               aria-hidden="true"
-              className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+              className="h-4 w-4 animate-spin rounded-full border-2 border-black/25 border-t-black"
             />
           )}
           {enviando ? 'Entrando…' : 'Ingresar'}
         </button>
       </form>
 
-      <p className="mt-8 text-center text-sm text-sitio-suave">
-        ¿Todavía no tenés tienda?{' '}
+      <p className="mt-8 text-center text-sm text-sitio-tenue">
+        ¿Todavía no tienes tienda?{' '}
         <Link
           href="/panel/crear-cuenta"
-          className="font-medium text-sitio-azul transition-colors hover:text-sitio-azul-fuerte"
+          className="font-medium text-white underline-offset-4 transition-colors hover:underline"
         >
-          Creá una gratis
+          Crea una gratis
         </Link>
       </p>
     </>

@@ -49,11 +49,11 @@ export default function PaginaBlog() {
         descripcion="Guías cortas y concretas sobre lo que se necesita para que una tienda funcione en Colombia."
       />
 
-      <section className="bg-white py-16 lg:py-20">
+      <section className="py-16 lg:py-20">
         <Contenedor>
           <Revelar>
             <div className="rounded-2xl border border-dashed border-sitio-borde-fuerte bg-sitio-crema px-6 py-8 text-center">
-              <p className="font-display font-semibold text-sitio-tinta">
+              <p className="font-medium tracking-[-0.01em] text-sitio-tinta">
                 Todavía no publicamos la primera entrada
               </p>
               <p className="mx-auto mt-2 max-w-md text-sm text-pretty text-sitio-suave">
@@ -71,7 +71,7 @@ export default function PaginaBlog() {
                     {tema.categoria}
                   </span>
                   <div>
-                    <h2 className="font-display text-lg font-semibold text-balance text-sitio-tinta">
+                    <h2 className="text-lg font-medium tracking-[-0.02em] text-balance text-sitio-tinta">
                       {tema.titulo}
                     </h2>
                     <p className="mt-1.5 text-pretty text-sitio-suave">{tema.resumen}</p>

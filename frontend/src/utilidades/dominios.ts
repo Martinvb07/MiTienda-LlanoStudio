@@ -124,3 +124,16 @@ export function hostDesdeIdentificador(
   const valor = decodeURIComponent(identificador).trim().toLowerCase()
   return valor.includes('.') ? valor : `${valor}.${opciones.dominioBase}`
 }
+
+/**
+ * Dirección pública de una tienda, para enlazarla desde el panel. En local
+ * (`localhost`) conserva el protocolo y el puerto de la ventana actual, para
+ * que ropa.localhost:3000 funcione igual que ropa.llanostudio.co.
+ */
+export function urlTienda(subdominio: string, opciones: OpcionesDominio = configuracionDominios): string {
+  const host = `${subdominio}.${opciones.dominioBase}`
+  if (typeof window !== 'undefined' && window.location.hostname.endsWith('localhost')) {
+    return `${window.location.protocol}//${subdominio}.localhost${window.location.port ? `:${window.location.port}` : ''}`
+  }
+  return `https://${host}`
+}

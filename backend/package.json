@@ -21,7 +21,8 @@
     "prisma:generar": "prisma generate",
     "prisma:migrar": "prisma migrate dev",
     "prisma:desplegar": "prisma migrate deploy",
-    "prisma:estudio": "prisma studio"
+    "prisma:estudio": "prisma studio",
+    "admin:clave": "tsx scripts/clave-admin.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1095.0",

@@ -16,7 +16,7 @@ export default function PaginaPrivacidad() {
       <CabeceraPagina
         rotulo="Legal"
         titulo="Política de privacidad"
-        descripcion="Qué datos recogemos, para qué los usamos y qué podés exigirnos sobre ellos."
+        descripcion="Qué datos recogemos, para qué los usamos y qué puedes exigirnos sobre ellos."
       />
 
       <ProsaLegal actualizado="26 de julio de 2026">
@@ -34,7 +34,7 @@ export default function PaginaPrivacidad() {
             <li>nombre y correo electrónico;</li>
             <li>contraseña, siempre guardada cifrada y nunca legible para nosotros;</li>
             <li>datos de la tienda: nombre, dominio, productos y configuración;</li>
-            <li>datos de facturación, si contratás un plan pago.</li>
+            <li>datos de facturación, si contratas un plan pago.</li>
           </ul>
           <p>
             También registramos datos técnicos de uso —dirección IP, navegador, páginas
@@ -46,7 +46,7 @@ export default function PaginaPrivacidad() {
           <ul className="ml-5 list-disc space-y-1.5">
             <li>prestarte el servicio y mantener tu tienda en línea;</li>
             <li>cobrarte el plan que hayas contratado;</li>
-            <li>responderte cuando nos escribís;</li>
+            <li>responderte cuando nos escribes;</li>
             <li>detectar fraudes y abusos;</li>
             <li>cumplir obligaciones legales.</li>
           </ul>
@@ -60,7 +60,7 @@ export default function PaginaPrivacidad() {
             los procesamos por cuenta suya, siguiendo sus instrucciones.
           </p>
           <p>
-            Si sos dueño de una tienda, sos vos quien debe informar a tus clientes cómo tratás
+            Si eres dueño de una tienda, eres tú quien debe informar a tus clientes cómo tratas
             sus datos y obtener su autorización.
           </p>
         </Articulo>
@@ -84,7 +84,7 @@ export default function PaginaPrivacidad() {
         </Articulo>
 
         <Articulo numero="7." titulo="Tus derechos">
-          <p>Como titular de tus datos podés en cualquier momento:</p>
+          <p>Como titular de tus datos puedes en cualquier momento:</p>
           <ul className="ml-5 list-disc space-y-1.5">
             <li>saber qué datos tuyos tenemos y de dónde salieron;</li>
             <li>corregirlos si están mal o incompletos;</li>
@@ -93,7 +93,7 @@ export default function PaginaPrivacidad() {
             <li>presentar una queja ante la Superintendencia de Industria y Comercio.</li>
           </ul>
           <p>
-            Para ejercerlos, escribinos desde la{' '}
+            Para ejercerlos, escríbenos desde la{' '}
             <Link href="/contacto" className="text-sitio-azul underline underline-offset-4">
               página de contacto
             </Link>

@@ -7,6 +7,7 @@ import { registro } from './utilidades/registro.js'
 import { manejadorErrores, rutaNoEncontrada } from './middlewares/manejadorErrores.js'
 import { normalizarHost } from './utilidades/dominios.js'
 import enrutadorApi from './rutas/index.js'
+import { CARPETA_MEDIOS_LOCALES, RUTA_MEDIOS_LOCALES } from './almacenamiento/index.js'
 
 export function crearApp() {
   const app = express()
@@ -40,9 +41,18 @@ export function crearApp() {
     }),
   )
 
-  app.use(express.json({ limit: '1mb' }))
+  // 2 MB: el diseño completo de la tienda viaja entero en cada guardado.
+  app.use(express.json({ limit: '2mb' }))
   app.use(express.urlencoded({ extended: true }))
   app.use(pinoHttp({ logger: registro }))
+
+  // Imágenes guardadas sin R2 (ver almacenamiento/medios.ts). En el VPS las
+  // sirve nginx directamente; esto cubre el desarrollo y cualquier hueco.
+  app.use(
+    RUTA_MEDIOS_LOCALES,
+    helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }),
+    express.static(CARPETA_MEDIOS_LOCALES, { fallthrough: false, maxAge: '365d', immutable: true }),
+  )
 
   app.use('/api', enrutadorApi)
 

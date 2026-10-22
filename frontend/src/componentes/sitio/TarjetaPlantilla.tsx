@@ -1,56 +1,48 @@
 'use client'
 
 import { motion } from 'motion/react'
-import type { DatosPlantilla } from './datosPlantillas'
+import { PLANES } from '@/utilidades/planes'
+import { PLANTILLAS_TIENDA } from '@/utilidades/plantillas'
+import { MiniaturaPlantilla } from './MiniaturaPlantilla'
 
 /**
- * Miniatura de plantilla. La usan tanto la portada como el catálogo completo,
- * así que vive aparte en vez de duplicarse en las dos.
- *
- * Los datos están en datosPlantillas.ts, fuera de este archivo: aquí no pueden
- * estar porque este módulo es de cliente.
+ * Tarjeta de plantilla del sitio: miniatura con sus colores, categoría y desde
+ * qué plan está. Recibe la clave y no el objeto, porque la plantilla lleva una
+ * función y los componentes de servidor no pueden pasarle funciones a este.
  */
-export function TarjetaPlantilla({ plantilla }: { plantilla: DatosPlantilla }) {
+export function TarjetaPlantilla({ clave }: { clave: string }) {
+  const plantilla = PLANTILLAS_TIENDA.find((opcion) => opcion.clave === clave)
+  if (!plantilla) return null
+
   return (
     <motion.article
       whileHover={{ y: -6 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className="group h-full overflow-hidden rounded-2xl border border-sitio-borde bg-white"
+      className="group baldosa h-full overflow-hidden"
     >
-      {/* Tienda esquematizada, no una captura: pesa nada y no envejece. */}
-      <div className="relative overflow-hidden bg-sitio-crema p-4">
+      <div className="relative overflow-hidden bg-[radial-gradient(circle_at_50%_0%,#17171a,#0b0b0c_70%)] p-5">
         {plantilla.destacada && (
-          <span className="absolute top-6 right-6 z-10 rounded-full bg-sitio-tinta px-2.5 py-1 text-[11px] font-medium text-white">
+          <span className="absolute top-6 right-6 z-10 rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-black">
             Más usada
           </span>
         )}
-
-        <div className="space-y-2 rounded-xl bg-white p-2.5 shadow-sm">
-          <div
-            className={`h-20 rounded-lg bg-gradient-to-br ${plantilla.desde} ${plantilla.hasta} p-3`}
-          >
-            <div className="h-2 w-16 rounded-full bg-white/85" />
-            <div className="mt-1.5 h-1.5 w-24 rounded-full bg-white/45" />
-          </div>
-
-          <div
-            className={`grid gap-1.5 ${plantilla.columnas === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}
-          >
-            {Array.from({ length: plantilla.columnas * 2 }).map((_, celda) => (
-              <div
-                key={celda}
-                className="h-9 rounded bg-sitio-crema transition-colors duration-500 group-hover:bg-sitio-borde"
-              />
-            ))}
-          </div>
-
-          <div className="h-4 rounded bg-sitio-crema" />
-        </div>
+        <MiniaturaPlantilla plantilla={plantilla} />
       </div>
 
-      <div className="border-t border-sitio-borde px-5 py-4">
-        <h3 className="font-display font-semibold text-sitio-tinta">{plantilla.nombre}</h3>
-        <p className="mt-0.5 text-sm text-sitio-tenue">{plantilla.categoria}</p>
+      <div className="flex items-start justify-between gap-3 border-t border-sitio-borde px-5 py-4">
+        <div>
+          <h3 className="font-medium tracking-[-0.01em] text-sitio-tinta">{plantilla.nombre}</h3>
+          <p className="mt-0.5 text-sm text-sitio-tenue">{plantilla.categoria}</p>
+        </div>
+        <span
+          className={
+            plantilla.plan === 'GRATIS'
+              ? 'rounded-full border border-sitio-verde/30 bg-sitio-verde/10 px-2.5 py-1 text-[11px] text-sitio-verde'
+              : 'rounded-full border border-sitio-azul-claro/30 bg-sitio-azul/10 px-2.5 py-1 text-[11px] text-sitio-azul-claro'
+          }
+        >
+          {plantilla.plan === 'GRATIS' ? 'Gratis' : `Plan ${PLANES[plantilla.plan].nombre}`}
+        </span>
       </div>
     </motion.article>
   )

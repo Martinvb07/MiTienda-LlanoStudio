@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { cn } from '@/utilidades/clases'
 
-type Variante = 'primario' | 'secundario' | 'claro'
+type Variante = 'primario' | 'secundario'
 type Tamano = 'normal' | 'grande'
 
 interface Props {
@@ -14,57 +14,43 @@ interface Props {
 }
 
 const VARIANTES: Record<Variante, string> = {
-  primario:
-    'bg-sitio-azul text-white hover:bg-sitio-azul-fuerte shadow-[0_1px_2px_rgba(10,15,28,0.16)]',
-  secundario:
-    'bg-white text-sitio-tinta border border-sitio-borde-fuerte hover:border-sitio-tinta',
-  claro: 'bg-white text-sitio-profundo hover:bg-sitio-crema',
-}
-
-const TAMANOS: Record<Tamano, string> = {
-  normal: 'px-5 py-2.5 text-sm',
-  grande: 'px-7 py-3.5 text-base',
+  primario: 'boton-primario',
+  secundario: 'boton-contorno',
 }
 
 /**
- * La flecha se desplaza al pasar el cursor. Es un gesto mínimo, pero es lo que
- * hace que el botón se sienta vivo sin recurrir a una animación aparatosa.
+ * Botón de la web comercial, el mismo de llanostudio.co: blanco sólido o
+ * contorno, en mayúsculas finas. La flecha se desplaza al pasar el cursor.
  */
 export function Boton({
   href,
   children,
   variante = 'primario',
-  tamano = 'normal',
+  tamano = 'grande',
   flecha = false,
   className,
 }: Props) {
   return (
     <Link
       href={href}
-      className={cn(
-        'group inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors duration-200',
-        VARIANTES[variante],
-        TAMANOS[tamano],
-        className,
-      )}
+      className={cn('group boton', VARIANTES[variante], tamano === 'normal' && 'boton-chico', className)}
     >
       {children}
-      {flecha && (
-        <svg
-          viewBox="0 0 16 16"
-          fill="none"
-          aria-hidden="true"
-          className="h-4 w-4 transition-transform duration-300 ease-out group-hover:translate-x-1"
-        >
-          <path
-            d="M2.5 8h11m0 0L9 3.5M13.5 8L9 12.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      )}
+      {flecha && <Flecha className="h-[15px] w-[15px] transition-transform duration-500 ease-salida group-hover:translate-x-1" />}
     </Link>
+  )
+}
+
+export function Flecha({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M5 12h14M13 6l6 6-6 6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }

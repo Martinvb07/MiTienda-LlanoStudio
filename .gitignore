@@ -39,3 +39,4 @@ Thumbs.db
 coverage/
 .eslintcache
 .turbo/
+backend/.medios/

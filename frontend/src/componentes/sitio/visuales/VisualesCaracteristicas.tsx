@@ -9,7 +9,7 @@
 function Marco({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`overflow-hidden rounded-2xl border border-sitio-borde bg-white shadow-[0_18px_44px_-26px_rgba(10,15,28,0.3)] ${className}`}
+      className={`overflow-hidden baldosa shadow-[0_30px_60px_-30px_rgba(0,0,0,0.9)] ${className}`}
     >
       {children}
     </div>
@@ -30,7 +30,7 @@ export function VisualEditor() {
               key={bloque.nombre}
               className={`flex items-center gap-2 rounded-lg border px-2 py-2 ${
                 indice === 1
-                  ? 'border-sitio-azul bg-blue-50/60 shadow-[0_6px_16px_-6px_rgba(37,99,235,0.4)]'
+                  ? 'border-white/40 bg-white/[0.07] shadow-[0_10px_24px_-8px_rgba(59,96,255,0.55)]'
                   : 'border-sitio-borde'
               }`}
             >
@@ -44,10 +44,10 @@ export function VisualEditor() {
           <div className="h-14 rounded-lg bg-gradient-to-br from-sitio-azul to-sitio-profundo" />
           <div className="grid grid-cols-3 gap-2">
             {[0, 1, 2].map((indice) => (
-              <div key={indice} className="h-10 rounded bg-white" />
+              <div key={indice} className="h-10 rounded bg-sitio-superficie-2" />
             ))}
           </div>
-          <div className="h-6 rounded bg-white" />
+          <div className="h-6 rounded bg-sitio-superficie-2" />
         </div>
       </div>
     </Marco>
@@ -117,10 +117,10 @@ export function VisualDominio() {
           </svg>
         </div>
 
-        <div className="flex items-center gap-3 rounded-xl border-2 border-sitio-azul bg-white px-4 py-3">
+        <div className="flex items-center gap-3 rounded-xl border-2 border-sitio-azul bg-sitio-superficie px-4 py-3">
           <span className="h-2 w-2 rounded-full bg-sitio-azul" />
           <span className="flex-1 text-sm font-medium text-sitio-tinta">www.tunegocio.com</span>
-          <span className="rounded-full bg-sitio-azul/10 px-2 py-0.5 text-[11px] font-medium text-sitio-azul-fuerte">
+          <span className="rounded-full bg-sitio-azul/10 px-2 py-0.5 text-[11px] font-medium text-sitio-azul-claro">
             Tu dominio
           </span>
         </div>
@@ -162,7 +162,7 @@ export function VisualPagos() {
 
         <div className="mt-4 flex items-center justify-between rounded-xl bg-sitio-crema px-4 py-3">
           <span className="text-sm text-sitio-suave">Total del pedido</span>
-          <span className="font-display text-lg font-bold text-sitio-tinta">$ 134.900</span>
+          <span className="text-lg font-medium text-sitio-tinta">$ 134.900</span>
         </div>
       </div>
     </Marco>

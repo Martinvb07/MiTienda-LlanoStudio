@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/react'
-import { Boton } from './Boton'
 import { Contenedor } from './Contenedor'
+import { Flecha } from './Boton'
 import { cn } from '@/utilidades/clases'
 
 const ENLACES = [
@@ -15,61 +16,73 @@ const ENLACES = [
   { href: '/blog', etiqueta: 'Recursos' },
 ] as const
 
+/**
+ * Cabecera fija como la de llanostudio.co: transparente sobre el hero y negra
+ * con desenfoque al bajar. Tres columnas (marca | menú | acciones) con las
+ * laterales del mismo ancho, para que el menú quede centrado de verdad.
+ */
 export function Encabezado() {
   const [desplazado, setDesplazado] = useState(false)
   const [menuAbierto, setMenuAbierto] = useState(false)
+  const rutaActual = usePathname()
   const { scrollY } = useScroll()
 
-  // El borde inferior sólo aparece al bajar: arriba del todo la cabecera se
-  // funde con el hero, lo que da sensación de más aire.
-  useMotionValueEvent(scrollY, 'change', (valor) => setDesplazado(valor > 8))
+  useMotionValueEvent(scrollY, 'change', (valor) => setDesplazado(valor > 12))
 
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 bg-white/85 backdrop-blur-md transition-shadow duration-300',
-        desplazado ? 'border-b border-sitio-borde' : 'border-b border-transparent',
+        'fixed inset-x-0 top-0 z-50 border-b transition-[background,border-color] duration-300',
+        desplazado || menuAbierto
+          ? 'border-white/5 bg-black/70 backdrop-blur-[18px] backdrop-saturate-150'
+          : 'border-transparent',
       )}
     >
       <Contenedor>
-        <div className="flex h-16 items-center justify-between gap-8">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight text-sitio-tinta"
-          >
-            {/* Versión oscura del monograma: la clara del pie desaparecería
-                sobre esta cabecera blanca. */}
+        <div className="flex h-[72px] items-center justify-between gap-6 md:grid md:grid-cols-[1fr_auto_1fr]">
+          <Link href="/" className="flex items-center gap-[11px] justify-self-start">
             <Image
-              src="/llanostudio-marca-oscura.png"
+              src="/llanostudio-marca.png"
               alt="Llano Studio"
-              width={220}
-              height={194}
+              width={232}
+              height={205}
               priority
               className="h-7 w-auto"
             />
-            Mi Tienda
+            <span className="flex flex-col justify-center">
+              <span className="text-base leading-none font-semibold tracking-[-0.02em]">Mi Tienda</span>
+              <span className="mt-1 text-[9.5px] tracking-[0.24em] text-sitio-tenue uppercase">
+                por Llano Studio
+              </span>
+            </span>
           </Link>
 
-          <nav className="hidden items-center gap-8 md:flex">
+          <nav className="hidden items-center gap-0.5 md:flex">
             {ENLACES.map((enlace) => (
               <Link
                 key={enlace.href}
                 href={enlace.href}
-                className="relative text-sm text-sitio-suave transition-colors hover:text-sitio-tinta"
+                className={cn(
+                  'inline-flex h-9 items-center px-3.5 text-[11.5px] font-medium tracking-[0.1em] uppercase transition-colors duration-300',
+                  rutaActual.startsWith(enlace.href) ? 'text-white' : 'text-white/60 hover:text-white',
+                )}
               >
                 {enlace.etiqueta}
               </Link>
             ))}
           </nav>
 
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="hidden items-center gap-5 justify-self-end md:flex">
             <Link
               href="/panel/ingresar"
-              className="text-sm text-sitio-suave transition-colors hover:text-sitio-tinta"
+              className="text-[11.5px] font-medium tracking-[0.1em] text-white/60 uppercase transition-colors hover:text-white"
             >
               Ingresar
             </Link>
-            <Boton href="/panel/crear-cuenta">Empezar gratis</Boton>
+            <Link href="/panel/crear-cuenta" className="group boton boton-primario boton-chico">
+              Crear tienda
+              <Flecha className="h-[15px] w-[15px] transition-transform duration-500 ease-salida group-hover:translate-x-1" />
+            </Link>
           </div>
 
           <button
@@ -77,23 +90,23 @@ export function Encabezado() {
             onClick={() => setMenuAbierto((abierto) => !abierto)}
             aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
             aria-expanded={menuAbierto}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-sitio-tinta md:hidden"
+            className="flex h-[42px] w-[42px] items-center justify-center rounded-[9px] border border-sitio-borde md:hidden"
           >
-            <div className="flex w-5 flex-col gap-1.5">
+            <div className="flex w-[18px] flex-col gap-[4px]">
               <motion.span
                 animate={menuAbierto ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
                 transition={{ duration: 0.25 }}
-                className="h-0.5 w-full origin-center bg-current"
+                className="h-0.5 w-full origin-center bg-white"
               />
               <motion.span
                 animate={menuAbierto ? { opacity: 0 } : { opacity: 1 }}
                 transition={{ duration: 0.2 }}
-                className="h-0.5 w-full bg-current"
+                className="h-0.5 w-full bg-white"
               />
               <motion.span
                 animate={menuAbierto ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
                 transition={{ duration: 0.25 }}
-                className="h-0.5 w-full origin-center bg-current"
+                className="h-0.5 w-full origin-center bg-white"
               />
             </div>
           </button>
@@ -106,26 +119,34 @@ export function Encabezado() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden border-t border-sitio-borde bg-white md:hidden"
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden border-t border-sitio-borde bg-black/95 md:hidden"
           >
-            <Contenedor className="flex flex-col gap-1 py-4">
+            <Contenedor className="flex flex-col pt-3 pb-7">
               {ENLACES.map((enlace) => (
                 <Link
                   key={enlace.href}
                   href={enlace.href}
                   onClick={() => setMenuAbierto(false)}
-                  className="rounded-lg px-2 py-2.5 text-sitio-suave transition-colors hover:bg-sitio-crema hover:text-sitio-tinta"
+                  className="border-b border-white/5 py-[13px] text-[17px] text-sitio-suave transition-colors hover:text-white"
                 >
                   {enlace.etiqueta}
                 </Link>
               ))}
-              <div className="mt-3 flex flex-col gap-2">
-                <Boton href="/panel/ingresar" variante="secundario">
-                  Ingresar
-                </Boton>
-                <Boton href="/panel/crear-cuenta">Empezar gratis</Boton>
-              </div>
+              <Link
+                href="/panel/ingresar"
+                onClick={() => setMenuAbierto(false)}
+                className="border-b border-white/5 py-[13px] text-[17px] text-sitio-suave"
+              >
+                Ingresar
+              </Link>
+              <Link
+                href="/panel/crear-cuenta"
+                onClick={() => setMenuAbierto(false)}
+                className="boton boton-primario mt-5"
+              >
+                Crear mi tienda
+              </Link>
             </Contenedor>
           </motion.div>
         )}

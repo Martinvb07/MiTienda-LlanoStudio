@@ -50,7 +50,7 @@ export default function PaginaCaracteristicas() {
     <>
       <CabeceraPagina
         rotulo="Características"
-        titulo="Todo lo que necesitás para vender, sin pedirle nada a nadie"
+        titulo="Todo lo que necesitas para vender, sin pedirle nada a nadie"
         descripcion="Diseño, catálogo, dominio y pagos en un solo lugar. Sin plugins que instalar ni piezas sueltas que conectar entre sí."
       >
         <Boton href="/panel/crear-cuenta" tamano="grande" flecha>
@@ -60,11 +60,11 @@ export default function PaginaCaracteristicas() {
 
       <Caracteristicas />
 
-      <section className="bg-white py-20 lg:py-24">
+      <section className="py-20 lg:py-24">
         <Contenedor>
           <Revelar className="max-w-2xl">
-            <Rotulo indice="—">Además</Rotulo>
-            <h2 className="mt-5 font-display text-3xl leading-[1.1] font-bold tracking-[-0.03em] text-balance text-sitio-tinta sm:text-4xl">
+            <Rotulo>Además</Rotulo>
+            <h2 className="mt-5 titulo-2">
               Detalles que no se ven, pero se notan
             </h2>
           </Revelar>
@@ -73,7 +73,7 @@ export default function PaginaCaracteristicas() {
             {DETALLES.map((detalle, indice) => (
               <Revelar key={detalle.titulo} retardo={(indice % 3) * 0.07}>
                 <div className="border-t border-sitio-borde-fuerte pt-5">
-                  <h3 className="font-display font-semibold text-sitio-tinta">{detalle.titulo}</h3>
+                  <h3 className="font-medium tracking-[-0.01em] text-sitio-tinta">{detalle.titulo}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-pretty text-sitio-suave">
                     {detalle.texto}
                   </p>

@@ -15,28 +15,34 @@
   --radius-marca: var(--radio);
 
   --font-sans: var(--fuente-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--fuente-display), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--fuente-display, var(--fuente-sans)), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--fuente-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 /*
- * Paleta de la web comercial de Llano Studio. Va con prefijo `sitio-` para no
- * pisar los tokens de tematización de las tiendas, que son otra cosa.
- *
- * Los bordes y el fondo crema son cálidos a propósito (tiran a beige, no a
- * gris): es lo que separa el conjunto del look por defecto de Tailwind.
+ * Paleta de la web comercial y del panel: la misma de llanostudio.co. Negro
+ * puro y sobrio, con el azul del logotipo sólo en los detalles. Va con prefijo
+ * `sitio-` para no pisar los tokens de tematización de las tiendas.
  */
 @theme {
-  --color-sitio-tinta: #0a0f1c;
-  --color-sitio-suave: #545c70;
-  --color-sitio-tenue: #8b93a5;
-  /* Azul tomado del propio logotipo de Llano Studio, para que la web y la
-     marca no vayan cada una por su lado. */
+  --color-sitio-fondo: #000000;
+  --color-sitio-superficie: #0e0e0f;
+  --color-sitio-superficie-2: #161618;
+  --color-sitio-tinta: #ffffff;
+  --color-sitio-suave: #a3a3a3;
+  --color-sitio-tenue: #6b6b6b;
   --color-sitio-azul: #3b60ff;
-  --color-sitio-azul-fuerte: #2a4ae8;
-  --color-sitio-profundo: #101a4d;
-  --color-sitio-crema: #f7f5f0;
-  --color-sitio-borde: #e7e3da;
-  --color-sitio-borde-fuerte: #d6d0c3;
+  --color-sitio-azul-claro: #6b8dff;
+  --color-sitio-profundo: #0a1030;
+  /* Fondo alterno de sección: un punto por encima del negro. */
+  --color-sitio-crema: #070707;
+  --color-sitio-borde: rgb(255 255 255 / 0.08);
+  --color-sitio-borde-fuerte: rgb(255 255 255 / 0.14);
+  --color-sitio-verde: #3ddc84;
+  --color-sitio-ambar: #f5b207;
+  --color-sitio-rojo: #f87171;
+
+  --ease-salida: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
@@ -51,6 +57,246 @@ body {
   background-color: var(--superficie);
   color: var(--tinta);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Sitio y panel: el marco oscuro lo pone esta clase, no el body, porque las
+   tiendas comparten el mismo documento raíz y tienen su propio tema. */
+.marco-oscuro {
+  background: #000;
+  color: #fff;
+  color-scheme: dark;
+}
+.marco-oscuro ::selection {
+  background: var(--color-sitio-azul);
+  color: #fff;
+}
+.marco-oscuro,
+.marco-oscuro * {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+}
+
+@layer components {
+  /* ── Botones: blanco sólido o contorno, en mayúsculas finas ── */
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    height: 48px;
+    padding: 0 26px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background 0.35s ease,
+      border-color 0.35s ease,
+      color 0.35s ease,
+      opacity 0.35s ease;
+  }
+  .boton:active {
+    opacity: 0.8;
+  }
+  .boton:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .boton-primario {
+    background: #fff;
+    color: #000;
+  }
+  .boton-primario:hover:not(:disabled) {
+    background: #d9d9d9;
+  }
+  .boton-contorno {
+    background: transparent;
+    border-color: rgb(255 255 255 / 0.28);
+    color: #fff;
+  }
+  .boton-contorno:hover:not(:disabled) {
+    border-color: #fff;
+    background: rgb(255 255 255 / 0.06);
+  }
+  .boton-chico {
+    height: 40px;
+    padding: 0 18px;
+    font-size: 11px;
+  }
+
+  /* ── Titulares grandes y finos ── */
+  .titulo-1,
+  .titulo-2,
+  .titulo-3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.045em;
+    color: #fff;
+    text-wrap: balance;
+  }
+  .titulo-1 {
+    font-size: clamp(46px, 7.4vw, 104px);
+    line-height: 0.98;
+  }
+  .titulo-2 {
+    font-size: clamp(34px, 4.6vw, 64px);
+    line-height: 1.02;
+  }
+  .titulo-3 {
+    font-size: clamp(24px, 2.4vw, 32px);
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+  }
+  .bajada {
+    max-width: 46ch;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgb(255 255 255 / 0.62);
+    text-wrap: pretty;
+  }
+  .antetitulo {
+    display: inline-block;
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.5);
+  }
+
+  /* ── Tarjeta base y luz que sigue al cursor ── */
+  .baldosa {
+    border-radius: 8px;
+    background: #0b0b0c;
+    border: 1px solid rgb(255 255 255 / 0.07);
+    transition: border-color 0.5s var(--ease-salida);
+  }
+  .baldosa:hover {
+    border-color: rgb(255 255 255 / 0.16);
+  }
+  .foco {
+    position: relative;
+    isolation: isolate;
+  }
+  .foco::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+      420px circle at var(--mx, 50%) var(--my, 50%),
+      rgb(255 255 255 / 0.07),
+      transparent 60%
+    );
+    transition: opacity 0.5s var(--ease-salida);
+  }
+  .foco:hover::before {
+    opacity: 1;
+  }
+
+  /* ── Enlace con flecha ── */
+  .enlace-flecha {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .enlace-flecha svg {
+    width: 15px;
+    height: 15px;
+    transition: transform 0.5s var(--ease-salida);
+  }
+  .enlace-flecha:hover svg {
+    transform: translateX(4px);
+  }
+
+  /* ── Separador degradado ── */
+  .divisor {
+    height: 1px;
+    border: 0;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.12) 50%, transparent);
+  }
+
+  /* ── Halo azul detrás de los encabezados ── */
+  .halo {
+    position: absolute;
+    z-index: -1;
+    left: 50%;
+    top: -20%;
+    width: min(1100px, 140vw);
+    height: 700px;
+    translate: -50% 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at center,
+      rgb(91 134 255 / 0.16),
+      rgb(91 134 255 / 0.03) 45%,
+      transparent 70%
+    );
+  }
+
+  /* Cuadrícula tenue de fondo */
+  .cuadricula {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+    background-size: 54px 54px;
+  }
+
+  /* Brillo mientras algo carga (subidas de imágenes) */
+  .brillo {
+    position: relative;
+    overflow: hidden;
+    background: #141417;
+  }
+  .brillo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.08), transparent);
+    animation: brillo 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes brillo {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Entrada del encabezado de cada página (visible al cargar, sin esperar al scroll) */
+@keyframes subir {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0);
+    filter: blur(8px);
+  }
+}
+.entrada > * {
+  animation: subir 1.4s var(--ease-salida) both;
+}
+.entrada > *:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.entrada > *:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.entrada > *:nth-child(4) {
+  animation-delay: 0.24s;
+}
+.entrada > *:nth-child(5) {
+  animation-delay: 0.32s;
 }
 
 /* Respeta a quien pidió menos movimiento en su sistema operativo. */

@@ -1,46 +1,26 @@
-import Link from 'next/link'
-import Image from 'next/image'
 import { NavegacionPanel } from '@/componentes/panel/NavegacionPanel'
+import { ProveedorSesion } from '@/componentes/panel/SesionPanel'
 
 /**
  * Marco del tablero de administración. Siempre se sirve en
  * mitienda.llanostudio.co; el middleware garantiza que ningún dominio de tienda
- * llegue hasta aquí.
+ * llegue hasta aquí. Mismo negro y misma tipografía que llanostudio.co.
  */
 export default function LayoutTablero({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-sitio-crema font-sans text-sitio-tinta">
-      <header className="sticky top-0 z-40 border-b border-sitio-borde bg-white">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <Link
-            href="/panel"
-            className="flex items-center gap-2.5 font-display font-bold tracking-tight"
-          >
-            <Image
-              src="/llanostudio-marca-oscura.png"
-              alt="Llano Studio"
-              width={220}
-              height={194}
-              className="h-6 w-auto"
-            />
-            Mi Tienda
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-sitio-tenue sm:block">Ropa Llanera</span>
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-sitio-azul font-display text-xs font-semibold text-white">
-              RL
-            </span>
+    <div className="marco-oscuro min-h-screen font-sans">
+      <ProveedorSesion
+        cargando={
+          <div className="grid min-h-screen place-items-center">
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/15 border-t-white" />
           </div>
-        </div>
-      </header>
-
-      <div className="mx-auto flex max-w-6xl gap-10 px-6 py-8">
-        <aside className="w-48 shrink-0">
+        }
+      >
+        <div className="flex min-h-screen flex-col md:flex-row">
           <NavegacionPanel />
-        </aside>
-        <main className="min-w-0 flex-1">{children}</main>
-      </div>
+          <main className="min-w-0 flex-1 px-5 py-8 md:px-10 md:py-10">{children}</main>
+        </div>
+      </ProveedorSesion>
     </div>
   )
 }

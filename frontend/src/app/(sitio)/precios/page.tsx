@@ -7,19 +7,19 @@ import { TablaPrecios } from '@/componentes/sitio/TablaPrecios'
 export const metadata: Metadata = {
   title: 'Precios',
   description:
-    'Planes desde $0 para vender en línea en Colombia. Empezá gratis y pasá a un plan pago cuando tu tienda lo pida.',
+    'Planes desde $0 para vender en línea en Colombia. Empieza gratis y pasa a un plan pago cuando tu tienda lo pida.',
 }
 
 const PREGUNTAS = [
   {
     pregunta: '¿Necesito tarjeta de crédito para empezar?',
     respuesta:
-      'No. El plan Gratis no pide datos de pago: creás tu cuenta, armás la tienda y la publicás. Sólo se te piden si decidís pasar a un plan pago.',
+      'No. El plan Gratis no pide datos de pago: creas tu cuenta, armas la tienda y la publicas. Sólo se te piden si decides pasar a un plan pago.',
   },
   {
     pregunta: '¿Puedo cambiar de plan más adelante?',
     respuesta:
-      'Sí, en cualquier momento y en las dos direcciones. Al subir de plan, las funciones nuevas quedan disponibles enseguida; al bajar, tu tienda y tus productos siguen ahí, sólo dejás de usar lo que ese plan no incluye.',
+      'Sí, en cualquier momento y en las dos direcciones. Al subir de plan, las funciones nuevas quedan disponibles enseguida; al bajar, tu tienda y tus productos siguen ahí, sólo dejas de usar lo que ese plan no incluye.',
   },
   {
     pregunta: '¿Qué pasa si supero el límite de productos?',
@@ -39,7 +39,7 @@ const PREGUNTAS = [
   {
     pregunta: '¿Qué pasa con mi tienda si dejo de pagar?',
     respuesta:
-      'La tienda deja de estar publicada, pero tus datos no se borran. Podés reactivarla volviendo a un plan pago o quedarte en el plan Gratis con sus límites.',
+      'La tienda deja de estar publicada, pero tus datos no se borran. Puedes reactivarla volviendo a un plan pago o quedarte en el plan Gratis con sus límites.',
   },
 ]
 
@@ -48,8 +48,8 @@ export default function PaginaPrecios() {
     <>
       <CabeceraPagina
         rotulo="Precios"
-        titulo="Empezá gratis. Pagá cuando tu tienda lo pida."
-        descripcion="Sin comisiones sobre tus ventas y sin permanencia. El plan Gratis no vence: si te alcanza, te podés quedar ahí."
+        titulo="Empieza gratis. Paga cuando tu tienda lo pida."
+        descripcion="Sin comisiones sobre tus ventas y sin permanencia. El plan Gratis no vence: si te alcanza, te puedes quedar ahí."
       />
 
       <TablaPrecios />

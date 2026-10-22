@@ -13,7 +13,7 @@ const CARACTERISTICAS = [
     rotulo: 'Diseño',
     titulo: 'Editor visual de arrastrar y soltar',
     texto:
-      'Armá tu página moviendo bloques con el mouse: portada, grilla de productos, texto, pie. Cambiá el orden, ocultá lo que no querés y publicá cuando esté listo.',
+      'Arma tu página moviendo bloques con el mouse: portada, grilla de productos, texto, pie. Cambia el orden, oculta lo que no quieres y publica cuando esté listo.',
     puntos: ['Bloques reordenables', 'Vista previa inmediata', 'Sin tocar una línea de código'],
     visual: <VisualEditor />,
   },
@@ -22,7 +22,7 @@ const CARACTERISTICAS = [
     rotulo: 'Catálogo',
     titulo: 'Gestión de productos simplificada',
     texto:
-      'Cargá fotos, precios, descripciones y stock desde un solo lugar. Las imágenes se optimizan solas para que tu tienda cargue rápido incluso con mala señal.',
+      'Carga fotos, precios, descripciones y stock desde un solo lugar. Las imágenes se optimizan solas para que tu tienda cargue rápido incluso con mala señal.',
     puntos: ['Fotos optimizadas al vuelo', 'Control de inventario', 'Precios en pesos'],
     visual: <VisualProductos />,
   },
@@ -31,7 +31,7 @@ const CARACTERISTICAS = [
     rotulo: 'Dominio',
     titulo: 'Tu marca, tu dirección',
     texto:
-      'Empezá en tunegocio.llanostudio.co y conectá tu dominio propio cuando quieras. Colores, tipografía y logo se aplican a toda la tienda.',
+      'Empieza en tunegocio.llanostudio.co y conecta tu dominio propio cuando quieras. Colores, tipografía y logo se aplican a toda la tienda.',
     puntos: ['Subdominio incluido', 'Dominio propio', 'Tema personalizable'],
     visual: <VisualDominio />,
   },
@@ -49,12 +49,12 @@ const CARACTERISTICAS = [
 
 export function Caracteristicas() {
   return (
-    <section id="producto" className="bg-sitio-crema py-20 lg:py-28">
+    <section id="producto" className="py-20 lg:py-28">
       <Contenedor>
         <Revelar className="max-w-2xl">
-          <Rotulo indice="—">Todo en una sola plataforma</Rotulo>
-          <h2 className="mt-5 font-display text-4xl leading-[1.08] font-bold tracking-[-0.03em] text-balance text-sitio-tinta sm:text-5xl">
-            Lo que antes pedías a un desarrollador, ahora lo hacés vos
+          <Rotulo>Todo en una sola plataforma</Rotulo>
+          <h2 className="mt-5 titulo-2">
+            Lo que antes pedías a un desarrollador, ahora lo haces tú
           </h2>
         </Revelar>
 
@@ -62,18 +62,18 @@ export function Caracteristicas() {
           {CARACTERISTICAS.map((caracteristica, posicion) => (
             <Revelar key={caracteristica.indice}>
               <article
-                className={`relative grid gap-10 border-t border-dashed border-sitio-borde-fuerte py-14 lg:grid-cols-2 lg:items-center lg:gap-16 ${
+                className={`relative grid gap-10 border-t border-sitio-borde py-14 lg:grid-cols-2 lg:items-center lg:gap-16 ${
                   posicion === CARACTERISTICAS.length - 1
-                    ? 'border-b border-dashed border-sitio-borde-fuerte'
+                    ? 'border-b border-sitio-borde'
                     : ''
                 }`}
               >
                 {/* En pantallas anchas se alternan los lados, para que la
                     vista no caiga siempre en la misma columna. */}
                 <div className={posicion % 2 === 1 ? 'lg:order-2' : ''}>
-                  <Rotulo indice={caracteristica.indice}>{caracteristica.rotulo}</Rotulo>
+                  <Rotulo>{caracteristica.rotulo}</Rotulo>
 
-                  <h3 className="mt-5 font-display text-2xl font-bold tracking-[-0.02em] text-balance text-sitio-tinta sm:text-3xl">
+                  <h3 className="mt-5 titulo-3">
                     {caracteristica.titulo}
                   </h3>
 
@@ -85,7 +85,7 @@ export function Caracteristicas() {
                     {caracteristica.puntos.map((punto) => (
                       <li
                         key={punto}
-                        className="rounded-full border border-sitio-borde-fuerte bg-white px-3 py-1.5 text-sm text-sitio-suave"
+                        className="rounded-full border border-sitio-borde-fuerte bg-white/[0.02] px-3 py-1.5 text-sm text-sitio-suave"
                       >
                         {punto}
                       </li>
@@ -93,7 +93,7 @@ export function Caracteristicas() {
                   </ul>
 
                   {caracteristica.proximamente && (
-                    <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-sitio-azul/10 px-3 py-1.5 text-xs font-medium text-sitio-azul-fuerte">
+                    <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-sitio-azul/30 bg-sitio-azul/10 px-3 py-1.5 text-xs font-medium text-sitio-azul-claro">
                       <span className="h-1.5 w-1.5 rounded-full bg-sitio-azul" />
                       Próximamente
                     </p>

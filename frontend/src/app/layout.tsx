@@ -1,18 +1,18 @@
 import type { Metadata } from 'next'
-import { Inter, Space_Grotesk } from 'next/font/google'
+import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 
-// Space Grotesk para titulares: tiene carácter propio sin volverse decorativa,
-// y sus formas geométricas apretadas aguantan bien los tamaños grandes.
-const display = Space_Grotesk({
+// Geist, la misma familia de llanostudio.co: titulares grandes y finos y texto
+// corrido con la misma voz. La tienda pública también la usa por defecto.
+const texto = Geist({
   subsets: ['latin'],
-  variable: '--fuente-display',
+  variable: '--fuente-sans',
   display: 'swap',
 })
 
-const texto = Inter({
+const mono = Geist_Mono({
   subsets: ['latin'],
-  variable: '--fuente-sans',
+  variable: '--fuente-mono',
   display: 'swap',
 })
 
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
  */
 export default function LayoutRaiz({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${display.variable} ${texto.variable}`}>
+    <html lang="es" className={`${texto.variable} ${mono.variable}`}>
       {/*
         suppressHydrationWarning por las extensiones del navegador: varias
         (ColorZilla, Grammarly y compañía) añaden atributos al <body> antes de

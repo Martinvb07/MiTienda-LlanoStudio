@@ -15,11 +15,11 @@ interface Pregunta {
  */
 export function Preguntas({ titulo, preguntas }: { titulo: string; preguntas: Pregunta[] }) {
   return (
-    <section className="bg-sitio-crema py-20 lg:py-24">
+    <section className="py-20 lg:py-24">
       <Contenedor>
         <Revelar className="max-w-2xl">
-          <Rotulo indice="—">Preguntas</Rotulo>
-          <h2 className="mt-5 font-display text-3xl leading-[1.1] font-bold tracking-[-0.03em] text-balance text-sitio-tinta sm:text-4xl">
+          <Rotulo>Preguntas</Rotulo>
+          <h2 className="mt-5 titulo-2">
             {titulo}
           </h2>
         </Revelar>

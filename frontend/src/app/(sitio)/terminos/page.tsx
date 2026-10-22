@@ -22,7 +22,7 @@ export default function PaginaTerminos() {
         <Articulo numero="1." titulo="Quiénes somos">
           <p>
             Mi Tienda es una plataforma operada por Llano Studio, con domicilio en Colombia. Al
-            crear una cuenta aceptás estas condiciones.
+            crear una cuenta aceptas estas condiciones.
           </p>
         </Articulo>
 
@@ -30,25 +30,25 @@ export default function PaginaTerminos() {
           <p>
             Un servicio para crear, publicar y administrar tiendas en línea. Damos las
             herramientas y la infraestructura; el negocio que se monte encima es tuyo y lo
-            gestionás vos.
+            gestionas tú.
           </p>
         </Articulo>
 
         <Articulo numero="3." titulo="Tu cuenta">
           <p>
-            Sos responsable de la información que registrás y de mantener tu contraseña a salvo.
-            Todo lo que ocurra desde tu cuenta se considera hecho por vos.
+            Sos responsable de la información que registras y de mantener tu contraseña a salvo.
+            Todo lo que ocurra desde tu cuenta se considera hecho por ti.
           </p>
-          <p>Para abrir una cuenta tenés que ser mayor de edad o contar con autorización.</p>
+          <p>Para abrir una cuenta tienes que ser mayor de edad o contar con autorización.</p>
         </Articulo>
 
-        <Articulo numero="4." titulo="Lo que publicás es tuyo">
+        <Articulo numero="4." titulo="Lo que publicas es tuyo">
           <p>
             Los productos, textos, fotos y datos que cargues siguen siendo de tu propiedad. No
             los usamos para nada distinto de prestarte el servicio.
           </p>
           <p>
-            A la vez, sos responsable de tener derecho sobre lo que publicás y de que cumpla la
+            A la vez, eres responsable de tener derecho sobre lo que publicas y de que cumpla la
             ley colombiana.
           </p>
         </Articulo>
@@ -67,7 +67,7 @@ export default function PaginaTerminos() {
         <Articulo numero="6." titulo="Planes y pagos">
           <p>
             El plan Gratis no tiene costo ni vencimiento. Los planes pagos se cobran por
-            adelantado en el periodo contratado y podés cambiarlos o cancelarlos cuando quieras;
+            adelantado en el periodo contratado y puedes cambiarlos o cancelarlos cuando quieras;
             la cancelación surte efecto al terminar el periodo ya pagado.
           </p>
           <p>
@@ -79,10 +79,10 @@ export default function PaginaTerminos() {
         <Articulo numero="7." titulo="Suspensión y cierre">
           <p>
             Podemos suspender una cuenta que incumpla estas condiciones, avisando salvo que la
-            gravedad del caso lo impida. Vos podés cerrar la tuya en cualquier momento.
+            gravedad del caso lo impida. Tú puedes cerrar la tuya en cualquier momento.
           </p>
           <p>
-            Al cerrarse una cuenta conservamos los datos un tiempo prudencial por si querés
+            Al cerrarse una cuenta conservamos los datos un tiempo prudencial por si quieres
             recuperarlos, y después los eliminamos.
           </p>
         </Articulo>
@@ -102,7 +102,7 @@ export default function PaginaTerminos() {
         <Articulo numero="9." titulo="Cambios en estas condiciones">
           <p>
             Si cambiamos algo relevante te avisamos con antelación razonable. Seguir usando la
-            plataforma después de un cambio significa que lo aceptás.
+            plataforma después de un cambio significa que lo aceptas.
           </p>
         </Articulo>
 
@@ -115,7 +115,7 @@ export default function PaginaTerminos() {
 
         <Articulo numero="11." titulo="Contacto">
           <p>
-            Para cualquier duda sobre estos términos, escribinos desde la{' '}
+            Para cualquier duda sobre estos términos, escríbenos desde la{' '}
             <Link href="/contacto" className="text-sitio-azul underline underline-offset-4">
               página de contacto
             </Link>

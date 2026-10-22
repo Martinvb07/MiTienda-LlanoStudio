@@ -7,7 +7,7 @@ import { registro } from './utilidades/registro.js'
 
 const app = crearApp()
 
-const servidor = app.listen(entorno.PUERTO, () => {
+const servidor = app.listen(entorno.PUERTO, entorno.HOST, () => {
   registro.info(
     { puerto: entorno.PUERTO, entorno: entorno.NODE_ENV, dominioBase: entorno.DOMINIO_BASE },
     'API de Mi Tienda escuchando',

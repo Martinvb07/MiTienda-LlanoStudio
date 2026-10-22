@@ -39,27 +39,28 @@ export function PieSitio() {
   const anio = new Date().getFullYear()
 
   return (
-    <footer className="relative overflow-hidden bg-sitio-tinta">
+    <footer className="relative overflow-hidden border-t border-sitio-borde bg-sitio-crema">
       {/* Halo de marca: levanta el bloque oscuro para que no se lea como un
           rectángulo negro y sin más. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-32 left-1/2 h-64 w-[42rem] -translate-x-1/2 rounded-full bg-sitio-azul/15 blur-3xl"
+        className="pointer-events-none absolute -top-32 left-1/2 h-64 w-[42rem] -translate-x-1/2 rounded-full bg-sitio-azul/10 blur-3xl"
       />
 
-      <Contenedor className="relative py-14 sm:py-16">
+      <Contenedor className="relative pt-[72px] pb-9">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_repeat(4,minmax(0,1fr))]">
           <div>
-            <Link href="/" className="font-display text-xl font-bold tracking-tight text-white">
-              Mi Tienda
+            <Link href="/" className="flex items-center gap-[11px]">
+              <Image src="/llanostudio-marca.png" alt="" width={232} height={205} className="h-7 w-auto" />
+              <span className="text-base font-semibold tracking-[-0.02em] text-white">Mi Tienda</span>
             </Link>
 
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/55">
-              Tiendas en línea para emprendedores colombianos. Sin código y sin complicaciones.
+            <p className="mt-[18px] max-w-[16ch] text-xl leading-[1.3] tracking-[-0.02em] text-white">
+              Tiendas en línea para negocios colombianos.
             </p>
 
             <p className="mt-5 flex items-center gap-2 text-sm text-white/55">
-              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 text-sitio-azul">
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 text-sitio-azul-claro">
                 <path
                   d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"
                   stroke="currentColor"
@@ -77,7 +78,7 @@ export function PieSitio() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram de Llano Studio"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-white/70 ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:bg-sitio-azul hover:text-white hover:ring-sitio-azul"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-white/70 ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:bg-white hover:text-black hover:ring-white"
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4" fill="none">
                   <rect
@@ -98,7 +99,7 @@ export function PieSitio() {
 
           {COLUMNAS.map((columna) => (
             <nav key={columna.titulo}>
-              <h3 className="font-display text-sm font-bold tracking-wider text-white/85 uppercase">
+              <h3 className="text-[13px] font-medium tracking-[-0.01em] text-white">
                 {columna.titulo}
               </h3>
               <ul className="mt-4 space-y-3">
@@ -106,7 +107,7 @@ export function PieSitio() {
                   <li key={enlace.etiqueta}>
                     <Link
                       href={enlace.href}
-                      className="text-sm text-white/55 transition-colors hover:text-sitio-azul"
+                      className="text-[13px] text-sitio-tenue transition-colors duration-300 hover:text-white"
                     >
                       {enlace.etiqueta}
                     </Link>
@@ -117,7 +118,7 @@ export function PieSitio() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
+        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-6 sm:flex-row">
           <p className="text-xs text-white/40">
             © {anio} Mi Tienda. Todos los derechos reservados.
           </p>

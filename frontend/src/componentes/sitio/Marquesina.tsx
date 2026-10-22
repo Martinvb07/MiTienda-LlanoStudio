@@ -44,7 +44,7 @@ export function Marquesina() {
   }, [])
 
   return (
-    <section className="border-y border-sitio-borde bg-white py-10">
+    <section className="border-y border-sitio-borde py-10">
       <Contenedor>
         <p className="text-center text-sm text-sitio-tenue">
           El tipo de negocio que ya vende con Llano Studio
@@ -59,7 +59,7 @@ export function Marquesina() {
           {[...TIENDAS, ...TIENDAS].map((tienda, indice) => (
             <span
               key={`${tienda}-${indice}`}
-              className="font-display text-xl font-semibold whitespace-nowrap text-sitio-tenue/70"
+              className="text-2xl tracking-[-0.03em] whitespace-nowrap text-white/35"
             >
               {tienda}
             </span>

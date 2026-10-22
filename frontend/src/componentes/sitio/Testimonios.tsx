@@ -31,11 +31,11 @@ const TESTIMONIOS = [
 
 export function Testimonios() {
   return (
-    <section className="bg-sitio-crema py-20 lg:py-28">
+    <section className="py-20 lg:py-28">
       <Contenedor>
         <Revelar className="max-w-2xl">
-          <Rotulo indice="—">Testimonios</Rotulo>
-          <h2 className="mt-5 font-display text-4xl leading-[1.08] font-bold tracking-[-0.03em] text-balance text-sitio-tinta sm:text-5xl">
+          <Rotulo>Testimonios</Rotulo>
+          <h2 className="mt-5 titulo-2">
             Hecho para quien vende, no para quien programa
           </h2>
         </Revelar>
@@ -43,7 +43,7 @@ export function Testimonios() {
         <div className="mt-14 grid gap-6 md:grid-cols-3">
           {TESTIMONIOS.map((testimonio, indice) => (
             <Revelar key={testimonio.negocio + indice} retardo={indice * 0.08}>
-              <figure className="flex h-full flex-col rounded-2xl border border-sitio-borde bg-white p-6">
+              <figure className="flex h-full flex-col baldosa foco p-6">
                 {/* Comilla de apertura como elemento gráfico, no como texto. */}
                 <svg
                   viewBox="0 0 32 24"
@@ -59,7 +59,7 @@ export function Testimonios() {
                 </blockquote>
 
                 <figcaption className="mt-6 flex items-center gap-3 border-t border-sitio-borde pt-5">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-sitio-crema font-display text-sm font-semibold text-sitio-suave">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-sitio-superficie-2 text-sm font-medium text-sitio-suave">
                     {testimonio.inicial}
                   </span>
                   <span className="min-w-0">

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { CSSProperties } from 'react'
 import { obtenerTienda } from '@/servicios/tiendas.servicio'
 import { hostDesdeIdentificador } from '@/utilidades/dominios'
+import { variablesTema } from '@/utilidades/tema'
 
 /** Revalidación ISR: las tiendas se sirven de caché y se refrescan solas. */
 export const revalidate = 60
@@ -52,15 +52,8 @@ export default async function LayoutTienda({ children, params }: Props) {
 
   if (!tienda) notFound()
 
-  const variablesTema = {
-    ...(tienda.tema.colorMarca ? { '--marca': tienda.tema.colorMarca } : {}),
-    ...(tienda.tema.colorFondo ? { '--superficie': tienda.tema.colorFondo } : {}),
-    ...(tienda.tema.colorTexto ? { '--tinta': tienda.tema.colorTexto } : {}),
-    ...(tienda.tema.radio ? { '--radio': tienda.tema.radio } : {}),
-  } as CSSProperties
-
   return (
-    <div style={variablesTema} className="min-h-screen bg-superficie text-tinta">
+    <div style={variablesTema(tienda.tema)} className="min-h-screen bg-superficie font-sans text-tinta">
       {children}
     </div>
   )

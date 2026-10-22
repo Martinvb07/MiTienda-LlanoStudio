@@ -2,12 +2,17 @@
  * Contrato del constructor drag-and-drop.
  *
  * El diseño de cada tienda se guarda como este array de bloques en
- * Tienda.configuracionBloques (JSON), nunca como HTML generado. El panel los
- * reordena con dnd-kit y la tienda pública los renderiza como componentes
+ * Tienda.configuracionBloques (JSON), nunca como HTML generado. El editor del
+ * panel los ordena y edita, y la tienda pública los renderiza como componentes
  * React. Cambiar la plantilla no pierde el contenido.
  */
 
-export type TipoBloque = 'hero' | 'grilla-productos' | 'texto' | 'pie'
+export type TipoBloque = 'anuncio' | 'hero' | 'grilla-productos' | 'imagen-texto' | 'texto' | 'pie'
+
+export interface PropsAnuncio {
+  texto: string
+  enlace?: string
+}
 
 export interface PropsHero {
   titulo: string
@@ -15,6 +20,7 @@ export interface PropsHero {
   textoBoton?: string
   enlaceBoton?: string
   imagenUrl?: string
+  alineacion?: 'izquierda' | 'centro'
 }
 
 export interface PropsGrillaProductos {
@@ -22,6 +28,16 @@ export interface PropsGrillaProductos {
   /** Cuántos productos mostrar. */
   limite?: number
   columnas?: 2 | 3 | 4
+}
+
+export interface PropsImagenTexto {
+  titulo: string
+  contenido?: string
+  imagenUrl?: string
+  textoBoton?: string
+  enlaceBoton?: string
+  /** De qué lado va la imagen en pantallas anchas. */
+  lado?: 'izquierda' | 'derecha'
 }
 
 export interface PropsTexto {
@@ -35,6 +51,8 @@ export interface PropsPie {
   mostrarRedes?: boolean
   instagram?: string
   whatsapp?: string
+  /** Quita "Hecho con Mi Tienda"; sólo surte efecto en planes pagos. */
+  ocultarMarca?: boolean
 }
 
 interface BloqueBase<T extends TipoBloque, P> {
@@ -45,19 +63,66 @@ interface BloqueBase<T extends TipoBloque, P> {
   visible?: boolean
 }
 
+export type BloqueAnuncio = BloqueBase<'anuncio', PropsAnuncio>
 export type BloqueHero = BloqueBase<'hero', PropsHero>
 export type BloqueGrillaProductos = BloqueBase<'grilla-productos', PropsGrillaProductos>
+export type BloqueImagenTexto = BloqueBase<'imagen-texto', PropsImagenTexto>
 export type BloqueTexto = BloqueBase<'texto', PropsTexto>
 export type BloquePie = BloqueBase<'pie', PropsPie>
 
-export type Bloque = BloqueHero | BloqueGrillaProductos | BloqueTexto | BloquePie
+export type Bloque =
+  | BloqueAnuncio
+  | BloqueHero
+  | BloqueGrillaProductos
+  | BloqueImagenTexto
+  | BloqueTexto
+  | BloquePie
 
-/** Etiquetas para la barra de bloques del panel. */
+/** Nombres y descripciones para el editor del panel. */
 export const ETIQUETAS_BLOQUE: Record<TipoBloque, string> = {
+  anuncio: 'Barra de anuncio',
   hero: 'Portada',
-  'grilla-productos': 'Grilla de productos',
+  'grilla-productos': 'Productos',
+  'imagen-texto': 'Imagen con texto',
   texto: 'Texto',
   pie: 'Pie de página',
+}
+
+export const DESCRIPCIONES_BLOQUE: Record<TipoBloque, string> = {
+  anuncio: 'Una franja arriba para envíos, promociones o avisos.',
+  hero: 'Titular grande con botón, sobre color o una foto.',
+  'grilla-productos': 'Tu catálogo en columnas.',
+  'imagen-texto': 'Una foto al lado de un texto: tu historia, un producto estrella.',
+  texto: 'Un párrafo para contar algo.',
+  pie: 'Cierre de la página con tus redes.',
+}
+
+/** Props con las que nace cada tipo de bloque al añadirlo desde el editor. */
+export const PROPS_INICIALES: { [T in TipoBloque]: Extract<Bloque, { tipo: T }>['props'] } = {
+  anuncio: { texto: 'Envíos a toda Colombia' },
+  hero: {
+    titulo: 'Título de la portada',
+    subtitulo: 'Un subtítulo corto',
+    textoBoton: 'Ver productos',
+    enlaceBoton: '#productos',
+    alineacion: 'centro',
+  },
+  'grilla-productos': { titulo: 'Productos', limite: 8, columnas: 3 },
+  'imagen-texto': {
+    titulo: 'Nuestra historia',
+    contenido: 'Cuenta quién está detrás de la tienda y por qué hace lo que hace.',
+    lado: 'izquierda',
+  },
+  texto: { contenido: 'Escribe aquí el texto de la sección.' },
+  pie: { texto: '© Mi tienda', mostrarRedes: true },
+}
+
+export function crearBloque(tipo: TipoBloque): Bloque {
+  return {
+    id: `${tipo}-${crypto.randomUUID().slice(0, 8)}`,
+    tipo,
+    props: structuredClone(PROPS_INICIALES[tipo]),
+  } as Bloque
 }
 
 /** Bloques que trae una tienda recién creada. */

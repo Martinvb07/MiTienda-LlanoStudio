@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { AvisoSinConectar, CampoContrasena, CampoTexto } from './CamposFormulario'
+import { useRouter } from 'next/navigation'
+import { ErrorPanel, registrar } from '@/servicios/panel'
+import { AvisoFormulario, CampoContrasena, CampoTexto } from './CamposFormulario'
 import { configuracionDominios, esSubdominioValido } from '@/utilidades/dominios'
 import { generarSlug } from '@/utilidades/formato'
 
@@ -31,7 +33,8 @@ export function FormularioRegistro() {
 
   const [errores, setErrores] = useState<Errores>({})
   const [enviando, setEnviando] = useState(false)
-  const [intentado, setIntentado] = useState(false)
+  const [errorServidor, setErrorServidor] = useState('')
+  const router = useRouter()
 
   const subdominioFinal = subdominioEditado ? subdominio : generarSlug(tienda)
   const dominioCompleto = `${subdominioFinal || 'tunegocio'}.${configuracionDominios.dominioBase}`
@@ -49,25 +52,25 @@ export function FormularioRegistro() {
   function validar(): Errores {
     const encontrados: Errores = {}
 
-    if (!nombre.trim()) encontrados.nombre = 'Escribí tu nombre'
+    if (!nombre.trim()) encontrados.nombre = 'Escribe tu nombre'
 
-    if (!email.trim()) encontrados.email = 'Escribí tu correo'
+    if (!email.trim()) encontrados.email = 'Escribe tu correo'
     else if (!CORREO.test(email)) encontrados.email = 'Ese correo no parece válido'
 
-    if (!contrasena) encontrados.contrasena = 'Elegí una contraseña'
+    if (!contrasena) encontrados.contrasena = 'Elige una contraseña'
     else if (contrasena.length < 8) encontrados.contrasena = 'Tiene que tener al menos 8 caracteres'
 
-    if (!tienda.trim()) encontrados.tienda = 'Escribí el nombre de tu tienda'
+    if (!tienda.trim()) encontrados.tienda = 'Escribe el nombre de tu tienda'
 
-    if (!subdominioFinal) encontrados.subdominio = 'Elegí una dirección para tu tienda'
+    if (!subdominioFinal) encontrados.subdominio = 'Elige una dirección para tu tienda'
     else if (!esSubdominioValido(subdominioFinal)) {
       encontrados.subdominio =
         subdominioFinal.length < 3
           ? 'Tiene que tener al menos 3 caracteres'
-          : 'Esa dirección no está disponible. Probá con otra.'
+          : 'Esa dirección no está disponible. Prueba con otra.'
     }
 
-    if (!condiciones) encontrados.condiciones = 'Tenés que aceptar las condiciones'
+    if (!condiciones) encontrados.condiciones = 'Tienes que aceptar las condiciones'
 
     return encontrados
   }
@@ -79,20 +82,34 @@ export function FormularioRegistro() {
     if (Object.keys(encontrados).length > 0) return
 
     setEnviando(true)
-    // TODO: POST al backend para crear Tenant + Tienda + Usuario en una
-    // transacción, y comprobar allí que el subdominio siga libre.
-    await new Promise((listo) => setTimeout(listo, 800))
-    setEnviando(false)
-    setIntentado(true)
+    setErrorServidor('')
+    try {
+      await registrar({
+        nombre: nombre.trim(),
+        email: email.trim(),
+        contrasena,
+        tienda: tienda.trim(),
+        subdominio: subdominioFinal,
+      })
+      // Recién creada: directo al editor para que la arme.
+      router.push('/panel/plantillas?editar=1')
+    } catch (error) {
+      if (error instanceof ErrorPanel && Object.keys(error.campos).length > 0) {
+        setErrores(error.campos as Errores)
+      } else {
+        setErrorServidor(error instanceof Error ? error.message : 'No pudimos crear tu tienda')
+      }
+      setEnviando(false)
+    }
   }
 
   return (
     <>
-      <h1 className="font-display text-3xl font-bold tracking-[-0.03em] text-sitio-tinta">
-        Creá tu tienda gratis
+      <h1 className="text-[32px] leading-[1.05] font-normal tracking-[-0.04em]">
+        Crea tu tienda gratis
       </h1>
-      <p className="mt-2 text-sitio-suave">
-        En un par de minutos la tenés publicada. Sin tarjeta de crédito.
+      <p className="mt-2 text-sm text-sitio-tenue">
+        En un par de minutos la tienes publicada. Sin tarjeta de crédito.
       </p>
 
       <form onSubmit={alEnviar} noValidate className="mt-8 space-y-5">
@@ -140,15 +157,15 @@ export function FormularioRegistro() {
         </div>
 
         <div>
-          <label htmlFor="subdominio" className="text-sm font-medium text-sitio-tinta">
+          <label htmlFor="subdominio" className="text-[12px] text-sitio-suave">
             La dirección de tu tienda
           </label>
 
           {/* El dominio va pegado al campo, no debajo: así se lee de corrido
               como la dirección completa que va a quedar. */}
           <div
-            className={`mt-1.5 flex items-stretch overflow-hidden rounded-lg border bg-white transition-colors focus-within:border-sitio-azul ${
-              errores.subdominio ? 'border-red-400' : 'border-sitio-borde-fuerte'
+            className={`mt-1.5 flex items-stretch overflow-hidden rounded-lg border bg-[#121214] transition-colors focus-within:border-white/40 ${
+              errores.subdominio ? 'border-red-400/60' : 'border-sitio-borde'
             }`}
           >
             <input
@@ -158,20 +175,20 @@ export function FormularioRegistro() {
               onChange={(evento) => alCambiarSubdominio(evento.target.value)}
               placeholder="tunegocio"
               aria-invalid={Boolean(errores.subdominio)}
-              className="min-w-0 flex-1 px-3.5 py-2.5 text-sitio-tinta outline-none placeholder:text-sitio-tenue/70"
+              className="min-w-0 flex-1 bg-transparent px-3.5 py-2.5 text-[14px] text-white outline-none placeholder:text-sitio-tenue"
             />
-            <span className="flex shrink-0 items-center border-l border-sitio-borde bg-sitio-crema px-3 text-sm text-sitio-tenue">
+            <span className="flex shrink-0 items-center border-l border-sitio-borde bg-white/[0.03] px-3 text-[13px] text-sitio-tenue">
               .{configuracionDominios.dominioBase}
             </span>
           </div>
 
           {errores.subdominio ? (
-            <p className="mt-1.5 text-sm text-red-600">{errores.subdominio}</p>
+            <p className="mt-1.5 text-[12.5px] text-red-300">{errores.subdominio}</p>
           ) : (
             <p className="mt-2 flex items-center gap-1.5 text-sm text-sitio-tenue">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-sitio-verde" />
               Tu tienda va a vivir en{' '}
-              <span className="font-medium text-sitio-tinta">{dominioCompleto}</span>
+              <span className="font-mono text-[12.5px] text-white">{dominioCompleto}</span>
             </p>
           )}
         </div>
@@ -188,57 +205,52 @@ export function FormularioRegistro() {
             checked={condiciones}
             onChange={(evento) => setCondiciones(evento.target.checked)}
             aria-label="Acepto los términos y condiciones y la política de privacidad"
-            className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-sitio-borde-fuerte accent-sitio-azul"
+            className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-sitio-borde-fuerte accent-white"
           />
-          <p className="text-sm leading-relaxed text-sitio-suave">
+          <p className="text-[13px] leading-relaxed text-sitio-suave">
             Acepto los{' '}
             <Link
               href="/terminos"
-              className="text-sitio-azul underline underline-offset-2 hover:text-sitio-azul-fuerte"
+              className="text-white underline underline-offset-2 hover:text-sitio-suave"
             >
               términos y condiciones
             </Link>{' '}
             y la{' '}
             <Link
               href="/privacidad"
-              className="text-sitio-azul underline underline-offset-2 hover:text-sitio-azul-fuerte"
+              className="text-white underline underline-offset-2 hover:text-sitio-suave"
             >
               política de privacidad
             </Link>
             .
           </p>
         </div>
-        {errores.condiciones && <p className="text-sm text-red-600">{errores.condiciones}</p>}
+        {errores.condiciones && <p className="text-[12.5px] text-red-300">{errores.condiciones}</p>}
 
-        {intentado && (
-          <AvisoSinConectar>
-            El alta todavía no está conectada. Falta el endpoint que cree el tenant, la tienda y
-            el usuario en una sola transacción.
-          </AvisoSinConectar>
-        )}
+        {errorServidor && <AvisoFormulario>{errorServidor}</AvisoFormulario>}
 
         <button
           type="submit"
           disabled={enviando}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-sitio-azul px-6 py-3 font-medium text-white transition-colors hover:bg-sitio-azul-fuerte disabled:opacity-60"
+          className="boton boton-primario w-full"
         >
           {enviando && (
             <span
               aria-hidden="true"
-              className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+              className="h-4 w-4 animate-spin rounded-full border-2 border-black/25 border-t-black"
             />
           )}
           {enviando ? 'Creando tu tienda…' : 'Crear mi tienda'}
         </button>
       </form>
 
-      <p className="mt-8 text-center text-sm text-sitio-suave">
-        ¿Ya tenés cuenta?{' '}
+      <p className="mt-8 text-center text-sm text-sitio-tenue">
+        ¿Ya tienes cuenta?{' '}
         <Link
           href="/panel/ingresar"
-          className="font-medium text-sitio-azul transition-colors hover:text-sitio-azul-fuerte"
+          className="font-medium text-white underline-offset-4 transition-colors hover:underline"
         >
-          Ingresá
+          Ingresa
         </Link>
       </p>
     </>

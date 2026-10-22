@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 /** Marco de la web comercial: se sirve en llanostudio.co y en www. */
 export default function LayoutSitio({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-white font-sans text-sitio-tinta antialiased">
+    <div className="marco-oscuro min-h-screen overflow-x-clip font-sans">
       <Encabezado />
       <main>{children}</main>
       <PieSitio />

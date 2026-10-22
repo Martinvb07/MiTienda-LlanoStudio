@@ -1,20 +1,26 @@
-name: Deploy
+name: CI y Deploy a VPS
+
+# Igual que el de Llano Studio: cada push a main se revisa en GitHub y, si
+# pasa, el VPS se actualiza con git, construye y recarga PM2. Si la versión
+# nueva no responde, vuelve sola a la anterior. Sin Docker.
 
 on:
-  push:
+  # Sólo después de que el CI (lint, tipos, tests y build) pase en main.
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
-  # Permite relanzar un despliegue a mano desde la pestaña Actions.
   workflow_dispatch:
 
-# Nunca dos despliegues a la vez sobre el mismo VPS.
+# Nunca dos deploys simultáneos sobre el mismo servidor.
 concurrency:
-  group: deploy-produccion
+  group: deploy-mitienda
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
-  # El despliegue sólo tiene sentido cuando ya existe un VPS con sus secretos
-  # cargados. Sin esta comprobación, cada push a main dejaba el workflow en rojo
-  # al intentar un ssh-keyscan contra un host vacío.
   comprobar:
     name: ¿Hay VPS configurado?
     runs-on: ubuntu-latest
@@ -22,128 +28,133 @@ jobs:
       configurado: ${{ steps.revisar.outputs.configurado }}
     steps:
       - id: revisar
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
-          if [ -n "${{ secrets.SSH_HOST }}" ] && [ -n "${{ secrets.SSH_LLAVE_PRIVADA }}" ]; then
+          if [ -n "$VPS_HOST" ] && [ -n "$VPS_SSH_KEY" ]; then
             echo "configurado=si" >> "$GITHUB_OUTPUT"
-            echo "Secretos presentes: se procede con el despliegue."
           else
             echo "configurado=no" >> "$GITHUB_OUTPUT"
-            echo "Faltan SSH_HOST o SSH_LLAVE_PRIVADA: se omite el despliegue."
-            echo "Cárgalos en Settings → Secrets and variables → Actions cuando el VPS esté listo."
+            echo "Faltan VPS_HOST o VPS_SSH_KEY: se omite el deploy (ver deploy/LEEME-VPS.md)."
           fi
 
   desplegar:
-    name: Desplegar al VPS
-    runs-on: ubuntu-latest
+    name: Desplegar en VPS
     needs: comprobar
-    if: needs.comprobar.outputs.configurado == 'si'
-    environment: produccion
-
+    if: >-
+      needs.comprobar.outputs.configurado == 'si' &&
+      (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    environment:
+      name: produccion
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      # ── Construcción en el runner ─────────────────────────────────────────
-      # Se compila aquí y no en el VPS para no competir por CPU y RAM con las
-      # tiendas que están sirviendo tráfico.
-
-      - name: Instalar y construir backend
-        working-directory: backend
-        run: |
-          npm ci
-          npx prisma generate
-          npx tsc -p tsconfig.build.json
-        env:
-          DATABASE_URL: postgresql://build:build@localhost:5432/build
-
-      - name: Instalar y construir frontend
-        working-directory: frontend
-        run: |
-          npm ci
-          npm run build
-        env:
-          NEXT_PUBLIC_DOMINIO_BASE: ${{ vars.DOMINIO_BASE }}
-          NEXT_PUBLIC_SUBDOMINIO_PANEL: ${{ vars.SUBDOMINIO_PANEL }}
-          URL_API: ${{ vars.URL_API }}
-
-      # ── Envío al VPS ──────────────────────────────────────────────────────
-
       - name: Preparar clave SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_LLAVE_PRIVADA }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p "${{ secrets.SSH_PUERTO || 22 }}" -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
-
-      - name: Sincronizar archivos
-        # --delete mantiene el servidor igual que el repo. Se excluyen los .env
-        # del servidor y el .next/cache, que es de la máquina.
-        run: |
-          rsync -az --delete \
-            -e "ssh -i ~/.ssh/id_ed25519 -p ${{ secrets.SSH_PUERTO || 22 }}" \
-            --exclude '.git' \
-            --exclude 'node_modules' \
-            --exclude '.env' \
-            --exclude '.env.local' \
-            --exclude 'frontend/.next/cache' \
-            ./ "${{ secrets.SSH_USUARIO }}@${{ secrets.SSH_HOST }}:${{ secrets.RUTA_DESPLIEGUE }}/"
-
-      - name: Instalar dependencias de producción y recargar PM2
-        run: |
-          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.SSH_PUERTO || 22 }}" \
-            "${{ secrets.SSH_USUARIO }}@${{ secrets.SSH_HOST }}" \
-            'bash -se' <<'GUION'
           set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # ssh-keyscan falla de forma intermitente desde los runners: hasta 5 intentos.
+          for intento in 1 2 3 4 5; do
+            ssh-keyscan -T 10 -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null && exit 0
+            echo "ssh-keyscan intento $intento fallido; reintentando en 5s..."
+            sleep 5
+          done
+          echo "ssh-keyscan falló tras 5 intentos"; exit 1
 
-          cd "${{ secrets.RUTA_DESPLIEGUE }}"
-
-          echo "→ Dependencias del backend"
-          cd backend
-          npm ci --omit=dev
-          # El cliente de Prisma es código generado: se rehace en el servidor
-          # porque no viaja en el repo.
-          npx prisma generate
-          cd ..
-
-          echo "→ Dependencias del frontend"
-          cd frontend
-          npm ci --omit=dev
-          cd ..
-
-          echo "→ Recargando procesos"
-          # reload = cero downtime: PM2 levanta el proceso nuevo antes de
-          # tumbar el viejo.
-          pm2 reload ecosystem.config.cjs --update-env
-          pm2 save
-
-          pm2 list
-          GUION
-
-      # ── Comprobación posterior ────────────────────────────────────────────
-
-      - name: Verificar que la API responde
+      - name: Actualizar código, construir y recargar PM2
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PATH: ${{ secrets.VPS_PATH }}
+          # El VPS descarga el código con el token temporal de este job (sólo
+          # lectura, vence al terminar): no guarda credenciales de GitHub.
+          GH_TOKEN: ${{ github.token }}
         run: |
-          ssh -i ~/.ssh/id_ed25519 -p "${{ secrets.SSH_PUERTO || 22 }}" \
-            "${{ secrets.SSH_USUARIO }}@${{ secrets.SSH_HOST }}" \
-            'curl -fsS http://127.0.0.1:4000/api/salud/detallada || (echo "La API no responde tras el despliegue" && exit 1)'
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=15 \
+              "$VPS_USER@$VPS_HOST" \
+              "VPS_PATH='$VPS_PATH' GIT_SHA='${{ github.event.workflow_run.head_sha || github.sha }}' REPO='${{ github.repository }}' GH_TOKEN='$GH_TOKEN' bash -s" <<'ENDSSH'
+          set -euo pipefail
+          cd "$VPS_PATH"
+          ANTERIOR="$(git rev-parse HEAD)"
 
-# ─────────────────────────────────────────────────────────────────────────────
-# MIGRACIONES DE PRISMA — PASO MANUAL, A PROPÓSITO
-#
-# Este workflow NO ejecuta `prisma migrate deploy`. Una migración mal probada
-# sobre datos de tenants reales no se deshace con un rollback del despliegue.
-#
-# Cuando una migración esté lista y revisada, se aplica a mano:
-#
-#   ssh usuario@vps
-#   cd /ruta/del/despliegue/backend
-#   npx prisma migrate status      # ver qué falta por aplicar
-#   pg_dump ... > respaldo.sql     # respaldo antes de tocar nada
-#   npx prisma migrate deploy
-#
-# Orden recomendado para cambios que rompen compatibilidad: desplegar primero
-# el código que tolera ambos esquemas, luego migrar, y por último limpiar.
-# ─────────────────────────────────────────────────────────────────────────────
+          # backend/.medios (fotos subidas sin R2) vive sólo en el servidor y git
+          # lo ignora, así que el deploy no lo toca. Aun así se respalda.
+          RESPALDOS="$HOME/mitienda-respaldos"
+          mkdir -p "$RESPALDOS"
+          if [ -d backend/.medios ]; then
+            tar -czf "$RESPALDOS/medios-$(date +%Y%m%d-%H%M%S).tgz" -C backend .medios
+            ls -1t "$RESPALDOS"/medios-*.tgz 2>/dev/null | tail -n +6 | xargs -r rm -f
+          fi
+
+          construir() {
+            (cd backend && npm ci && npx prisma generate && npx tsc -p tsconfig.build.json) || return 1
+            # El build de Next lee frontend/.env.local (dominios y URL de la API).
+            (cd frontend && npm ci && npm run build) || return 1
+          }
+
+          recargar_pm2() {
+            mkdir -p logs
+            if pm2 describe mitienda-web >/dev/null 2>&1; then
+              pm2 reload ecosystem.config.cjs --update-env || return 1
+            else
+              pm2 start ecosystem.config.cjs || return 1
+            fi
+            pm2 save
+          }
+
+          PUERTO_API="$( (grep -E '^PUERTO=' backend/.env 2>/dev/null || true) | tail -1 | cut -d= -f2 | tr -d "\"' \r")"
+          PUERTO_API="${PUERTO_API:-4101}"
+          PANEL="$( (grep -E '^NEXT_PUBLIC_SUBDOMINIO_PANEL=' frontend/.env.local 2>/dev/null || true) | tail -1 | cut -d= -f2 | tr -d "\"' \r")"
+          BASE="$( (grep -E '^NEXT_PUBLIC_DOMINIO_BASE=' frontend/.env.local 2>/dev/null || true) | tail -1 | cut -d= -f2 | tr -d "\"' \r")"
+
+          # Espera hasta ~45 s a que la API (Postgres y Redis incluidos) y la web respondan.
+          verificar() {
+            local intentos=0 api web
+            while true; do
+              api=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:$PUERTO_API/api/salud/detallada" || echo 000)
+              web=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -H "Host: ${PANEL:-mitienda}.${BASE:-llanostudio.co}" "http://127.0.0.1:4100/" || echo 000)
+              [ "$api" = "200" ] && [ "$web" = "200" ] && return 0
+              intentos=$((intentos + 1))
+              [ "$intentos" -ge 15 ] && { echo "!! API respondió $api y web $web"; return 1; }
+              sleep 3
+            done
+          }
+
+          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $AUTH" \
+              fetch --prune "https://github.com/$REPO.git" "$GIT_SHA"
+          git reset --hard "$GIT_SHA"
+          # -fd no toca lo ignorado (.env, .env.local, backend/.medios, node_modules, logs).
+          git clean -fd
+
+          # Las migraciones NO se aplican solas: una mala sobre datos reales no
+          # se deshace volviendo de versión. Si hay pendientes, se avisa.
+          if (cd backend && npx prisma migrate status 2>&1 | grep -q "not yet been applied"); then
+            echo "!! Hay migraciones de Prisma sin aplicar. Respáldalas y aplícalas a mano (deploy/LEEME-VPS.md)."
+          fi
+
+          if construir && recargar_pm2 && verificar; then
+            echo "OK — desplegado $(git rev-parse --short HEAD)"
+            exit 0
+          fi
+
+          echo "!! Deploy fallido — registros:"
+          pm2 logs mitienda-api --lines 40 --nostream || true
+          pm2 logs mitienda-web --lines 40 --nostream || true
+          echo "!! Revirtiendo a $ANTERIOR"
+          git reset --hard "$ANTERIOR"
+          git clean -fd
+          construir
+          recargar_pm2
+          exit 1
+          ENDSSH
+
+      - name: Limpiar credenciales
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

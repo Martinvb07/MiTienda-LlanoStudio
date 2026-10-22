@@ -1,0 +1,417 @@
+import type { Request, Response } from 'express'
+import jwt from 'jsonwebtoken'
+import { z } from 'zod'
+import { prisma } from '../config/prisma.js'
+import { entorno } from '../config/entorno.js'
+import type { SesionPanel } from '../middlewares/autenticacion.js'
+import { guardarImagen } from '../almacenamiento/index.js'
+import { cifrarContrasena, verificarContrasena } from '../utilidades/contrasenas.js'
+import { esSubdominioValido } from '../utilidades/dominios.js'
+import { ErrorHttp, noAutorizado, noEncontrado, solicitudInvalida } from '../utilidades/errores.js'
+import { ETIQUETAS_BLOQUE_PLAN, TEMAS_PREDEFINIDOS, fueraDelPlan, limitesDe } from '../utilidades/planes.js'
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Esquemas
+// ─────────────────────────────────────────────────────────────────────────────
+
+const correo = z.string().trim().toLowerCase().email('Ese correo no parece válido').max(160)
+
+export const esquemaRegistro = z.object({
+  nombre: z.string().trim().min(1, 'Escribe tu nombre').max(80),
+  email: correo,
+  contrasena: z.string().min(8, 'Tiene que tener al menos 8 caracteres').max(200),
+  tienda: z.string().trim().min(1, 'Escribe el nombre de tu tienda').max(80),
+  subdominio: z.string().trim().toLowerCase(),
+})
+
+export const esquemaIngreso = z.object({
+  email: correo,
+  contrasena: z.string().min(1, 'Escribe tu contraseña').max(200),
+})
+
+const colorHex = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Color inválido')
+
+const esquemaTema = z.object({
+  colorMarca: colorHex.optional(),
+  colorContraste: colorHex.optional(),
+  colorFondo: colorHex.optional(),
+  colorTexto: colorHex.optional(),
+  fuenteTitulos: z.string().max(40).optional(),
+  radio: z.string().max(12).optional(),
+})
+
+/**
+ * El diseño es JSON libre para el resto del sistema; aquí sólo se exige la
+ * forma mínima y un tope de tamaño. La tienda pública vuelve a normalizarlo
+ * antes de pintar (frontend/src/tipos/bloques.ts).
+ */
+const esquemaBloque = z.object({
+  id: z.string().min(1).max(64),
+  tipo: z.string().min(1).max(40),
+  props: z.record(z.string(), z.unknown()),
+  visible: z.boolean().optional(),
+})
+
+const urlMedio = z.string().max(600)
+
+export const esquemaTienda = z.object({
+  nombre: z.string().trim().min(1, 'La tienda necesita un nombre').max(80),
+  descripcion: z.string().trim().max(300).nullable(),
+  logoUrl: urlMedio.nullable(),
+  plantilla: z.string().max(40),
+  tema: esquemaTema,
+  configuracionBloques: z.array(esquemaBloque).max(40),
+  publicada: z.boolean(),
+})
+
+const precio = z.coerce.number().min(0, 'El precio no puede ser negativo').max(9_999_999_999)
+
+export const esquemaProducto = z.object({
+  nombre: z.string().trim().min(1, 'El producto necesita un nombre').max(120),
+  slug: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, 'Usa sólo letras, números y guiones')
+    .max(80),
+  descripcion: z.string().trim().max(4000).nullable(),
+  precio,
+  precioComparacion: precio.nullable(),
+  stock: z.coerce.number().int().min(0).max(1_000_000),
+  fotos: z.array(urlMedio).max(10),
+  activo: z.boolean(),
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sesión
+// ─────────────────────────────────────────────────────────────────────────────
+
+function firmarSesion(sesion: SesionPanel): string {
+  return jwt.sign(sesion, entorno.JWT_SECRETO, { expiresIn: '7d' })
+}
+
+function bloquesIniciales(nombreTienda: string) {
+  return [
+    {
+      id: 'hero-inicial',
+      tipo: 'hero',
+      props: {
+        titulo: nombreTienda,
+        subtitulo: 'Bienvenido a nuestra tienda',
+        textoBoton: 'Ver productos',
+        enlaceBoton: '#productos',
+      },
+    },
+    {
+      id: 'productos-inicial',
+      tipo: 'grilla-productos',
+      props: { titulo: 'Nuestros productos', limite: 8, columnas: 3 },
+    },
+    {
+      id: 'pie-inicial',
+      tipo: 'pie',
+      props: { texto: `© ${new Date().getFullYear()} ${nombreTienda}`, mostrarRedes: true },
+    },
+  ]
+}
+
+/** Crea cuenta, tenant y tienda en una sola transacción y abre sesión. */
+export async function registrar(req: Request, res: Response): Promise<void> {
+  const datos = req.body as z.infer<typeof esquemaRegistro>
+
+  if (!esSubdominioValido(datos.subdominio)) {
+    throw solicitudInvalida('Esa dirección no está disponible', [
+      { campo: 'subdominio', mensaje: 'Esa dirección no está disponible. Prueba con otra.' },
+    ])
+  }
+
+  const [correoUsado, subdominioUsado] = await Promise.all([
+    prisma.usuario.findUnique({ where: { email: datos.email }, select: { id: true } }),
+    prisma.tenant.findUnique({ where: { subdominio: datos.subdominio }, select: { id: true } }),
+  ])
+  if (correoUsado) {
+    throw new ErrorHttp(409, 'Ya existe una cuenta con ese correo', 'CORREO_EN_USO', [
+      { campo: 'email', mensaje: 'Ya existe una cuenta con ese correo' },
+    ])
+  }
+  if (subdominioUsado) {
+    throw new ErrorHttp(409, 'Esa dirección ya la tiene otra tienda', 'SUBDOMINIO_EN_USO', [
+      { campo: 'subdominio', mensaje: 'Esa dirección ya la tiene otra tienda' },
+    ])
+  }
+
+  const contrasenaHash = await cifrarContrasena(datos.contrasena)
+
+  const tenant = await prisma.tenant.create({
+    data: {
+      nombre: datos.tienda,
+      subdominio: datos.subdominio,
+      usuarios: { create: { email: datos.email, nombre: datos.nombre, contrasenaHash } },
+      tienda: {
+        create: { nombre: datos.tienda, configuracionBloques: bloquesIniciales(datos.tienda) },
+      },
+    },
+    select: { id: true, usuarios: { select: { id: true, rol: true } } },
+  })
+
+  const usuario = tenant.usuarios[0]!
+  const token = firmarSesion({
+    usuarioId: usuario.id,
+    tenantId: tenant.id,
+    email: datos.email,
+    rol: usuario.rol,
+  })
+
+  res.status(201).json({ token })
+}
+
+export async function ingresar(req: Request, res: Response): Promise<void> {
+  const { email, contrasena } = req.body as z.infer<typeof esquemaIngreso>
+
+  const usuario = await prisma.usuario.findUnique({
+    where: { email },
+    select: { id: true, tenantId: true, rol: true, activo: true, contrasenaHash: true, tenant: { select: { activo: true } } },
+  })
+
+  // Mismo mensaje para correo inexistente y contraseña errada: no confirma
+  // qué correos tienen cuenta.
+  const valida = usuario ? await verificarContrasena(contrasena, usuario.contrasenaHash) : false
+  if (!usuario || !valida) throw noAutorizado('Correo o contraseña incorrectos')
+  if (!usuario.activo || !usuario.tenant.activo) throw noAutorizado('Esta cuenta está desactivada')
+
+  await prisma.usuario.update({ where: { id: usuario.id }, data: { ultimoAccesoEn: new Date() } })
+
+  res.json({
+    token: firmarSesion({ usuarioId: usuario.id, tenantId: usuario.tenantId, email, rol: usuario.rol }),
+  })
+}
+
+/** Quién es y qué tienda administra: lo primero que pide el panel al cargar. */
+export async function obtenerSesion(req: Request, res: Response): Promise<void> {
+  const { usuarioId, tenantId } = req.sesion!
+
+  const usuario = await prisma.usuario.findFirst({
+    where: { id: usuarioId, tenantId, activo: true },
+    select: {
+      nombre: true,
+      email: true,
+      rol: true,
+      tenant: { select: { subdominio: true, plan: true, tienda: { select: { nombre: true, logoUrl: true, publicada: true } } } },
+    },
+  })
+  if (!usuario) throw noAutorizado('La sesión ya no es válida')
+
+  res.json({
+    usuario: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
+    tenant: { subdominio: usuario.tenant.subdominio, plan: usuario.tenant.plan },
+    tienda: usuario.tenant.tienda,
+  })
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tienda
+// ─────────────────────────────────────────────────────────────────────────────
+
+const camposTienda = {
+  id: true,
+  nombre: true,
+  descripcion: true,
+  logoUrl: true,
+  faviconUrl: true,
+  plantilla: true,
+  tema: true,
+  configuracionBloques: true,
+  moneda: true,
+  publicada: true,
+} as const
+
+/** La tienda de la sesión. Siempre por tenantId del token, nunca por parámetro. */
+async function tiendaDeLaSesion(req: Request) {
+  const tienda = await prisma.tienda.findUnique({
+    where: { tenantId: req.sesion!.tenantId },
+    select: { id: true },
+  })
+  if (!tienda) throw noEncontrado('Esta cuenta no tiene tienda')
+  return tienda.id
+}
+
+export async function obtenerTiendaPanel(req: Request, res: Response): Promise<void> {
+  const tienda = await prisma.tienda.findUnique({
+    where: { tenantId: req.sesion!.tenantId },
+    select: { ...camposTienda, tenant: { select: { subdominio: true } } },
+  })
+  if (!tienda) throw noEncontrado('Esta cuenta no tiene tienda')
+
+  const { tenant, ...resto } = tienda
+  res.json({ tienda: resto, subdominio: tenant.subdominio })
+}
+
+async function planDeLaSesion(req: Request) {
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: req.sesion!.tenantId },
+    select: { plan: true },
+  })
+  return limitesDe(tenant?.plan ?? 'GRATIS')
+}
+
+export async function actualizarTiendaPanel(req: Request, res: Response): Promise<void> {
+  const datos = req.body as z.infer<typeof esquemaTienda>
+  const plan = await planDeLaSesion(req)
+
+  if (datos.configuracionBloques.length > plan.secciones) {
+    throw fueraDelPlan(`Tu plan ${plan.nombre} admite hasta ${plan.secciones} secciones`)
+  }
+  const fuera = datos.configuracionBloques.find((bloque) => !plan.bloques.includes(bloque.tipo))
+  if (fuera) {
+    throw fueraDelPlan(
+      `La sección "${ETIQUETAS_BLOQUE_PLAN[fuera.tipo] ?? fuera.tipo}" no está incluida en tu plan ${plan.nombre}`,
+    )
+  }
+
+  // Sin tema libre, el tema es siempre el del estilo predefinido elegido: lo
+  // que llegue en el cuerpo se ignora.
+  const plantilla = plan.temaLibre || datos.plantilla in TEMAS_PREDEFINIDOS ? datos.plantilla : 'clasica'
+  const tema = plan.temaLibre ? datos.tema : TEMAS_PREDEFINIDOS[plantilla]!
+
+  // Quitar "Hecho con Mi Tienda" del pie es de los planes pagos.
+  const bloques = plan.quitarMarca
+    ? datos.configuracionBloques
+    : datos.configuracionBloques.map((bloque) =>
+        bloque.tipo === 'pie' ? { ...bloque, props: { ...bloque.props, ocultarMarca: false } } : bloque,
+      )
+
+  const tienda = await prisma.tienda.update({
+    where: { tenantId: req.sesion!.tenantId },
+    data: {
+      nombre: datos.nombre,
+      descripcion: datos.descripcion || null,
+      logoUrl: datos.logoUrl || null,
+      plantilla,
+      tema,
+      configuracionBloques: bloques as object[],
+      publicada: datos.publicada,
+    },
+    select: camposTienda,
+  })
+
+  res.json({ tienda })
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Productos
+// ─────────────────────────────────────────────────────────────────────────────
+
+const camposProducto = {
+  id: true,
+  nombre: true,
+  slug: true,
+  descripcion: true,
+  precio: true,
+  precioComparacion: true,
+  stock: true,
+  fotos: true,
+  activo: true,
+  actualizadoEn: true,
+} as const
+
+type ProductoBd = {
+  precio: { toString(): string }
+  precioComparacion: { toString(): string } | null
+}
+
+function serializar<T extends ProductoBd>(producto: T) {
+  return {
+    ...producto,
+    precio: producto.precio.toString(),
+    precioComparacion: producto.precioComparacion?.toString() ?? null,
+  }
+}
+
+export async function listarProductosPanel(req: Request, res: Response): Promise<void> {
+  const tiendaId = await tiendaDeLaSesion(req)
+  const productos = await prisma.producto.findMany({
+    where: { tiendaId },
+    select: camposProducto,
+    orderBy: { creadoEn: 'desc' },
+  })
+  res.json({ productos: productos.map(serializar) })
+}
+
+async function slugLibre(tiendaId: string, slug: string, excepto?: string): Promise<void> {
+  const existente = await prisma.producto.findFirst({
+    where: { tiendaId, slug, ...(excepto ? { id: { not: excepto } } : {}) },
+    select: { id: true },
+  })
+  if (existente) {
+    throw new ErrorHttp(409, 'Ya tienes un producto con esa dirección', 'SLUG_EN_USO', [
+      { campo: 'slug', mensaje: 'Ya tienes un producto con esa dirección' },
+    ])
+  }
+}
+
+function revisarFotos(fotos: string[], plan: ReturnType<typeof limitesDe>) {
+  if (fotos.length > plan.fotosPorProducto) {
+    throw fueraDelPlan(`Tu plan ${plan.nombre} admite hasta ${plan.fotosPorProducto} fotos por producto`)
+  }
+}
+
+export async function crearProductoPanel(req: Request, res: Response): Promise<void> {
+  const datos = req.body as z.infer<typeof esquemaProducto>
+  const [tiendaId, plan] = await Promise.all([tiendaDeLaSesion(req), planDeLaSesion(req)])
+  revisarFotos(datos.fotos, plan)
+  if (plan.productos !== null) {
+    const total = await prisma.producto.count({ where: { tiendaId } })
+    if (total >= plan.productos) {
+      throw fueraDelPlan(`Tu plan ${plan.nombre} admite hasta ${plan.productos} productos`)
+    }
+  }
+  await slugLibre(tiendaId, datos.slug)
+
+  const producto = await prisma.producto.create({
+    data: { ...datos, tiendaId },
+    select: camposProducto,
+  })
+  res.status(201).json({ producto: serializar(producto) })
+}
+
+/** Busca el producto dentro de la tienda de la sesión: un id ajeno da 404. */
+async function productoPropio(req: Request) {
+  const tiendaId = await tiendaDeLaSesion(req)
+  const id = req.params.id as string
+  const producto = await prisma.producto.findFirst({ where: { id, tiendaId }, select: { id: true } })
+  if (!producto) throw noEncontrado('Ese producto no existe')
+  return { tiendaId, id }
+}
+
+export async function actualizarProductoPanel(req: Request, res: Response): Promise<void> {
+  const datos = req.body as z.infer<typeof esquemaProducto>
+  const { tiendaId, id } = await productoPropio(req)
+  revisarFotos(datos.fotos, await planDeLaSesion(req))
+  await slugLibre(tiendaId, datos.slug, id)
+
+  const producto = await prisma.producto.update({ where: { id }, data: datos, select: camposProducto })
+  res.json({ producto: serializar(producto) })
+}
+
+export async function eliminarProductoPanel(req: Request, res: Response): Promise<void> {
+  const { id } = await productoPropio(req)
+  await prisma.producto.delete({ where: { id } })
+  res.status(204).end()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Medios
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Recibe la imagen como cuerpo binario (Content-Type: image/*) y devuelve su URL. */
+export async function subirMedioPanel(req: Request, res: Response): Promise<void> {
+  if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+    throw solicitudInvalida('No llegó ninguna imagen')
+  }
+
+  const tiendaId = await tiendaDeLaSesion(req)
+  const tipo = (req.headers['content-type'] ?? '').split(';')[0]!.trim()
+  const url = await guardarImagen(req.sesion!.tenantId, tiendaId, req.body, tipo)
+
+  res.status(201).json({ url })
+}

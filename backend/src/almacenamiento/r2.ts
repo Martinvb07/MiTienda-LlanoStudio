@@ -1,4 +1,4 @@
-import { S3Client } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { entorno } from '../config/entorno.js'
 
 /**
@@ -8,7 +8,7 @@ import { entorno } from '../config/entorno.js'
  * endpoint de la cuenta. La ventaja frente a S3 es que no cobra egreso: las
  * tiendas sirven imágenes sin que el tráfico dispare la factura.
  *
- * Estado: cliente y configuración listos; las operaciones todavía no.
+ * Estado: subida y borrado desde el servidor listos; la URL firmada todavía no.
  */
 
 let clienteMemorizado: S3Client | null = null
@@ -59,11 +59,11 @@ export function urlPublica(clave: string): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Operaciones pendientes de implementar
+// Operaciones
 //
-// El plan es no proxear archivos por la API: el panel pide una URL firmada,
-// sube directo a R2 desde el navegador y luego avisa al backend, que encola la
-// optimización (src/colas → trabajadores/imagenes.trabajador.ts).
+// Por ahora el panel sube los archivos a través de la API (ver medios.ts). El
+// plan para archivos grandes sigue siendo la URL firmada: el navegador sube
+// directo a R2 y luego avisa al backend, que encola la optimización.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface OpcionesSubidaFirmada {
@@ -80,12 +80,21 @@ export function crearUrlSubidaFirmada(_opciones: OpcionesSubidaFirmada): Promise
   return Promise.reject(new Error('crearUrlSubidaFirmada aún no está implementada'))
 }
 
-/** TODO: PutObjectCommand para subidas hechas desde el propio servidor. */
-export function subirObjeto(_clave: string, _contenido: Uint8Array, _tipoMime: string): Promise<void> {
-  return Promise.reject(new Error('subirObjeto aún no está implementada'))
+/** Sube un objeto desde el propio servidor (lo usa la subida de medios del panel). */
+export async function subirObjeto(clave: string, contenido: Uint8Array, tipoMime: string): Promise<void> {
+  await obtenerClienteR2().send(
+    new PutObjectCommand({
+      Bucket: entorno.R2_BUCKET,
+      Key: clave,
+      Body: contenido,
+      ContentType: tipoMime,
+      // Las claves llevan un id aleatorio: el contenido de una clave nunca cambia.
+      CacheControl: 'public, max-age=31536000, immutable',
+    }),
+  )
 }
 
-/** TODO: DeleteObjectCommand, al borrar un producto o una tienda. */
-export function eliminarObjeto(_clave: string): Promise<void> {
-  return Promise.reject(new Error('eliminarObjeto aún no está implementada'))
+/** Borra un objeto, al quitar una foto o eliminar un producto. */
+export async function eliminarObjeto(clave: string): Promise<void> {
+  await obtenerClienteR2().send(new DeleteObjectCommand({ Bucket: entorno.R2_BUCKET, Key: clave }))
 }

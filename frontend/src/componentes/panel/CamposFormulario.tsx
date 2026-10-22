@@ -17,7 +17,7 @@ interface PropsCampo {
 }
 
 const CLASES_BASE =
-  'mt-1.5 w-full rounded-lg border bg-white px-3.5 py-2.5 text-sitio-tinta outline-none transition-colors placeholder:text-sitio-tenue/70'
+  'mt-1.5 w-full rounded-lg border bg-[#121214] px-3.5 py-2.5 text-[14px] text-white outline-none transition-[border-color,box-shadow] placeholder:text-sitio-tenue focus:shadow-[0_0_0_3px_rgba(255,255,255,0.06)]'
 
 export function CampoTexto({
   etiqueta,
@@ -35,7 +35,7 @@ export function CampoTexto({
 
   return (
     <div>
-      <label htmlFor={id} className="text-sm font-medium text-sitio-tinta">
+      <label htmlFor={id} className="text-[12px] text-sitio-suave">
         {etiqueta}
       </label>
       <input
@@ -52,12 +52,12 @@ export function CampoTexto({
         className={cn(
           CLASES_BASE,
           error
-            ? 'border-red-400 focus:border-red-500'
-            : 'border-sitio-borde-fuerte focus:border-sitio-azul',
+            ? 'border-red-400/60 focus:border-red-400'
+            : 'border-sitio-borde focus:border-white/40',
         )}
       />
       {error ? (
-        <p id={`${id}-error`} className="mt-1.5 text-sm text-red-600">
+        <p id={`${id}-error`} className="mt-1.5 text-[12.5px] text-red-300">
           {error}
         </p>
       ) : (
@@ -113,7 +113,7 @@ export function CampoContrasena({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-3">
-        <label htmlFor={id} className="text-sm font-medium text-sitio-tinta">
+        <label htmlFor={id} className="text-[12px] text-sitio-suave">
           {etiqueta}
         </label>
         {enlaceOlvido}
@@ -133,15 +133,15 @@ export function CampoContrasena({
             CLASES_BASE,
             'pr-11',
             error
-              ? 'border-red-400 focus:border-red-500'
-              : 'border-sitio-borde-fuerte focus:border-sitio-azul',
+              ? 'border-red-400/60 focus:border-red-400'
+              : 'border-sitio-borde focus:border-white/40',
           )}
         />
         <button
           type="button"
           onClick={() => setVisible((estado) => !estado)}
           aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-          className="absolute top-1/2 right-1 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-md text-sitio-tenue transition-colors hover:text-sitio-tinta"
+          className="absolute top-1/2 right-1 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-md text-sitio-tenue transition-colors hover:text-white"
         >
           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-4.5 w-4.5">
             <path
@@ -158,7 +158,7 @@ export function CampoContrasena({
       </div>
 
       {error ? (
-        <p id={`${id}-error`} className="mt-1.5 text-sm text-red-600">
+        <p id={`${id}-error`} className="mt-1.5 text-[12.5px] text-red-300">
           {error}
         </p>
       ) : (
@@ -186,16 +186,25 @@ export function CampoContrasena({
   )
 }
 
-/** Aviso que sustituye al envío real mientras no exista el backend de sesión. */
-export function AvisoSinConectar({ children }: { children: React.ReactNode }) {
+/** Aviso del formulario: error del servidor o algo que todavía no está conectado. */
+export function AvisoFormulario({
+  tono = 'error',
+  children,
+}: {
+  tono?: 'error' | 'pendiente'
+  children: React.ReactNode
+}) {
   return (
-    <div className="flex gap-2.5 rounded-lg border border-amber-300 bg-amber-50 px-3.5 py-3">
-      <svg viewBox="0 0 20 20" aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-amber-600">
-        <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" fill="none" />
-        <path d="M10 6v5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        <circle cx="10" cy="14" r="0.9" fill="currentColor" />
-      </svg>
-      <p className="text-sm leading-relaxed text-amber-900">{children}</p>
+    <div
+      role={tono === 'error' ? 'alert' : undefined}
+      className={cn(
+        'rounded-lg border px-3.5 py-3 text-[13px] leading-relaxed',
+        tono === 'error'
+          ? 'border-red-500/20 bg-red-500/[0.08] text-red-300'
+          : 'border-sitio-ambar/30 bg-sitio-ambar/[0.08] text-sitio-suave',
+      )}
+    >
+      {children}
     </div>
   )
 }

@@ -8,6 +8,8 @@ import { z } from 'zod'
 const esquema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PUERTO: z.coerce.number().int().positive().default(4000),
+  // Sólo escucha en local: afuera habla nginx. 0.0.0.0 la expone en todas las interfaces.
+  HOST: z.string().default('127.0.0.1'),
 
   DATABASE_URL: z.string().min(1, 'DATABASE_URL es obligatoria'),
   REDIS_URL: z.string().min(1).default('redis://localhost:6379'),
@@ -21,6 +23,12 @@ const esquema = z.object({
   // Secreto compartido con el servidor de Next. Permite que el SSR diga en
   // nombre de qué Host pregunta. Vacío = anulación deshabilitada.
   TOKEN_INTERNO: z.string().default(''),
+
+  // Panel de administración de la plataforma (Llano Studio). Sin estos dos
+  // valores el acceso de admin queda deshabilitado. El hash se genera con
+  // `npm run admin:clave -- "tu-contraseña"`.
+  ADMIN_CORREO: z.string().default(''),
+  ADMIN_CONTRASENA_HASH: z.string().default(''),
 
   // Cloudflare R2 — opcionales mientras la subida de archivos no esté implementada.
   R2_ACCOUNT_ID: z.string().default(''),

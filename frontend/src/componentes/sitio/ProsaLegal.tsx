@@ -16,12 +16,12 @@ export function ProsaLegal({
   children: React.ReactNode
 }) {
   return (
-    <section className="bg-white py-14 lg:py-18">
+    <section className="py-14 lg:py-18">
       <Contenedor>
         <div className="max-w-3xl">
-          <div className="rounded-xl border border-amber-300 bg-amber-50 px-5 py-4">
-            <p className="text-sm font-semibold text-amber-900">Borrador sin revisión legal</p>
-            <p className="mt-1 text-sm leading-relaxed text-amber-800">
+          <div className="rounded-lg border border-sitio-ambar/30 bg-sitio-ambar/[0.08] px-5 py-4">
+            <p className="text-sm font-medium text-sitio-ambar">Borrador sin revisión legal</p>
+            <p className="mt-1 text-sm leading-relaxed text-sitio-suave">
               Este texto es una base de trabajo, no un documento validado por un abogado. Antes
               de publicar la plataforma hay que someterlo a revisión profesional y quitar este
               aviso.
@@ -48,7 +48,7 @@ export function Articulo({
 }) {
   return (
     <section>
-      <h2 className="font-display text-lg font-bold text-sitio-tinta">
+      <h2 className="text-lg font-medium tracking-[-0.02em] text-sitio-tinta">
         <span className="mr-2 text-sitio-azul">{numero}</span>
         {titulo}
       </h2>

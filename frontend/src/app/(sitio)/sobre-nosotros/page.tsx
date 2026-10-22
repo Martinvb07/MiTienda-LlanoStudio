@@ -38,7 +38,7 @@ export default function PaginaSobreNosotros() {
         descripcion="Mi Tienda es un producto de Llano Studio. Nos dedicamos a construir software que resuelve problemas concretos de negocios reales."
       />
 
-      <section className="bg-white py-16 lg:py-20">
+      <section className="py-16 lg:py-20">
         <Contenedor>
           <div className="grid gap-12 lg:grid-cols-[1.3fr_1fr] lg:gap-16">
             <Revelar>
@@ -54,8 +54,8 @@ export default function PaginaSobreNosotros() {
                   cambiar un precio. Ese costo deja fuera a la mayoría.
                 </p>
                 <p className="font-medium text-sitio-tinta">
-                  Mi Tienda existe para quitar ese intermediario. Armás tu tienda vos, la
-                  publicás el mismo día y la cambiás cuando quieras sin pedirle permiso a nadie.
+                  Mi Tienda existe para quitar ese intermediario. Armas tu tienda tú, la
+                  publicas el mismo día y la cambias cuando quieras sin pedirle permiso a nadie.
                 </p>
               </div>
             </Revelar>
@@ -69,7 +69,7 @@ export default function PaginaSobreNosotros() {
                   height={194}
                   className="h-10 w-auto"
                 />
-                <h2 className="mt-5 font-display text-lg font-bold text-sitio-tinta">
+                <h2 className="mt-5 text-lg font-medium tracking-[-0.02em] text-sitio-tinta">
                   Llano Studio
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed text-sitio-suave">
@@ -80,7 +80,7 @@ export default function PaginaSobreNosotros() {
                   href="https://llanostudio.co"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-sitio-azul transition-colors hover:text-sitio-azul-fuerte"
+                  className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-sitio-azul transition-colors hover:text-sitio-azul-claro"
                 >
                   Conocer el estudio
                   <span aria-hidden="true">→</span>
@@ -91,11 +91,11 @@ export default function PaginaSobreNosotros() {
         </Contenedor>
       </section>
 
-      <section className="bg-sitio-crema py-20 lg:py-24">
+      <section className="py-20 lg:py-24">
         <Contenedor>
           <Revelar className="max-w-2xl">
-            <Rotulo indice="—">Cómo trabajamos</Rotulo>
-            <h2 className="mt-5 font-display text-3xl leading-[1.1] font-bold tracking-[-0.03em] text-balance text-sitio-tinta sm:text-4xl">
+            <Rotulo>Cómo trabajamos</Rotulo>
+            <h2 className="mt-5 titulo-2">
               Tres cosas que no negociamos
             </h2>
           </Revelar>
@@ -107,7 +107,7 @@ export default function PaginaSobreNosotros() {
                   <span className="font-display text-sm font-medium text-sitio-azul">
                     0{indice + 1}
                   </span>
-                  <h3 className="mt-3 font-display text-lg font-semibold text-sitio-tinta">
+                  <h3 className="mt-3 text-lg font-medium tracking-[-0.02em] text-sitio-tinta">
                     {principio.titulo}
                   </h3>
                   <p className="mt-2 leading-relaxed text-pretty text-sitio-suave">

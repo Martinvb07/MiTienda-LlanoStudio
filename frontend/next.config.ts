@@ -31,6 +31,13 @@ const configuracion: NextConfig = {
     ],
   },
 
+  // El panel llama a la API por el mismo origen: sin CORS y sin URLs que
+  // cambien entre entornos. En el servidor, el SSR sigue yendo directo a URL_API.
+  async rewrites() {
+    const urlApi = process.env.URL_API ?? 'http://localhost:4000'
+    return [{ source: '/api/:ruta*', destination: `${urlApi}/api/:ruta*` }]
+  },
+
   experimental: {
     // El panel sube archivos grandes vía Server Actions.
     serverActions: { bodySizeLimit: '4mb' },

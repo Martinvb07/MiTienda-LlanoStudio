@@ -29,5 +29,6 @@ export async function obtenerTiendaPublica(req: Request, res: Response): Promise
     throw noEncontrado('Esta tienda todavía no está publicada')
   }
 
-  res.json({ tienda, subdominio: contexto.subdominio })
+  // El plan viaja con la tienda: la marca del pie depende de él.
+  res.json({ tienda: { ...tienda, plan: contexto.plan }, subdominio: contexto.subdominio })
 }

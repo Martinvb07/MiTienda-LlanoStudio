@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type { PropsGrillaProductos } from '@/tipos/bloques'
 import type { Producto } from '@/tipos/tienda'
 import { formatearPrecio } from '@/utilidades/formato'
+import { esMedioLocal } from '@/utilidades/medios'
 
 const CLASES_COLUMNAS = {
   2: 'sm:grid-cols-2',
@@ -26,7 +27,7 @@ export function GrillaProductos({
 
   return (
     <section id="productos" className="mx-auto max-w-6xl px-6 py-16">
-      {titulo && <h2 className="mb-10 text-2xl font-semibold tracking-tight">{titulo}</h2>}
+      {titulo && <h2 className="mb-10 font-display text-2xl font-semibold tracking-tight">{titulo}</h2>}
 
       {visibles.length === 0 ? (
         <p className="text-tinta/50">Todavía no hay productos publicados.</p>
@@ -38,13 +39,14 @@ export function GrillaProductos({
               href={`/productos/${producto.slug}`}
               className="group block"
             >
-              <div className="relative aspect-square overflow-hidden rounded-(--radius-marca) bg-black/5">
+              <div className="relative aspect-square overflow-hidden rounded-(--radius-marca) bg-tinta/5">
                 {producto.fotos[0] ? (
                   <Image
                     src={producto.fotos[0]}
                     alt={producto.nombre}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    unoptimized={esMedioLocal(producto.fotos[0])}
                     className="object-cover transition duration-300 group-hover:scale-105"
                   />
                 ) : (
@@ -56,6 +58,11 @@ export function GrillaProductos({
 
               <h3 className="mt-4 font-medium">{producto.nombre}</h3>
               <p className="mt-1 text-tinta/70">{formatearPrecio(producto.precio, moneda)}</p>
+              {producto.precioComparacion && (
+                <p className="text-sm text-tinta/40 line-through">
+                  {formatearPrecio(producto.precioComparacion, moneda)}
+                </p>
+              )}
               {producto.stock === 0 && (
                 <p className="mt-1 text-sm text-tinta/40">Agotado</p>
               )}

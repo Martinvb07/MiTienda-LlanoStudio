@@ -10,6 +10,7 @@ import { esSubdominioValido } from '../utilidades/dominios.js'
 import { ErrorHttp, noAutorizado, noEncontrado, solicitudInvalida } from '../utilidades/errores.js'
 import { ETIQUETAS_BLOQUE_PLAN, TEMAS_PREDEFINIDOS, fueraDelPlan, limitesDe } from '../utilidades/planes.js'
 import { aplicarVencimientos, estadoSuscripcion } from '../servicios/suscripciones.servicio.js'
+import { tokenSiEsAdmin } from './admin.controlador.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Esquemas
@@ -284,6 +285,13 @@ export async function registrar(req: Request, res: Response): Promise<void> {
 
 export async function ingresar(req: Request, res: Response): Promise<void> {
   const { email, contrasena } = req.body as z.infer<typeof esquemaIngreso>
+
+  // Con los datos del admin de la plataforma, el mismo login abre el admin.
+  const tokenAdmin = await tokenSiEsAdmin(email, contrasena)
+  if (tokenAdmin) {
+    res.json({ token: tokenAdmin, admin: true })
+    return
+  }
 
   const usuario = await prisma.usuario.findUnique({
     where: { email },

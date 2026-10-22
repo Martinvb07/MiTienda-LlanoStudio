@@ -115,12 +115,14 @@ export async function registrar(datos: {
   guardarToken(token)
 }
 
+/** Devuelve el token y si es del admin de la plataforma (que entra por el mismo login). */
 export async function ingresar(email: string, contrasena: string) {
-  const { token } = await pedir<{ token: string }>('/ingreso', {
+  const { token, admin } = await pedir<{ token: string; admin?: boolean }>('/ingreso', {
     method: 'POST',
     body: JSON.stringify({ email, contrasena }),
   })
-  guardarToken(token)
+  if (!admin) guardarToken(token)
+  return { token, admin: Boolean(admin) }
 }
 
 export const obtenerSesion = () => pedir<SesionPanel>('/sesion')

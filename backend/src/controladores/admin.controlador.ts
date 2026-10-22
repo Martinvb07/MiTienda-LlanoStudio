@@ -42,18 +42,24 @@ export const esquemaOferta = z.object({
 
 const PLAN_VALIDO = z.enum(['GRATIS', 'EMPRENDE', 'NEGOCIO', 'PRO'])
 
-export async function ingresarAdmin(req: Request, res: Response): Promise<void> {
-  const { email, contrasena } = req.body as z.infer<typeof esquemaIngresoAdmin>
-
+/**
+ * Token de admin si el correo y la contraseña son los del .env; si no, null.
+ * Lo usa también el ingreso normal del panel: el admin entra por el mismo login.
+ */
+export async function tokenSiEsAdmin(email: string, contrasena: string): Promise<string | null> {
   const configurado = Boolean(entorno.ADMIN_CORREO && entorno.ADMIN_CONTRASENA_HASH)
   const valido =
     configurado &&
-    email === entorno.ADMIN_CORREO.toLowerCase() &&
+    email.toLowerCase() === entorno.ADMIN_CORREO.toLowerCase() &&
     (await verificarContrasena(contrasena, entorno.ADMIN_CONTRASENA_HASH))
+  return valido ? jwt.sign({ admin: true, email }, entorno.JWT_SECRETO, { expiresIn: '12h' }) : null
+}
 
-  if (!valido) throw noAutorizado('Credenciales de administrador incorrectas')
-
-  res.json({ token: jwt.sign({ admin: true, email }, entorno.JWT_SECRETO, { expiresIn: '12h' }) })
+export async function ingresarAdmin(req: Request, res: Response): Promise<void> {
+  const { email, contrasena } = req.body as z.infer<typeof esquemaIngresoAdmin>
+  const token = await tokenSiEsAdmin(email, contrasena)
+  if (!token) throw noAutorizado('Credenciales de administrador incorrectas')
+  res.json({ token })
 }
 
 export function exigirAdmin(req: Request, _res: Response, next: NextFunction): void {

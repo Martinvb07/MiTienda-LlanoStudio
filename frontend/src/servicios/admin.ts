@@ -4,14 +4,14 @@ import { ErrorPanel } from './panel'
 
 /**
  * Cliente del panel de la plataforma (Llano Studio). Token aparte del de los
- * dueños de tienda, guardado sólo en esta pestaña: se cierra con ella.
+ * dueños de tienda; se obtiene en el login normal del panel y vence a las 12 h.
  */
 
 const CLAVE = 'mitienda:admin'
 
 export const leerTokenAdmin = () => {
   try {
-    return sessionStorage.getItem(CLAVE)
+    return localStorage.getItem(CLAVE)
   } catch {
     return null
   }
@@ -19,7 +19,7 @@ export const leerTokenAdmin = () => {
 
 export function cerrarSesionAdmin() {
   try {
-    sessionStorage.removeItem(CLAVE)
+    localStorage.removeItem(CLAVE)
   } catch {
     // Nada que borrar.
   }
@@ -42,13 +42,9 @@ async function pedir<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
   return cuerpo
 }
 
-export async function ingresarAdmin(email: string, contrasena: string) {
-  const { token } = await pedir<{ token: string }>('/ingreso', {
-    method: 'POST',
-    body: JSON.stringify({ email, contrasena }),
-  })
+export function guardarTokenAdmin(token: string) {
   try {
-    sessionStorage.setItem(CLAVE, token)
+    localStorage.setItem(CLAVE, token)
   } catch {
     // Sin almacenamiento la sesión no sobrevive a recargar.
   }

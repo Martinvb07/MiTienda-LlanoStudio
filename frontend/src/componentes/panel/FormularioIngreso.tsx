@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ingresar } from '@/servicios/panel'
+import { guardarTokenAdmin } from '@/servicios/admin'
 import { AvisoFormulario, CampoContrasena, CampoTexto } from './CamposFormulario'
 
 interface Errores {
@@ -38,8 +39,13 @@ export function FormularioIngreso() {
     setEnviando(true)
     setErrorServidor('')
     try {
-      await ingresar(email.trim(), contrasena)
-      router.push('/panel')
+      const { token, admin } = await ingresar(email.trim(), contrasena)
+      if (admin) {
+        guardarTokenAdmin(token)
+        router.push('/panel/admin')
+      } else {
+        router.push('/panel')
+      }
     } catch (error) {
       setErrorServidor(error instanceof Error ? error.message : 'No pudimos iniciar tu sesión')
       setEnviando(false)

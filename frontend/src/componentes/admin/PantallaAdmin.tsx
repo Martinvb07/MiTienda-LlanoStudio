@@ -2,13 +2,13 @@
 
 /* eslint-disable @next/next/no-img-element -- logos de tiendas en la lista */
 import { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowUpRight, KeyRound, LogOut, MoreHorizontal, Power, Search } from 'lucide-react'
 import {
   cambiarContrasena,
   cambiarTienda,
   cerrarSesionAdmin,
-  ingresarAdmin,
   leerTokenAdmin,
   listarTiendas,
   obtenerResumen,
@@ -28,76 +28,29 @@ import { BotonTema } from '@/componentes/comunes/BotonTema'
 const SALIDA = [0.16, 1, 0.3, 1] as const
 const OPCIONES_PLAN = ORDEN_PLANES.map((plan) => ({ valor: plan, etiqueta: PLANES[plan].nombre }))
 
-/** Panel de la plataforma (sólo Llano Studio): tiendas, planes y precios. */
+/**
+ * Panel de la plataforma (sólo Llano Studio): tiendas, planes y precios. Se
+ * entra por el login normal del panel con los datos del admin.
+ */
 export function PantallaAdmin() {
-  const [listo, setListo] = useState(false)
+  const router = useRouter()
   const [conSesion, setConSesion] = useState(false)
 
   useEffect(() => {
-    setConSesion(Boolean(leerTokenAdmin()))
-    setListo(true)
-  }, [])
+    if (leerTokenAdmin()) setConSesion(true)
+    else router.replace('/panel/ingresar')
+  }, [router])
 
   return (
     <div className="marco-oscuro min-h-screen font-sans">
-      {listo &&
-        (conSesion ? (
-          <Tablero
-            alSalir={() => {
-              cerrarSesionAdmin()
-              setConSesion(false)
-            }}
-          />
-        ) : (
-          <Ingreso alEntrar={() => setConSesion(true)} />
-        ))}
-    </div>
-  )
-}
-
-function Ingreso({ alEntrar }: { alEntrar: () => void }) {
-  const [email, setEmail] = useState('')
-  const [contrasena, setContrasena] = useState('')
-  const [error, setError] = useState('')
-  const [enviando, setEnviando] = useState(false)
-
-  async function enviar(evento: React.FormEvent) {
-    evento.preventDefault()
-    setEnviando(true)
-    setError('')
-    try {
-      await ingresarAdmin(email, contrasena)
-      alEntrar()
-    } catch (problema) {
-      setError(problema instanceof Error ? problema.message : 'No se pudo ingresar')
-      setEnviando(false)
-    }
-  }
-
-  return (
-    <div className="grid min-h-screen place-items-center px-6">
-      <motion.form
-        onSubmit={enviar}
-        initial={{ opacity: 0, y: 34, filter: 'blur(6px)' }}
-        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        transition={{ duration: 1.1, ease: SALIDA }}
-        className="w-full max-w-[380px]"
-      >
-        <div className="flex items-center justify-between">
-          <LogoMarca className="h-8 w-auto" />
-          <BotonTema />
-        </div>
-        <p className="antetitulo mt-8">Mi Tienda · Plataforma</p>
-        <h1 className="mt-3 text-[40px] leading-none tracking-[-0.045em]">Administración</h1>
-        <div className="mt-9 flex flex-col gap-4">
-          <Campo etiqueta="Correo" tipo="email" valor={email} alCambiar={setEmail} autoFoco autoCompletar="username" />
-          <Campo etiqueta="Contraseña" tipo="password" valor={contrasena} alCambiar={setContrasena} autoCompletar="current-password" />
-          <AnimatePresence>{error && <Aviso>{error}</Aviso>}</AnimatePresence>
-          <button type="submit" disabled={enviando} className="boton boton-primario mt-2 w-full">
-            {enviando ? 'Entrando…' : 'Entrar'}
-          </button>
-        </div>
-      </motion.form>
+      {conSesion && (
+        <Tablero
+          alSalir={() => {
+            cerrarSesionAdmin()
+            router.replace('/panel/ingresar')
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -22,6 +22,11 @@ import {
   registrar,
   subirMedioPanel,
 } from '../controladores/panel.controlador.js'
+import {
+  actualizarPedidoPanel,
+  esquemaActualizarPedido,
+  listarPedidosPanel,
+} from '../controladores/pedidos.controlador.js'
 
 const enrutador = Router()
 
@@ -47,6 +52,9 @@ enrutador.get('/productos', listarProductosPanel)
 enrutador.post('/productos', validar(esquemaProducto), crearProductoPanel)
 enrutador.put('/productos/:id', validar(esquemaProducto), actualizarProductoPanel)
 enrutador.delete('/productos/:id', eliminarProductoPanel)
+
+enrutador.get('/pedidos', listarPedidosPanel)
+enrutador.patch('/pedidos/:id', validar(esquemaActualizarPedido), actualizarPedidoPanel)
 
 // La imagen llega como cuerpo binario: sin multipart no hace falta otra dependencia.
 enrutador.post(

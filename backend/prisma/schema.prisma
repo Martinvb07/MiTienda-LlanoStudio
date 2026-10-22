@@ -212,12 +212,25 @@ model Pedido {
   clienteNombre   String
   clienteEmail    String
   clienteTelefono String?
+  /// { ciudad, direccion, detalle } tal como los escribió el cliente.
   direccionEnvio  Json?
+  /// Lo que el cliente quiso aclarar al pedir.
+  notas           String?
 
-  estado   EstadoPedido @default(PENDIENTE)
-  subtotal Decimal      @db.Decimal(12, 2)
-  envio    Decimal      @default(0) @db.Decimal(12, 2)
-  total    Decimal      @db.Decimal(12, 2)
+  /// Por dónde llegó: "web" (confirmó en la tienda) o "whatsapp" (lo mandó por chat).
+  canal      String  @default("web")
+  /// "contra-entrega", "transferencia" o "acordar". Wompi/PSE llegan con Pago.
+  metodoPago String  @default("acordar")
+  /// Código del cupón aplicado, guardado tal cual para el histórico.
+  cupon      String?
+  /// Nota interna de la tienda; el cliente no la ve.
+  notaInterna String?
+
+  estado    EstadoPedido @default(PENDIENTE)
+  subtotal  Decimal      @db.Decimal(12, 2)
+  descuento Decimal      @default(0) @db.Decimal(12, 2)
+  envio     Decimal      @default(0) @db.Decimal(12, 2)
+  total     Decimal      @db.Decimal(12, 2)
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
@@ -228,6 +241,7 @@ model Pedido {
 
   @@unique([tiendaId, numero])
   @@index([tiendaId, estado])
+  @@index([tiendaId, creadoEn])
   @@map("pedidos")
 }
 
@@ -239,6 +253,9 @@ model ItemPedido {
   productoId String?
 
   nombreProducto String
+  /// Variante elegida ("Talla M · Rojo"), si el producto las tiene.
+  variante       String?
+  foto           String?
   precioUnitario Decimal @db.Decimal(12, 2)
   cantidad       Int
   subtotal       Decimal @db.Decimal(12, 2)

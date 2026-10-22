@@ -84,6 +84,14 @@ const esquemaAjustes = z.object({
   instagram: z.string().trim().max(60).optional(),
   facebook: z.string().trim().max(120).optional(),
   tiktok: z.string().trim().max(60).optional(),
+  // Ventas y envíos
+  costoEnvio: z.coerce.number().min(0).max(10_000_000).optional(),
+  envioGratisDesde: z.coerce.number().min(0).max(1_000_000_000).optional(),
+  pedidoMinimo: z.coerce.number().min(0).max(1_000_000_000).optional(),
+  pagoContraEntrega: z.boolean().optional(),
+  pagoTransferencia: z.boolean().optional(),
+  datosTransferencia: z.string().trim().max(400).optional(),
+  pedidosWhatsapp: z.boolean().optional(),
 })
 
 export const esquemaTienda = z.object({

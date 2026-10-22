@@ -284,43 +284,50 @@ ubicaciones() {
 EOF
 }
 
-{
-  echo "# Generado por deploy/instalar.sh — se reescribe al volver a correrlo."
-  echo "# Web y panel de Mi Tienda (certbot le agrega el HTTPS)."
-  echo "server {"
-  echo "    listen 80;"
-  echo "    listen [::]:80;"
-  echo "    server_name $HOST_PANEL ${SUBDOMINIOS_PRUEBA:+$(printf '%s.'"$DOMINIO"' ' $SUBDOMINIOS_PRUEBA)};"
-  ubicaciones
-  echo "}"
-  echo
-  echo "# Todas las tiendas: *.$DOMINIO. nginx atiende primero los nombres exactos"
-  echo "# ($DOMINIO, www y los de arriba), así que tus otros sitios no se ven afectados."
-  if [ -f "$CERT_COMODIN" ]; then
+# Con certificado comodín, panel y tiendas comparten un solo bloque con ese
+# certificado (también cubre $HOST_PANEL) y certbot no se toca: si se le pide
+# un certificado para el panel, instala el suyo encima del bloque comodín,
+# porque *.dominio también coincide con el panel, y rompe todas las tiendas.
+if [ -f "$CERT_COMODIN" ]; then
+  {
+    echo "# Generado por deploy/instalar.sh — se reescribe al volver a correrlo."
+    echo "# Web, panel y todas las tiendas con el certificado comodín. nginx atiende"
+    echo "# primero los nombres exactos ($DOMINIO, www), así que tus otros sitios no cambian."
     echo "server {"
     echo "    listen 80;"
     echo "    listen [::]:80;"
-    echo "    server_name *.$DOMINIO;"
+    echo "    server_name $HOST_PANEL *.$DOMINIO;"
     echo "    return 301 https://\$host\$request_uri;"
     echo "}"
     echo "server {"
     echo "    listen 443 ssl;"
     echo "    listen [::]:443 ssl;"
-    echo "    server_name *.$DOMINIO;"
+    echo "    server_name $HOST_PANEL *.$DOMINIO;"
     echo "    ssl_certificate     $CERT_COMODIN;"
     echo "    ssl_certificate_key /etc/letsencrypt/live/$DOMINIO-comodin/privkey.pem;"
     ubicaciones
     echo "}"
-  else
-    echo "# Sin certificado comodín todavía: las tiendas responden por HTTP."
+  } > "$SITIO"
+else
+  {
+    echo "# Generado por deploy/instalar.sh — se reescribe al volver a correrlo."
+    echo "# Web y panel de Mi Tienda (certbot le agrega el HTTPS)."
+    echo "server {"
+    echo "    listen 80;"
+    echo "    listen [::]:80;"
+    echo "    server_name $HOST_PANEL ${SUBDOMINIOS_PRUEBA:+$(printf '%s.'"$DOMINIO"' ' $SUBDOMINIOS_PRUEBA)};"
+    ubicaciones
+    echo "}"
+    echo
+    echo "# Sin certificado comodín todavía: las tiendas (*.$DOMINIO) responden por HTTP."
     echo "server {"
     echo "    listen 80;"
     echo "    listen [::]:80;"
     echo "    server_name *.$DOMINIO;"
     ubicaciones
     echo "}"
-  fi
-} > "$SITIO"
+  } > "$SITIO"
+fi
 
 ln -sf "$SITIO" /etc/nginx/sites-enabled/mitienda
 nginx -t 2>&1 | tail -1
@@ -331,30 +338,32 @@ verde "nginx recargado."
 paso "HTTPS"
 # ─────────────────────────────────────────────────────────────────────────────
 
-IP_PUBLICA="$(curl -fsS --max-time 5 https://api.ipify.org || hostname -I | awk '{print $1}')"
-NOMBRES=("$HOST_PANEL")
-for sub in ${SUBDOMINIOS_PRUEBA:-}; do NOMBRES+=("$sub.$DOMINIO"); done
+if [ -f "$CERT_COMODIN" ]; then
+  verde "Certificado comodín activo: https para $HOST_PANEL y todas las tiendas."
+else
+  IP_PUBLICA="$(curl -fsS --max-time 5 https://api.ipify.org || hostname -I | awk '{print $1}')"
+  NOMBRES=("$HOST_PANEL")
+  for sub in ${SUBDOMINIOS_PRUEBA:-}; do NOMBRES+=("$sub.$DOMINIO"); done
 
-LISTOS=()
-for nombre in "${NOMBRES[@]}"; do
-  if [ "$(dig +short "$nombre" A | tail -1)" = "$IP_PUBLICA" ]; then
-    LISTOS+=("-d" "$nombre")
-  else
-    ambar "$nombre todavía no apunta a $IP_PUBLICA en el DNS: se omite su certificado."
-    ambar "  Crea en Namecheap un A Record con host '${nombre%%.$DOMINIO}' y valor $IP_PUBLICA, y vuelve a correr el instalador."
+  LISTOS=()
+  for nombre in "${NOMBRES[@]}"; do
+    if [ "$(dig +short "$nombre" A | tail -1)" = "$IP_PUBLICA" ]; then
+      LISTOS+=("-d" "$nombre")
+    else
+      ambar "$nombre todavía no apunta a $IP_PUBLICA en el DNS: se omite su certificado."
+      ambar "  Crea en Namecheap un A Record con host '${nombre%%.$DOMINIO}' y valor $IP_PUBLICA, y vuelve a correr el instalador."
+    fi
+  done
+  if [ ${#LISTOS[@]} -gt 0 ]; then
+    certbot --nginx --non-interactive --agree-tos -m "$CORREO" --redirect --keep-until-expiring \
+      --cert-name "$HOST_PANEL" "${LISTOS[@]}" \
+      && verde "Certificado listo para: ${NOMBRES[*]}" \
+      || ambar "certbot no pudo emitir el certificado; revisa el mensaje de arriba."
   fi
-done
-if [ ${#LISTOS[@]} -gt 0 ]; then
-  certbot --nginx --non-interactive --agree-tos -m "$CORREO" --redirect --keep-until-expiring \
-    --cert-name "$HOST_PANEL" "${LISTOS[@]}" \
-    && verde "Certificado listo para: ${NOMBRES[*]}" \
-    || ambar "certbot no pudo emitir el certificado; revisa el mensaje de arriba."
-fi
 
-if [ ! -f "$CERT_COMODIN" ]; then
   ambar "Las tiendas (*.$DOMINIO) funcionan por HTTP hasta que saques el certificado comodín:"
   ambar "  sudo certbot certonly --manual --preferred-challenges dns -d '*.$DOMINIO' --cert-name $DOMINIO-comodin"
-  ambar "  (y luego vuelve a correr este instalador). Ver deploy/LEEME-VPS.md, paso 7."
+  ambar "  (y luego vuelve a correr este instalador)."
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────

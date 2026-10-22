@@ -1,6 +1,7 @@
 'use client'
 
 import { useId, useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/utilidades/clases'
 
 interface PropsCampo {
@@ -143,17 +144,7 @@ export function CampoContrasena({
           aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           className="absolute top-1/2 right-1 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-md text-sitio-tenue transition-colors hover:text-white"
         >
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-4.5 w-4.5">
-            <path
-              d="M1.5 10S4.6 4.5 10 4.5 18.5 10 18.5 10 15.4 15.5 10 15.5 1.5 10 1.5 10z"
-              stroke="currentColor"
-              strokeWidth="1.4"
-            />
-            <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.4" />
-            {!visible && (
-              <path d="M3.5 3.5l13 13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-            )}
-          </svg>
+          {visible ? <EyeOff aria-hidden="true" className="h-4 w-4" /> : <Eye aria-hidden="true" className="h-4 w-4" />}
         </button>
       </div>
 

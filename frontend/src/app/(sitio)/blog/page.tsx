@@ -1,88 +1,90 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
+import Link from 'next/link'
+import { ArrowUpRight } from 'lucide-react'
 import { CabeceraPagina } from '@/componentes/sitio/CabeceraPagina'
 import { Contenedor } from '@/componentes/sitio/Contenedor'
+import { LlamadoFinal } from '@/componentes/sitio/LlamadoFinal'
 import { Revelar } from '@/componentes/sitio/Revelar'
+import { ARTICULOS, fechaLarga } from '@/contenido/articulos'
 
 export const metadata: Metadata = {
-  title: 'Blog',
+  title: 'Recursos',
   description:
-    'Guías y notas sobre vender en línea en Colombia: dominios, fotos de producto, medios de pago y posicionamiento.',
+    'Guías para vender en línea en Colombia: fotos de producto, descripciones, pagos, envíos y cómo elegir la plantilla de tu tienda.',
 }
 
-/**
- * Índice del blog.
- *
- * Todavía no hay entradas ni de dónde sacarlas: el día que existan, lo suyo es
- * que salgan de la base de datos o de archivos MDX, y esta lista pase a
- * recorrerlas. Mientras tanto se anuncian los temas previstos, que es honesto
- * y deja la página con algo que decir.
- */
-const TEMAS = [
-  {
-    categoria: 'Dominios',
-    titulo: 'Cómo conectar tu dominio propio a tu tienda',
-    resumen: 'Qué registros DNS tocar y por qué la verificación tarda unas horas.',
-  },
-  {
-    categoria: 'Fotografía',
-    titulo: 'Fotos de producto con el celular que no parecen del celular',
-    resumen: 'Luz, fondo y encuadre. Sin estudio y sin comprar nada.',
-  },
-  {
-    categoria: 'Pagos',
-    titulo: 'Wompi o PSE: cuál le conviene a tu tienda',
-    resumen: 'Diferencias de tarifa, tiempos de desembolso y qué prefiere el comprador.',
-  },
-  {
-    categoria: 'Posicionamiento',
-    titulo: 'Qué escribir en la descripción de un producto para aparecer en Google',
-    resumen: 'Lo que el buscador lee de tu catálogo y cómo dárselo servido.',
-  },
-]
+export default function PaginaRecursos() {
+  const [destacado, ...resto] = ARTICULOS
 
-export default function PaginaBlog() {
   return (
     <>
       <CabeceraPagina
-        rotulo="Blog"
-        titulo="Aprender a vender en línea, sin vueltas"
-        descripcion="Guías cortas y concretas sobre lo que se necesita para que una tienda funcione en Colombia."
+        rotulo="Recursos"
+        titulo="Aprende a vender en línea, sin vueltas"
+        descripcion="Guías cortas y concretas sobre lo que de verdad hace que una tienda venda en Colombia."
       />
 
-      <section className="py-16 lg:py-20">
+      <section className="pt-24 pb-[110px] md:pb-[150px]">
         <Contenedor>
-          <Revelar>
-            <div className="rounded-2xl border border-dashed border-sitio-borde-fuerte bg-sitio-crema px-6 py-8 text-center">
-              <p className="font-medium tracking-[-0.01em] text-sitio-tinta">
-                Todavía no publicamos la primera entrada
-              </p>
-              <p className="mx-auto mt-2 max-w-md text-sm text-pretty text-sitio-suave">
-                Estos son los temas con los que vamos a empezar. Si hay alguno que te urge, se
-                acepta sugerencia.
-              </p>
-            </div>
-          </Revelar>
-
-          <div className="mt-12 divide-y divide-sitio-borde border-y border-sitio-borde">
-            {TEMAS.map((tema, indice) => (
-              <Revelar key={tema.titulo} retardo={indice * 0.05}>
-                <article className="grid gap-2 py-7 sm:grid-cols-[130px_1fr] sm:gap-8">
-                  <span className="font-display text-xs font-medium tracking-[0.14em] text-sitio-tenue uppercase">
-                    {tema.categoria}
+          {destacado && (
+            <Revelar>
+              <Link href={`/blog/${destacado.slug}`} className="group grid gap-8 md:grid-cols-[1.3fr_1fr] md:items-end">
+                <div className="relative aspect-[16/10] overflow-hidden rounded-[8px]">
+                  <Image
+                    src={destacado.portada}
+                    alt=""
+                    fill
+                    priority
+                    sizes="(max-width: 768px) 100vw, 60vw"
+                    className="object-cover transition-transform duration-[1.4s] ease-salida group-hover:scale-[1.04]"
+                  />
+                </div>
+                <div className="pb-2">
+                  <span className="antetitulo">
+                    {destacado.categoria} · {destacado.minutos} min
                   </span>
-                  <div>
-                    <h2 className="text-lg font-medium tracking-[-0.02em] text-balance text-sitio-tinta">
-                      {tema.titulo}
-                    </h2>
-                    <p className="mt-1.5 text-pretty text-sitio-suave">{tema.resumen}</p>
-                    <p className="mt-3 text-xs text-sitio-tenue">Próximamente</p>
+                  <h2 className="mt-4 text-[clamp(28px,3.2vw,44px)] leading-[1.04] tracking-[-0.04em]">
+                    {destacado.titulo}
+                  </h2>
+                  <p className="mt-4 max-w-[46ch] text-[15px] leading-relaxed text-white/55">{destacado.resumen}</p>
+                  <span className="enlace-flecha mt-7">
+                    Leer
+                    <ArrowUpRight aria-hidden="true" />
+                  </span>
+                </div>
+              </Link>
+            </Revelar>
+          )}
+
+          <div className="mt-24 grid gap-x-6 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
+            {resto.map((articulo, indice) => (
+              <Revelar key={articulo.slug} retardo={(indice % 3) * 0.08}>
+                <Link href={`/blog/${articulo.slug}`} className="group block">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-[8px]">
+                    <Image
+                      src={articulo.portada}
+                      alt=""
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-[1.4s] ease-salida group-hover:scale-[1.05]"
+                    />
                   </div>
-                </article>
+                  <p className="mt-5 text-[11px] tracking-[0.12em] text-white/45 uppercase">
+                    {articulo.categoria} · {fechaLarga(articulo.fecha)}
+                  </p>
+                  <h3 className="mt-2.5 text-[20px] leading-[1.2] tracking-[-0.02em] transition-colors duration-500 group-hover:text-white/70">
+                    {articulo.titulo}
+                  </h3>
+                  <p className="mt-2 text-[14px] leading-relaxed text-white/50">{articulo.resumen}</p>
+                </Link>
               </Revelar>
             ))}
           </div>
         </Contenedor>
       </section>
+
+      <LlamadoFinal />
     </>
   )
 }

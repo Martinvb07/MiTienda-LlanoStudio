@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import { cn } from '@/utilidades/clases'
 
 type Variante = 'primario' | 'secundario'
@@ -42,15 +43,5 @@ export function Boton({
 }
 
 export function Flecha({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
-      <path
-        d="M5 12h14M13 6l6 6-6 6"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
+  return <ArrowRight aria-hidden="true" strokeWidth={1.6} className={className} />
 }

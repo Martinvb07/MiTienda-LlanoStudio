@@ -48,7 +48,7 @@ export function FormularioIngreso() {
 
   return (
     <>
-      <h1 className="text-[32px] leading-[1.05] font-normal tracking-[-0.04em]">
+      <h1 className="text-[clamp(34px,3.4vw,46px)] leading-[1.02] font-normal tracking-[-0.045em]">
         Entra a tu tienda
       </h1>
       <p className="mt-2 text-sm text-sitio-tenue">

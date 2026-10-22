@@ -23,6 +23,9 @@ const configuracion: NextConfig = {
   // aunque falte alguna dependencia opcional del entorno de CI.
   poweredByHeader: false,
 
+  // El botón flotante de desarrollo se colaba en las capturas y en la vista previa del editor.
+  devIndicators: false,
+
   images: {
     // Fotos servidas desde Cloudflare R2 (dominio público del bucket).
     remotePatterns: [

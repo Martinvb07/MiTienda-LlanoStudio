@@ -1,39 +1,45 @@
 'use client'
 
-import { motion } from 'motion/react'
+import { useRef } from 'react'
+import Image from 'next/image'
+import { motion, useScroll, useTransform, type MotionValue } from 'motion/react'
 import { Boton } from './Boton'
-import { Contenedor } from './Contenedor'
-import { MaquetaEditor } from './MaquetaEditor'
+
+const SALIDA = [0.16, 1, 0.3, 1] as const
+
+/** Tiendas de la vitrina: la del centro y las que se abren a los lados. */
+const VITRINA = [
+  { src: '/ejemplos/casa-morichal.webp', alt: 'Tienda de ejemplo Casa Morichal', lado: -1, tipo: 'escritorio' },
+  { src: '/ejemplos/orbita.webp', alt: 'Tienda de ejemplo Órbita', lado: 1, tipo: 'escritorio' },
+  { src: '/ejemplos/paso-urbano-movil.webp', alt: 'Tienda de ejemplo Paso Urbano en celular', lado: -2, tipo: 'movil' },
+  { src: '/ejemplos/barro-vivo-movil.webp', alt: 'Tienda de ejemplo Barro Vivo en celular', lado: 2, tipo: 'movil' },
+] as const
 
 const CIFRAS = [
+  { valor: '6', etiqueta: 'plantillas listas' },
   { valor: '0', etiqueta: 'líneas de código' },
-  { valor: '1 día', etiqueta: 'para tener tu tienda en línea' },
   { valor: '0%', etiqueta: 'de comisión por venta' },
 ]
 
 /**
- * Portada al estilo de llanostudio.co: titular enorme y centrado, un solo
- * botón, y el editor real como imagen protagonista debajo.
+ * Portada como la de llanostudio.co: titular enorme, un botón, y una vitrina
+ * de tiendas reales hechas con Mi Tienda que se abre al bajar.
  */
 export function Hero() {
-  return (
-    <section className="relative isolate overflow-hidden pt-[150px] md:pt-[190px]">
-      <div aria-hidden="true" className="halo" />
-      <div
-        aria-hidden="true"
-        className="cuadricula pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(70%_55%_at_50%_0%,black,transparent)]"
-      />
+  const zona = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({ target: zona, offset: ['start end', 'end start'] })
 
+  return (
+    <section className="relative overflow-hidden pt-[150px] md:pt-[190px]">
       <div className="entrada flex flex-col items-center px-5 text-center">
-        <span className="antetitulo mb-[22px]">Hecho en Colombia, para vender en Colombia</span>
         <h1 className="titulo-1">
           Tu tienda en línea,
           <br />
           lista hoy
         </h1>
         <p className="bajada mx-auto mt-[22px] !text-base">
-          Diseña tu tienda arrastrando bloques, sube tus productos y vende desde tu propio dominio.
-          Sin escribir una sola línea de código.
+          Elige una plantilla, sube tus productos y vende desde tu propia dirección. Sin escribir una
+          sola línea de código.
         </p>
         <div className="mt-[34px] flex flex-wrap justify-center gap-3">
           <Boton href="/panel/crear-cuenta" flecha>
@@ -46,32 +52,88 @@ export function Hero() {
         <p className="mt-5 text-xs text-white/45">Sin tarjeta de crédito · Tu tienda en línea el mismo día</p>
       </div>
 
-      <Contenedor className="mt-20 md:mt-24">
-        <motion.div
-          initial={{ opacity: 0, y: 60, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="relative"
-        >
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-[10%] -top-10 -z-10 h-40 rounded-full bg-sitio-azul/25 blur-[90px]"
-          />
-          <MaquetaEditor />
-        </motion.div>
+      <div ref={zona} className="relative mx-auto mt-20 h-[clamp(260px,46vw,620px)] max-w-[1400px] md:mt-24">
+        {VITRINA.map((tarjeta, indice) => (
+          <TarjetaVitrina key={tarjeta.src} {...tarjeta} progreso={scrollYProgress} orden={indice} />
+        ))}
 
-        <dl className="mx-auto mt-16 grid max-w-3xl grid-cols-3 gap-4 border-t border-sitio-borde pt-10 text-center">
-          {CIFRAS.map((cifra) => (
-            <div key={cifra.etiqueta}>
-              <dt className="sr-only">{cifra.etiqueta}</dt>
-              <dd className="text-[clamp(28px,4vw,44px)] leading-none font-normal tracking-[-0.04em]">
-                {cifra.valor}
-              </dd>
-              <dd className="mt-2 text-xs text-sitio-tenue">{cifra.etiqueta}</dd>
-            </div>
-          ))}
-        </dl>
-      </Contenedor>
+        <motion.figure
+          initial={{ opacity: 0, y: 80, filter: 'blur(8px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ duration: 1.5, delay: 0.25, ease: SALIDA }}
+          className="absolute top-0 left-1/2 z-10 w-[min(64vw,880px)] -translate-x-1/2 overflow-hidden rounded-[10px] bg-black shadow-[0_40px_120px_-30px_rgba(0,0,0,1)] ring-1 ring-white/10"
+        >
+          <div className="flex h-7 items-center gap-1.5 border-b border-white/10 bg-[#141416] px-3">
+            <span className="h-2 w-2 rounded-full bg-white/20" />
+            <span className="h-2 w-2 rounded-full bg-white/20" />
+            <span className="h-2 w-2 rounded-full bg-white/20" />
+            <span className="ml-3 font-mono text-[10px] text-white/40">lana-andina.llanostudio.co</span>
+          </div>
+          <Image
+            src="/ejemplos/lana-andina.webp"
+            alt="Tienda de ejemplo Lana Andina hecha con Mi Tienda"
+            width={1440}
+            height={900}
+            priority
+            sizes="(max-width: 1400px) 64vw, 880px"
+            className="h-auto w-full"
+          />
+        </motion.figure>
+      </div>
+
+      <dl className="mx-auto mt-16 grid max-w-3xl grid-cols-3 gap-4 px-5 text-center md:mt-24">
+        {CIFRAS.map((cifra, indice) => (
+          <motion.div
+            key={cifra.etiqueta}
+            initial={{ opacity: 0, y: 34, filter: 'blur(6px)' }}
+            whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.1, delay: indice * 0.08, ease: SALIDA }}
+          >
+            <dd className="text-[clamp(32px,4.4vw,56px)] leading-none font-normal tracking-[-0.045em]">
+              {cifra.valor}
+            </dd>
+            <dt className="mt-2 text-xs text-white/45">{cifra.etiqueta}</dt>
+          </motion.div>
+        ))}
+      </dl>
     </section>
+  )
+}
+
+function TarjetaVitrina({
+  src,
+  alt,
+  lado,
+  tipo,
+  progreso,
+  orden,
+}: {
+  src: string
+  alt: string
+  lado: number
+  tipo: 'escritorio' | 'movil'
+  progreso: MotionValue<number>
+  orden: number
+}) {
+  // Al bajar, las tarjetas de los lados se abren hacia afuera y se inclinan.
+  const separacion = useTransform(progreso, [0.15, 0.6], [0, lado * (tipo === 'movil' ? 3.5 : 6)])
+  const giro = useTransform(progreso, [0.15, 0.6], [0, lado * 2.5])
+  const x = useTransform(separacion, (valor) => `calc(-50% + ${lado * (tipo === 'movil' ? 37 : 22)}vw + ${valor}vw)`)
+
+  return (
+    <motion.figure
+      initial={{ opacity: 0, y: 100, filter: 'blur(8px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      transition={{ duration: 1.6, delay: 0.4 + orden * 0.08, ease: SALIDA }}
+      style={{ x, rotate: giro }}
+      className={
+        tipo === 'escritorio'
+          ? 'absolute top-[7%] left-1/2 hidden w-[min(40vw,560px)] overflow-hidden rounded-[8px] bg-black opacity-70 shadow-[0_30px_80px_-20px_rgba(0,0,0,1)] ring-1 ring-white/10 md:block'
+          : 'absolute top-[12%] left-1/2 hidden w-[min(13vw,190px)] overflow-hidden rounded-[22px] border-[5px] border-[#1b1b1e] bg-black shadow-[0_30px_80px_-20px_rgba(0,0,0,1)] lg:block'
+      }
+    >
+      <Image src={src} alt={alt} width={tipo === 'escritorio' ? 1440 : 560} height={tipo === 'escritorio' ? 900 : 1212} sizes="40vw" className="h-auto w-full brightness-[0.8]" />
+    </motion.figure>
   )
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { configuracionDominios, urlTienda } from '@/utilidades/dominios'
 import { Tarjeta } from '@/componentes/comunes/Tarjeta'
@@ -36,7 +37,7 @@ export function PantallaConfiguracion() {
             rel="noopener noreferrer"
             className="font-mono text-[13px] text-sitio-azul-claro hover:underline"
           >
-            {direccion} ↗
+            {direccion} <ArrowUpRight aria-hidden="true" className="inline h-3 w-3 align-[-1px]" />
           </a>
           <p className="mt-3 text-[12.5px] leading-relaxed text-sitio-tenue">
             Viene incluida con tu cuenta. Para cambiar el nombre, el logo o los colores usa{' '}

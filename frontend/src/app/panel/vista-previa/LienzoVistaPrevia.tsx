@@ -51,7 +51,7 @@ export function LienzoVistaPrevia() {
   return (
     <div style={variablesTema(tienda.tema)} className="min-h-screen bg-superficie font-sans text-tinta">
       {enfocar && (
-        <style>{`[data-bloque="${enfocar.replace(/"/g, '')}"]{outline:2px solid #3b60ff;outline-offset:-2px;transition:outline-color .3s}`}</style>
+        <style>{`[data-bloque="${enfocar.replace(/"/g, '')}"]{outline:1.5px dashed color-mix(in srgb,var(--tinta) 45%,transparent);outline-offset:-6px;animation:mt-enfoque .6s cubic-bezier(.22,1,.36,1)}@keyframes mt-enfoque{from{outline-color:transparent;outline-offset:2px}}`}</style>
       )}
       {datos.vista === 'producto' && datos.producto ? (
         <>

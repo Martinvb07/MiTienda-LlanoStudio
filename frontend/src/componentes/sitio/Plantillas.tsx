@@ -1,37 +1,28 @@
 import { Boton } from './Boton'
-import { Contenedor, Rotulo } from './Contenedor'
+import { Contenedor } from './Contenedor'
+import { GaleriaPlantillas } from './GaleriaPlantillas'
 import { Revelar } from './Revelar'
-import { PLANTILLAS_TIENDA } from '@/utilidades/plantillas'
-import { TarjetaPlantilla } from './TarjetaPlantilla'
 
-/** Adelanto en la portada: las tres primeras del catálogo. */
+/** Adelanto en la portada: tres plantillas con su captura real. */
 export function Plantillas() {
   return (
-    <section id="plantillas" className="py-20 lg:py-28">
+    <section id="plantillas" className="py-[110px] md:py-[150px]">
       <Contenedor>
-        <Revelar className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="max-w-xl">
-            <Rotulo>Plantillas</Rotulo>
-            <h2 className="mt-5 titulo-2">
-              Empieza con un diseño que ya funciona
-            </h2>
-            <p className="mt-4 text-pretty text-sitio-suave">
-              Cada plantilla es un punto de partida, no una jaula: puedes mover, quitar y agregar
-              bloques sin perder nada de lo que ya cargaste.
-            </p>
+        <Revelar className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <span className="antetitulo mb-[22px]">Plantillas</span>
+            <h2 className="titulo-2 max-w-[13ch]">Empieza con un diseño que ya vende</h2>
           </div>
-          <Boton href="/plantillas" variante="secundario" flecha className="shrink-0">
-            Ver todas
-          </Boton>
+          <div className="md:max-w-[34ch]">
+            <p className="bajada">
+              Tiendas reales armadas con cada plantilla. Abre una para ver todo lo que trae.
+            </p>
+            <Boton href="/plantillas" variante="secundario" tamano="normal" flecha className="mt-6">
+              Ver las seis
+            </Boton>
+          </div>
         </Revelar>
-
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
-          {PLANTILLAS_TIENDA.slice(0, 3).map((plantilla, indice) => (
-            <Revelar key={plantilla.clave} retardo={indice * 0.08}>
-              <TarjetaPlantilla clave={plantilla.clave} />
-            </Revelar>
-          ))}
-        </div>
+        <GaleriaPlantillas limite={3} />
       </Contenedor>
     </section>
   )

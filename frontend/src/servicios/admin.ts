@@ -88,3 +88,25 @@ export const cambiarTienda = (id: string, cambios: { plan?: string; activo?: boo
     method: 'PATCH',
     body: JSON.stringify(cambios),
   }).then((respuesta) => respuesta.tenant)
+
+export const cambiarContrasena = (id: string, contrasena: string) =>
+  pedir<{ email: string }>(`/tiendas/${id}/contrasena`, {
+    method: 'PUT',
+    body: JSON.stringify({ contrasena }),
+  }).then((respuesta) => respuesta.email)
+
+export interface OfertaPlan {
+  plan: 'GRATIS' | 'EMPRENDE' | 'NEGOCIO' | 'PRO'
+  precio: number
+  resumen: string
+  incluye: string[]
+  destacado: boolean
+}
+
+export const listarPlanes = () => pedir<{ planes: OfertaPlan[] }>('/planes').then((respuesta) => respuesta.planes)
+
+export const guardarPlan = ({ plan, ...datos }: OfertaPlan) =>
+  pedir<{ planes: OfertaPlan[] }>(`/planes/${plan}`, {
+    method: 'PUT',
+    body: JSON.stringify(datos),
+  }).then((respuesta) => respuesta.planes)

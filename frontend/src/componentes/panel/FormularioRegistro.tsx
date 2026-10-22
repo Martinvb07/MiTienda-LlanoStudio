@@ -92,7 +92,9 @@ export function FormularioRegistro() {
         subdominio: subdominioFinal,
       })
       // Recién creada: directo al editor para que la arme.
-      router.push('/panel/plantillas?editar=1')
+      // Si llegó desde "Usar esta plantilla", el editor abre con ella aplicada.
+      const plantilla = new URLSearchParams(window.location.search).get('plantilla')
+      router.push(`/panel/plantillas?editar=1${plantilla ? `&plantilla=${encodeURIComponent(plantilla)}` : ''}`)
     } catch (error) {
       if (error instanceof ErrorPanel && Object.keys(error.campos).length > 0) {
         setErrores(error.campos as Errores)
@@ -105,14 +107,14 @@ export function FormularioRegistro() {
 
   return (
     <>
-      <h1 className="text-[32px] leading-[1.05] font-normal tracking-[-0.04em]">
+      <h1 className="text-[clamp(34px,3.4vw,46px)] leading-[1.02] font-normal tracking-[-0.045em]">
         Crea tu tienda gratis
       </h1>
       <p className="mt-2 text-sm text-sitio-tenue">
         En un par de minutos la tienes publicada. Sin tarjeta de crédito.
       </p>
 
-      <form onSubmit={alEnviar} noValidate className="mt-8 space-y-5">
+      <form onSubmit={alEnviar} noValidate className="mt-9 grid gap-x-4 gap-y-5 sm:grid-cols-2">
         <CampoTexto
           etiqueta="Tu nombre"
           nombre="nombre"
@@ -135,6 +137,7 @@ export function FormularioRegistro() {
           error={errores.email}
         />
 
+        <div className="sm:col-span-2">
         <CampoContrasena
           etiqueta="Contraseña"
           nombre="contrasena"
@@ -144,8 +147,13 @@ export function FormularioRegistro() {
           error={errores.contrasena}
           medirFortaleza
         />
+        </div>
 
-        <div className="border-t border-sitio-borde pt-5">
+        <p className="border-t border-white/10 pt-6 text-[11px] tracking-[0.14em] text-white/45 uppercase sm:col-span-2">
+          Tu tienda
+        </p>
+
+        <div>
           <CampoTexto
             etiqueta="Nombre de tu tienda"
             nombre="tienda"
@@ -185,10 +193,9 @@ export function FormularioRegistro() {
           {errores.subdominio ? (
             <p className="mt-1.5 text-[12.5px] text-red-300">{errores.subdominio}</p>
           ) : (
-            <p className="mt-2 flex items-center gap-1.5 text-sm text-sitio-tenue">
+            <p className="mt-2 flex min-w-0 items-center gap-1.5 text-[12px] text-sitio-tenue" title="Tu tienda va a vivir en esta dirección">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-sitio-verde" />
-              Tu tienda va a vivir en{' '}
-              <span className="font-mono text-[12.5px] text-white">{dominioCompleto}</span>
+              <span className="truncate font-mono text-white/80">{dominioCompleto}</span>
             </p>
           )}
         </div>
@@ -198,7 +205,7 @@ export function FormularioRegistro() {
           enlaces se los come: al pulsarlos, el navegador marca la casilla en
           vez de navegar. La casilla recibe su nombre accesible por aria-label.
         */}
-        <div className="flex items-start gap-2.5">
+        <div className="flex items-start gap-2.5 sm:col-span-2">
           <input
             type="checkbox"
             name="condiciones"
@@ -225,14 +232,14 @@ export function FormularioRegistro() {
             .
           </p>
         </div>
-        {errores.condiciones && <p className="text-[12.5px] text-red-300">{errores.condiciones}</p>}
+        {errores.condiciones && <p className="text-[12.5px] text-red-300 sm:col-span-2">{errores.condiciones}</p>}
 
-        {errorServidor && <AvisoFormulario>{errorServidor}</AvisoFormulario>}
+        {errorServidor && <div className="sm:col-span-2"><AvisoFormulario>{errorServidor}</AvisoFormulario></div>}
 
         <button
           type="submit"
           disabled={enviando}
-          className="boton boton-primario w-full"
+          className="boton boton-primario w-full sm:col-span-2"
         >
           {enviando && (
             <span

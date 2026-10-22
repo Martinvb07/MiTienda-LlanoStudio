@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
+import { ArrowLeft, Monitor, Smartphone, Check } from 'lucide-react'
 import { cn } from '@/utilidades/clases'
 import { BotonPanel, CURVA, Etiqueta, Segmentado } from '../ui/basicos'
 import type { Dispositivo } from './VistaPrevia'
@@ -10,22 +11,12 @@ const DISPOSITIVOS = [
   {
     valor: 'escritorio',
     titulo: 'Escritorio',
-    etiqueta: (
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
-        <rect x="3" y="4" width="18" height="12" rx="2" />
-        <path d="M8 20h8M12 16v4" strokeLinecap="round" />
-      </svg>
-    ),
+    etiqueta: <Monitor aria-hidden="true" className="h-4 w-4" />,
   },
   {
     valor: 'movil',
     titulo: 'Móvil',
-    etiqueta: (
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
-        <rect x="7" y="2.5" width="10" height="19" rx="2.5" />
-        <path d="M11 18.5h2" strokeLinecap="round" />
-      </svg>
-    ),
+    etiqueta: <Smartphone aria-hidden="true" className="h-4 w-4" />,
   },
 ] as const
 
@@ -81,9 +72,7 @@ export function MarcoEditor(props: Props) {
     >
       <header className="flex h-[60px] shrink-0 items-center gap-2 border-b border-sitio-borde bg-[#0a0a0b] px-2.5 md:gap-3.5 md:px-4">
         <BotonPanel variante="fantasma" onClick={props.alCerrar}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <path d="M19 12H5M11 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">{props.volver}</span>
         </BotonPanel>
 
@@ -113,7 +102,7 @@ export function MarcoEditor(props: Props) {
                   transition={{ duration: 0.35, ease: CURVA }}
                   className="text-[11.5px] whitespace-nowrap text-sitio-verde"
                 >
-                  ✓ Guardado
+                  <Check aria-hidden="true" className="inline h-3 w-3 align-[-1px]" /> Guardado
                 </motion.span>
               )
             )}

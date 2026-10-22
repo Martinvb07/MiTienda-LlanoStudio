@@ -20,6 +20,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { AnimatePresence, motion } from 'motion/react'
+import { ChevronDown, Eye, EyeOff, GripVertical, Plus, X } from 'lucide-react'
 import {
   DESCRIPCIONES_BLOQUE,
   ETIQUETAS_BLOQUE,
@@ -29,7 +30,7 @@ import {
 } from '@/tipos/bloques'
 import { cn } from '@/utilidades/clases'
 import { planMinimo, type LimitesPlan } from '@/utilidades/planes'
-import { CURVA, Candado, Etiqueta } from '../ui/basicos'
+import { CURVA, Candado, PlanRequerido } from '../ui/basicos'
 import { CamposBloque, resumenBloque } from './CamposBloque'
 
 interface Props {
@@ -132,7 +133,7 @@ export function ListaBloques({ bloques, alCambiar, abierto, alAbrir, alError, al
         aria-expanded={menu}
         className="mt-1 flex h-10 items-center justify-center gap-2 rounded-[10px] border border-dashed border-white/[0.18] text-[12.5px] text-sitio-suave transition-colors enabled:hover:border-white/50 enabled:hover:text-white disabled:opacity-40"
       >
-        <span className="text-base leading-none">{menu ? '×' : '+'}</span>
+        {menu ? <X aria-hidden="true" className="h-3.5 w-3.5" /> : <Plus aria-hidden="true" className="h-3.5 w-3.5" />}
         {menu ? 'Cerrar' : 'Agregar sección'}
       </button>
 
@@ -158,7 +159,7 @@ export function ListaBloques({ bloques, alCambiar, abierto, alAbrir, alError, al
                 >
                   <span className="flex items-center justify-between gap-2 text-[13px] text-white">
                     {ETIQUETAS_BLOQUE[tipo]}
-                    {!incluido && <Etiqueta tono="azul">{planMinimo((plan) => plan.bloques.includes(tipo))}</Etiqueta>}
+                    {!incluido && <PlanRequerido plan={planMinimo((plan) => plan.bloques.includes(tipo))} />}
                   </span>
                   <span className="mt-0.5 block text-[11.5px] leading-snug text-sitio-tenue">
                     {DESCRIPCIONES_BLOQUE[tipo]}
@@ -195,7 +196,11 @@ function FilaBloque({
   alSubiendo: (delta: number) => void
   limites: LimitesPlan
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: bloque.id })
+  // Misma curva y duración que el reordenamiento del editor de llanostudio.co.
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: bloque.id,
+    transition: { duration: 450, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+  })
   const oculto = bloque.visible === false
   const fueraDelPlan = !limites.bloques.includes(bloque.tipo)
 
@@ -206,7 +211,7 @@ function FilaBloque({
       className={cn(
         'rounded-[10px] border bg-[#121214] transition-[border-color,box-shadow]',
         abierto ? 'border-white/30' : 'border-sitio-borde hover:border-white/15',
-        isDragging && 'relative z-10 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.9)] ring-1 ring-white/20',
+        isDragging && 'relative z-10 scale-[1.02] border-white/30 shadow-[0_24px_50px_-12px_rgba(0,0,0,0.95)]',
       )}
     >
       <div className="flex items-center gap-1 py-1.5 pr-1.5 pl-1">
@@ -217,15 +222,13 @@ function FilaBloque({
           {...attributes}
           {...listeners}
         >
-          <svg viewBox="0 0 12 18" className="h-3.5 w-2.5" fill="currentColor" aria-hidden="true">
-            {[3, 9, 15].flatMap((y) => [3, 9].map((x) => <circle key={`${x}-${y}`} cx={x} cy={y} r="1.4" />))}
-          </svg>
+          <GripVertical aria-hidden="true" className="h-4 w-4" />
         </button>
 
         <button type="button" onClick={alAbrir} className={cn('min-w-0 flex-1 py-1 text-left', oculto && 'opacity-45')}>
           <span className="flex items-center gap-2 text-[13px] text-white">
             {ETIQUETAS_BLOQUE[bloque.tipo]}
-            {fueraDelPlan && <Etiqueta tono="ambar">Fuera de tu plan</Etiqueta>}
+            {fueraDelPlan && <PlanRequerido plan={planMinimo((plan) => plan.bloques.includes(bloque.tipo))} />}
           </span>
           <span className="block truncate text-[11.5px] text-sitio-tenue">{resumenBloque(bloque) || '—'}</span>
         </button>
@@ -237,16 +240,7 @@ function FilaBloque({
           title={oculto ? 'Mostrar' : 'Ocultar'}
           className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-sitio-tenue transition-colors hover:bg-white/10 hover:text-white"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4" aria-hidden="true">
-            {oculto ? (
-              <path d="M3 3l18 18M10.6 5.1A9.8 9.8 0 0112 5c5 0 9 4.5 10 7a13 13 0 01-3.2 4.2M6.3 6.3C4.1 7.8 2.6 10 2 12c1 2.5 5 7 10 7a9.6 9.6 0 004.3-1M9.9 9.9a3 3 0 004.2 4.2" strokeLinecap="round" />
-            ) : (
-              <>
-                <path d="M2 12c1-2.5 5-7 10-7s9 4.5 10 7c-1 2.5-5 7-10 7S3 14.5 2 12z" />
-                <circle cx="12" cy="12" r="3" />
-              </>
-            )}
-          </svg>
+          {oculto ? <EyeOff aria-hidden="true" className="h-4 w-4" /> : <Eye aria-hidden="true" className="h-4 w-4" />}
         </button>
         <button
           type="button"
@@ -254,11 +248,9 @@ function FilaBloque({
           aria-label={abierto ? 'Cerrar' : 'Editar'}
           className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-sitio-tenue transition-colors hover:bg-white/10 hover:text-white"
         >
-          <i
-            className={cn(
-              'h-[7px] w-[7px] border-r-[1.5px] border-b-[1.5px] border-current transition-transform duration-[450ms] ease-salida',
-              abierto ? 'translate-y-[1px] rotate-[-135deg]' : '-translate-y-[2px] rotate-45',
-            )}
+          <ChevronDown
+            aria-hidden="true"
+            className={cn('h-4 w-4 transition-transform duration-[450ms] ease-salida', abierto && 'rotate-180')}
           />
         </button>
       </div>

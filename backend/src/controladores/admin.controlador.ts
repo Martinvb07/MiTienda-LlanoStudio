@@ -3,7 +3,8 @@ import jwt from 'jsonwebtoken'
 import { z } from 'zod'
 import { entorno } from '../config/entorno.js'
 import { prisma } from '../config/prisma.js'
-import { verificarContrasena } from '../utilidades/contrasenas.js'
+import { cifrarContrasena, verificarContrasena } from '../utilidades/contrasenas.js'
+import { listarOfertas } from '../servicios/ofertas.servicio.js'
 import { noAutorizado, noEncontrado } from '../utilidades/errores.js'
 
 /**
@@ -26,6 +27,19 @@ export const esquemaCambioTienda = z
   .refine((datos) => datos.plan !== undefined || datos.activo !== undefined, 'No hay nada que cambiar')
 
 export const esquemaBusqueda = z.object({ buscar: z.string().trim().max(80).optional() })
+
+export const esquemaContrasena = z.object({
+  contrasena: z.string().min(8, 'Tiene que tener al menos 8 caracteres').max(200),
+})
+
+export const esquemaOferta = z.object({
+  precio: z.coerce.number().int().min(0).max(100_000_000),
+  resumen: z.string().trim().min(1).max(200),
+  incluye: z.array(z.string().trim().min(1).max(120)).max(12),
+  destacado: z.boolean(),
+})
+
+const PLAN_VALIDO = z.enum(['GRATIS', 'EMPRENDE', 'NEGOCIO', 'PRO'])
 
 export async function ingresarAdmin(req: Request, res: Response): Promise<void> {
   const { email, contrasena } = req.body as z.infer<typeof esquemaIngresoAdmin>
@@ -133,4 +147,53 @@ export async function cambiarTiendaAdmin(req: Request, res: Response): Promise<v
     select: { id: true, plan: true, activo: true },
   })
   res.json({ tenant })
+}
+
+/**
+ * Pone una contraseña nueva al dueño de una tienda. Mientras no exista la
+ * recuperación por correo, es la forma de devolverle el acceso a alguien.
+ */
+export async function cambiarContrasenaAdmin(req: Request, res: Response): Promise<void> {
+  const { contrasena } = req.body as z.infer<typeof esquemaContrasena>
+  const propietario = await prisma.usuario.findFirst({
+    where: { tenantId: req.params.id as string, rol: 'PROPIETARIO' },
+    select: { id: true, email: true },
+  })
+  if (!propietario) throw noEncontrado('Esa tienda no tiene dueño registrado')
+
+  await prisma.usuario.update({
+    where: { id: propietario.id },
+    data: { contrasenaHash: await cifrarContrasena(contrasena) },
+  })
+  res.json({ email: propietario.email })
+}
+
+export async function listarOfertasAdmin(_req: Request, res: Response): Promise<void> {
+  res.json({ planes: await listarOfertas() })
+}
+
+export async function guardarOfertaAdmin(req: Request, res: Response): Promise<void> {
+  const plan = PLAN_VALIDO.safeParse(req.params.plan)
+  if (!plan.success) throw noEncontrado('Ese plan no existe')
+  const datos = req.body as z.infer<typeof esquemaOferta>
+
+  // Sólo un plan puede ir destacado como "el más elegido".
+  if (datos.destacado) {
+    await prisma.ofertaPlan.updateMany({ where: { plan: { not: plan.data } }, data: { destacado: false } })
+    const actuales = await listarOfertas()
+    for (const oferta of actuales.filter((otra) => otra.plan !== plan.data && otra.destacado)) {
+      await prisma.ofertaPlan.upsert({
+        where: { plan: oferta.plan },
+        create: { ...oferta, destacado: false },
+        update: { destacado: false },
+      })
+    }
+  }
+
+  await prisma.ofertaPlan.upsert({
+    where: { plan: plan.data },
+    create: { plan: plan.data, ...datos },
+    update: datos,
+  })
+  res.json({ planes: await listarOfertas() })
 }

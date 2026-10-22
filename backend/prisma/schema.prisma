@@ -265,3 +265,24 @@ model Pago {
   @@index([estado])
   @@map("pagos")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Oferta comercial
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Lo que se muestra de cada plan en la página de precios. Lo edita el admin
+/// de la plataforma; los límites técnicos del plan viven en el código
+/// (src/utilidades/planes.ts). Si falta una fila, se usa la oferta por defecto.
+model OfertaPlan {
+  plan PlanTenant @id
+
+  /// Pesos colombianos al mes. 0 = gratis.
+  precio    Int
+  resumen   String
+  incluye   String[]
+  destacado Boolean  @default(false)
+
+  actualizadoEn DateTime @updatedAt
+
+  @@map("ofertas_planes")
+}

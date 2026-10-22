@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- miniaturas del panel */
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
+import { Plus } from 'lucide-react'
 import {
   actualizarProducto,
   eliminarProducto,
@@ -87,9 +88,7 @@ export function PantallaProductos() {
         }`}
         accion={
           <BotonPanel variante="primario" onClick={() => setAbierto(null)} disabled={!tienda || lleno} className="h-10 px-5">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
-              <path d="M12 5v14M5 12h14" strokeLinecap="round" />
-            </svg>
+            <Plus aria-hidden="true" className="h-3.5 w-3.5" />
             Nuevo producto
           </BotonPanel>
         }

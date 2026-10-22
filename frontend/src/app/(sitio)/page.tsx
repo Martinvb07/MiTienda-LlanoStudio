@@ -1,24 +1,40 @@
-import { Caracteristicas } from '@/componentes/sitio/Caracteristicas'
+import { Caracteristicas, ComoFunciona } from '@/componentes/sitio/Caracteristicas'
 import { Hero } from '@/componentes/sitio/Hero'
 import { LlamadoFinal } from '@/componentes/sitio/LlamadoFinal'
-import { Marquesina } from '@/componentes/sitio/Marquesina'
 import { Plantillas } from '@/componentes/sitio/Plantillas'
-import { Testimonios } from '@/componentes/sitio/Testimonios'
+import { Preguntas } from '@/componentes/sitio/Preguntas'
 
-/**
- * Portada de Llano Studio.
- *
- * El recorrido alterna fondo blanco y crema para marcar el ritmo entre
- * secciones sin recurrir a líneas separadoras en cada corte.
- */
+const PREGUNTAS = [
+  {
+    pregunta: '¿Necesito saber de diseño o de código?',
+    respuesta:
+      'No. Eliges una plantilla, cambias textos, colores y fotos desde el editor y ves el resultado en vivo. Si sabes usar Instagram, sabes usar Mi Tienda.',
+  },
+  {
+    pregunta: '¿Cuánto cuesta empezar?',
+    respuesta:
+      'Nada. El plan Gratis no pide tarjeta y no vence. Cuando quieras más productos, más secciones o tus propios colores, pasas a un plan pago.',
+  },
+  {
+    pregunta: '¿Cobran comisión por cada venta?',
+    respuesta: 'No. Lo que vendes es tuyo; sólo aplican las tarifas de la pasarela de pago que uses.',
+  },
+  {
+    pregunta: '¿Puedo cambiar de plantilla después?',
+    respuesta:
+      'Sí, cuando quieras. Tus productos no se tocan: la plantilla sólo cambia el diseño y las secciones de la portada.',
+  },
+]
+
+/** Portada de Mi Tienda, con el mismo recorrido y ritmo que llanostudio.co. */
 export default function PaginaInicio() {
   return (
     <>
       <Hero />
-      <Marquesina />
       <Caracteristicas />
       <Plantillas />
-      <Testimonios />
+      <ComoFunciona />
+      <Preguntas titulo="Lo que más nos preguntan" preguntas={PREGUNTAS} />
       <LlamadoFinal />
     </>
   )

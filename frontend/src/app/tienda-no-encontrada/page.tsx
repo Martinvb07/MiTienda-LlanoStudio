@@ -12,7 +12,6 @@ export const metadata: Metadata = {
 export default function TiendaNoEncontrada() {
   return (
     <main className="marco-oscuro relative isolate flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center">
-      <div aria-hidden="true" className="halo !top-[15%]" />
       <div className="entrada flex flex-col items-center">
         <span className="antetitulo mb-5">Mi Tienda</span>
         <h1 className="titulo-2 max-w-[16ch]">Aquí todavía no hay una tienda</h1>

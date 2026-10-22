@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { ArrowRight, Check, ArrowUpRight } from 'lucide-react'
 import { listarProductos } from '@/servicios/panel'
 import type { ProductoPanel } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
@@ -59,7 +60,6 @@ export function PantallaResumen() {
   return (
     <div className="flex flex-col gap-6">
       <section className="relative isolate overflow-hidden rounded-[14px] border border-sitio-borde bg-sitio-superficie px-6 py-9 md:px-9">
-        <div aria-hidden="true" className="halo !top-[-120%] !h-[520px]" />
         <span className="antetitulo">Hola, {sesion.usuario.nombre.split(' ')[0]}</span>
         <h1 className="mt-3 text-[clamp(30px,4vw,52px)] leading-[1.02] font-normal tracking-[-0.045em]">
           {sesion.tienda?.nombre ?? 'Tu tienda'}
@@ -72,7 +72,7 @@ export function PantallaResumen() {
             rel="noopener noreferrer"
             className="font-mono text-[12.5px] text-sitio-suave hover:text-white"
           >
-            {direccion.replace(/^https?:\/\//, '')} ↗
+            {direccion.replace(/^https?:\/\//, '')} <ArrowUpRight aria-hidden="true" className="inline h-3 w-3 align-[-1px]" />
           </a>
         </div>
         <div className="mt-7 flex flex-wrap gap-3">
@@ -123,7 +123,7 @@ export function PantallaResumen() {
                   paso.hecho ? 'border-sitio-verde/40 bg-sitio-verde/10 text-sitio-verde' : 'border-sitio-borde text-sitio-tenue',
                 )}
               >
-                {paso.hecho ? '✓' : String(indice + 1).padStart(2, '0')}
+                {paso.hecho ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : String(indice + 1).padStart(2, '0')}
               </span>
               <div className="min-w-0">
                 <p className={cn('text-sm', paso.hecho && 'text-sitio-tenue line-through')}>{paso.titulo}</p>
@@ -132,9 +132,7 @@ export function PantallaResumen() {
               {!paso.hecho && (
                 <Link href={paso.href} className="enlace-flecha !text-[11px] text-sitio-suave hover:text-white">
                   {paso.accion}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <ArrowRight aria-hidden="true" />
                 </Link>
               )}
             </li>

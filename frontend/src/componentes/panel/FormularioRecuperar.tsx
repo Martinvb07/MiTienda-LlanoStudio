@@ -26,7 +26,7 @@ export function FormularioRecuperar() {
 
   return (
     <>
-      <h1 className="text-[32px] leading-[1.05] font-normal tracking-[-0.04em]">Recupera tu contraseña</h1>
+      <h1 className="text-[clamp(34px,3.4vw,46px)] leading-[1.02] font-normal tracking-[-0.045em]">Recupera tu contraseña</h1>
       <p className="mt-2 text-sm text-sitio-tenue">
         Escribe el correo con el que te registraste y te ayudamos a cambiarla.
       </p>

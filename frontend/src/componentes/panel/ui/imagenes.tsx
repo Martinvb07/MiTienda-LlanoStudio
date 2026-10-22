@@ -4,6 +4,7 @@ import { useState } from 'react'
 /* eslint-disable @next/next/no-img-element -- miniaturas del panel: URLs de
    R2 o locales que no tiene sentido pasar por el optimizador. */
 import { AnimatePresence, motion } from 'motion/react'
+import { ArrowLeft, ArrowRight, ImagePlus, Plus, X } from 'lucide-react'
 import { FORMATOS_IMAGEN, subirImagen } from '@/servicios/panel'
 import { cn } from '@/utilidades/clases'
 import { CURVA } from './basicos'
@@ -85,7 +86,8 @@ export function ZonaImagen({
             </span>
           </>
         ) : (
-          <span className="px-4 text-center text-[13px] leading-relaxed text-sitio-suave">
+          <span className="flex flex-col items-center px-4 text-center text-[13px] leading-relaxed text-sitio-suave">
+            <ImagePlus aria-hidden="true" className="mb-2 h-5 w-5 text-sitio-tenue" />
             {texto}
             <br />
             <small className="text-sitio-tenue">o haz clic para elegirla</small>
@@ -197,18 +199,18 @@ export function Galeria({
             )}
             <div className="absolute right-1 bottom-1 flex gap-[3px] opacity-0 transition-opacity group-hover:opacity-100">
               {[
-                { texto: '←', accion: () => alCambiar(mover(urls, indice, indice - 1)), etiqueta: 'Antes' },
-                { texto: '→', accion: () => alCambiar(mover(urls, indice, indice + 1)), etiqueta: 'Después' },
-                { texto: '✕', accion: () => alCambiar(urls.filter((_, otro) => otro !== indice)), etiqueta: 'Quitar' },
+                { Icono: ArrowLeft, accion: () => alCambiar(mover(urls, indice, indice - 1)), etiqueta: 'Antes' },
+                { Icono: ArrowRight, accion: () => alCambiar(mover(urls, indice, indice + 1)), etiqueta: 'Después' },
+                { Icono: X, accion: () => alCambiar(urls.filter((_, otro) => otro !== indice)), etiqueta: 'Quitar' },
               ].map((boton) => (
                 <button
                   key={boton.etiqueta}
                   type="button"
                   aria-label={boton.etiqueta}
                   onClick={boton.accion}
-                  className="h-[22px] w-[22px] rounded-md bg-black/75 text-[11px] text-white hover:bg-white hover:text-black"
+                  className="grid h-[22px] w-[22px] place-items-center rounded-md bg-black/75 text-white transition-colors hover:bg-white hover:text-black"
                 >
-                  {boton.texto}
+                  <boton.Icono aria-hidden="true" className="h-3 w-3" />
                 </button>
               ))}
             </div>
@@ -232,8 +234,9 @@ export function Galeria({
             encima ? 'border-white/55 bg-[#151518]' : 'border-white/[0.18] bg-[#0f0f11] hover:border-white/55',
           )}
         >
-          <span className="flex flex-col items-center text-xl leading-none text-sitio-suave">
-            +<small className="mt-1 text-[10.5px]">Agregar</small>
+          <span className="flex flex-col items-center gap-1 text-sitio-suave">
+            <Plus aria-hidden="true" className="h-4 w-4" />
+            <small className="text-[10.5px]">Agregar</small>
           </span>
           <input
             type="file"

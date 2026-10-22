@@ -2,6 +2,7 @@
 
 import { useId, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
+import { ChevronDown, Lock } from 'lucide-react'
 import { cn } from '@/utilidades/clases'
 
 /*
@@ -105,10 +106,11 @@ export function Seccion({
           className="flex flex-1 items-center justify-between px-1 py-[15px] text-left text-[13.5px] font-medium text-white transition-colors hover:text-sitio-suave"
         >
           {titulo}
-          <i
+          <ChevronDown
+            aria-hidden="true"
             className={cn(
-              'h-[7px] w-[7px] border-r-[1.5px] border-b-[1.5px] border-sitio-tenue transition-transform duration-[450ms] ease-salida',
-              abierta ? '-translate-y-[1px] rotate-[-135deg]' : '-translate-y-[2px] rotate-45',
+              'h-4 w-4 text-sitio-tenue transition-transform duration-[450ms] ease-salida',
+              abierta && 'rotate-180',
             )}
           />
         </button>
@@ -381,20 +383,32 @@ export function Segmentado<T extends string>({
   )
 }
 
-/** Lo que el plan actual no incluye: candado, desde qué plan, y enlace a precios. */
+/** Lo que el plan actual no incluye: una línea discreta con candado y enlace a los planes. */
 export function Candado({ plan, children }: { plan: string; children?: ReactNode }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-lg border border-sitio-azul-claro/20 bg-sitio-azul/[0.07] px-3 py-2.5 text-[12px] leading-relaxed text-sitio-suave">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sitio-azul-claro" aria-hidden="true">
-        <rect x="5" y="11" width="14" height="10" rx="2" />
-        <path d="M8 11V8a4 4 0 118 0v3" />
-      </svg>
+    <p className="flex items-start gap-2 text-[12px] leading-relaxed text-sitio-tenue">
+      <Lock aria-hidden="true" className="mt-[3px] h-3 w-3 shrink-0" strokeWidth={2} />
       <span>
-        {children} Disponible desde el plan <b className="font-medium text-white">{plan}</b>.{' '}
-        <a href="/precios" target="_blank" rel="noopener noreferrer" className="text-white underline underline-offset-2">
+        {children} Incluido desde {plan}.{' '}
+        <a
+          href="/precios"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sitio-suave underline decoration-white/20 underline-offset-2 transition-colors hover:text-white"
+        >
           Ver planes
         </a>
       </span>
-    </div>
+    </p>
+  )
+}
+
+/** Marca de "esto es de otro plan": candado y nombre del plan, sin color. */
+export function PlanRequerido({ plan }: { plan: string }) {
+  return (
+    <span className="inline-flex shrink-0 items-center gap-1 text-[10.5px] tracking-[0.04em] text-sitio-tenue">
+      <Lock aria-hidden="true" className="h-2.5 w-2.5" strokeWidth={2.2} />
+      {plan}
+    </span>
   )
 }

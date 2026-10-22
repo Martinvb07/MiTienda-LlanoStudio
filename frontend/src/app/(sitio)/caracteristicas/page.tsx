@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { Boton } from '@/componentes/sitio/Boton'
 import { CabeceraPagina } from '@/componentes/sitio/CabeceraPagina'
-import { Caracteristicas } from '@/componentes/sitio/Caracteristicas'
-import { Contenedor, Rotulo } from '@/componentes/sitio/Contenedor'
+import { Caracteristicas, ComoFunciona } from '@/componentes/sitio/Caracteristicas'
+import { Contenedor } from '@/componentes/sitio/Contenedor'
 import { LlamadoFinal } from '@/componentes/sitio/LlamadoFinal'
 import { Revelar } from '@/componentes/sitio/Revelar'
 
@@ -53,30 +53,28 @@ export default function PaginaCaracteristicas() {
         titulo="Todo lo que necesitas para vender, sin pedirle nada a nadie"
         descripcion="Diseño, catálogo, dominio y pagos en un solo lugar. Sin plugins que instalar ni piezas sueltas que conectar entre sí."
       >
-        <Boton href="/panel/crear-cuenta" tamano="grande" flecha>
+        <Boton href="/panel/crear-cuenta" flecha>
           Crear mi tienda
         </Boton>
       </CabeceraPagina>
 
       <Caracteristicas />
 
-      <section className="py-20 lg:py-24">
-        <Contenedor>
-          <Revelar className="max-w-2xl">
-            <Rotulo>Además</Rotulo>
-            <h2 className="mt-5 titulo-2">
-              Detalles que no se ven, pero se notan
-            </h2>
-          </Revelar>
+      <ComoFunciona />
 
-          <div className="mt-12 grid gap-x-10 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="pb-[110px] md:pb-[150px]">
+        <Contenedor>
+          <Revelar className="mb-14">
+            <span className="antetitulo mb-[22px]">Además</span>
+            <h2 className="titulo-2 max-w-[14ch]">Detalles que no se ven, pero se notan</h2>
+          </Revelar>
+          <div className="grid gap-x-10 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
             {DETALLES.map((detalle, indice) => (
-              <Revelar key={detalle.titulo} retardo={(indice % 3) * 0.07}>
-                <div className="border-t border-sitio-borde-fuerte pt-5">
-                  <h3 className="font-medium tracking-[-0.01em] text-sitio-tinta">{detalle.titulo}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-pretty text-sitio-suave">
-                    {detalle.texto}
-                  </p>
+              <Revelar key={detalle.titulo} retardo={(indice % 3) * 0.08}>
+                <div className="border-t border-white/12 py-7">
+                  <span className="font-mono text-[12px] text-white/35">{String(indice + 1).padStart(2, '0')}</span>
+                  <h3 className="mt-3 text-[19px] tracking-[-0.02em]">{detalle.titulo}</h3>
+                  <p className="mt-2 text-[14px] leading-relaxed text-white/55">{detalle.texto}</p>
                 </div>
               </Revelar>
             ))}

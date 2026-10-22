@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowUpRight } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AnimatePresence } from 'motion/react'
@@ -102,7 +103,7 @@ export function PantallaTienda() {
               rel="noopener noreferrer"
               className="mt-3 block truncate font-mono text-[12px] text-sitio-azul-claro hover:underline"
             >
-              {urlTienda(subdominio).replace(/^https?:\/\//, '')} ↗
+              {urlTienda(subdominio).replace(/^https?:\/\//, '')} <ArrowUpRight aria-hidden="true" className="inline h-3 w-3 align-[-1px]" />
             </a>
             {!tienda.publicada && (
               <p className="mt-3 text-[12.5px] leading-relaxed text-sitio-tenue">
@@ -142,6 +143,7 @@ export function PantallaTienda() {
           <EditorTienda
             tienda={tienda}
             subdominio={subdominio}
+            plantillaInicial={parametros.get('plantilla')}
             alCerrar={cerrarEditor}
             alGuardar={(guardada) => {
               setDatos({ tienda: guardada, subdominio })

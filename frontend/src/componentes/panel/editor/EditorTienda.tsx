@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowUpRight } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence } from 'motion/react'
 import { guardarTienda, listarProductos, type DatosTienda } from '@/servicios/panel'
@@ -9,9 +10,8 @@ import { ESTILOS_PREDEFINIDOS, FUENTES_TITULOS, RADIOS } from '@/utilidades/tema
 import { cn } from '@/utilidades/clases'
 import { PLANES, limitesDe, planIncluye, planMinimo } from '@/utilidades/planes'
 import { PLANTILLAS_TIENDA, type PlantillaTienda } from '@/utilidades/plantillas'
-import { MiniaturaPlantilla } from '@/componentes/sitio/MiniaturaPlantilla'
 import { useSesion } from '../SesionPanel'
-import { Aviso, Campo, CampoArea, CampoColor, Candado, Etiqueta, Interruptor, Seccion, Segmentado } from '../ui/basicos'
+import { Aviso, Campo, CampoArea, CampoColor, Candado, Interruptor, PlanRequerido, Seccion, Segmentado } from '../ui/basicos'
 import { ZonaImagen } from '../ui/imagenes'
 import { ListaBloques } from './ListaBloques'
 import { MarcoEditor, useAtajosEditor } from './MarcoEditor'
@@ -36,13 +36,15 @@ interface Props {
   subdominio: string
   alGuardar: (tienda: Tienda) => void
   alCerrar: () => void
+  /** Plantilla elegida en el sitio antes de crear la cuenta: se aplica al abrir. */
+  plantillaInicial?: string | null
 }
 
 /**
  * Editor de la tienda: a la izquierda las secciones de la página, el estilo y
  * los datos; a la derecha la tienda real actualizándose mientras se edita.
  */
-export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar }: Props) {
+export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantillaInicial }: Props) {
   const [borrador, setBorrador] = useState<DatosTienda>(() => borradorDe(tienda))
   const [inicial, setInicial] = useState(() => JSON.stringify(borradorDe(tienda)))
   const [abierto, setAbierto] = useState<string | null>(null)
@@ -54,6 +56,19 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar }: Props)
   const [subiendo, setSubiendo] = useState(0)
   const plan = useSesion().sesion.tenant.plan
   const limites = limitesDe(plan)
+
+  // Aplica la plantilla que eligió en el sitio, si su plan la incluye. Queda
+  // como cambio sin guardar: decide él si la guarda.
+  useEffect(() => {
+    const elegida = PLANTILLAS_TIENDA.find((opcion) => opcion.clave === plantillaInicial)
+    if (!elegida || !planIncluye(plan, elegida.plan)) return
+    setBorrador((actual) => ({
+      ...actual,
+      tema: { ...elegida.tema },
+      plantilla: elegida.estilo,
+      configuracionBloques: elegida.bloques(actual.nombre || 'Mi tienda'),
+    }))
+  }, [plantillaInicial, plan])
 
   const sucio = JSON.stringify(borrador) !== inicial
 
@@ -154,7 +169,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar }: Props)
           rel="noopener noreferrer"
           className="hidden h-[34px] items-center rounded-lg border border-sitio-borde px-[13px] text-[12.5px] text-sitio-suave transition-colors hover:bg-white/[0.06] hover:text-white sm:inline-flex"
         >
-          Ver tienda ↗
+          Ver tienda <ArrowUpRight aria-hidden="true" className="inline h-3 w-3 align-[-1px]" />
         </a>
       }
       lateral={
@@ -177,12 +192,18 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar }: Props)
                     title={incluida ? `Usar ${plantilla.nombre}` : `Desde el plan ${PLANES[plantilla.plan].nombre}`}
                     className="group flex flex-col gap-2 rounded-[10px] border border-sitio-borde bg-[#121214] p-2 text-left transition-colors enabled:hover:border-white/30 disabled:cursor-not-allowed"
                   >
-                    <span className={cn('block transition-opacity', !incluida && 'opacity-40')}>
-                      <MiniaturaPlantilla plantilla={plantilla} chica />
+                    <span
+                      className={cn(
+                        'relative block aspect-[16/10] overflow-hidden rounded-md bg-black transition-opacity',
+                        !incluida && 'opacity-40',
+                      )}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element -- miniatura estática */}
+                      <img src={plantilla.captura} alt="" className="h-full w-full object-cover object-top" />
                     </span>
                     <span className="flex items-center justify-between gap-1.5 px-0.5">
                       <span className="truncate text-[11.5px] text-white">{plantilla.nombre}</span>
-                      {!incluida && <Etiqueta tono="azul">{PLANES[plantilla.plan].nombre}</Etiqueta>}
+                      {!incluida && <PlanRequerido plan={PLANES[plantilla.plan].nombre} />}
                     </span>
                   </button>
                 )

@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { Instagram, MapPin } from 'lucide-react'
 import { Contenedor } from './Contenedor'
 
 const COLUMNAS = [
@@ -15,7 +16,7 @@ const COLUMNAS = [
     titulo: 'Empresa',
     enlaces: [
       { etiqueta: 'Sobre nosotros', href: '/sobre-nosotros' },
-      { etiqueta: 'Blog', href: '/blog' },
+      { etiqueta: 'Recursos', href: '/blog' },
       { etiqueta: 'Contacto', href: '/contacto' },
     ],
   },
@@ -40,12 +41,6 @@ export function PieSitio() {
 
   return (
     <footer className="relative overflow-hidden border-t border-sitio-borde bg-sitio-crema">
-      {/* Halo de marca: levanta el bloque oscuro para que no se lea como un
-          rectángulo negro y sin más. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-32 left-1/2 h-64 w-[42rem] -translate-x-1/2 rounded-full bg-sitio-azul/10 blur-3xl"
-      />
 
       <Contenedor className="relative pt-[72px] pb-9">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_repeat(4,minmax(0,1fr))]">
@@ -60,15 +55,7 @@ export function PieSitio() {
             </p>
 
             <p className="mt-5 flex items-center gap-2 text-sm text-white/55">
-              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 text-sitio-azul-claro">
-                <path
-                  d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  fill="none"
-                />
-                <circle cx="12" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.8" fill="none" />
-              </svg>
+              <MapPin aria-hidden="true" className="h-4 w-4 text-white/40" strokeWidth={1.6} />
               Colombia
             </p>
 
@@ -80,19 +67,7 @@ export function PieSitio() {
                 aria-label="Instagram de Llano Studio"
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-white/70 ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:bg-white hover:text-black hover:ring-white"
               >
-                <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4" fill="none">
-                  <rect
-                    x="3"
-                    y="3"
-                    width="18"
-                    height="18"
-                    rx="5"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  />
-                  <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.8" />
-                  <circle cx="17.2" cy="6.8" r="1.2" fill="currentColor" />
-                </svg>
+                <Instagram aria-hidden="true" className="h-4 w-4" strokeWidth={1.6} />
               </a>
             </div>
           </div>

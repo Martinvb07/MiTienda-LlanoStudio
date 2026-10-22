@@ -5,6 +5,7 @@ import rutasTiendas from './tiendas.rutas.js'
 import rutasProductos from './productos.rutas.js'
 import rutasPanel from './panel.rutas.js'
 import rutasAdmin from './admin.rutas.js'
+import rutasPlanes from './planes.rutas.js'
 
 const enrutador = Router()
 
@@ -16,6 +17,7 @@ enrutador.use('/salud', rutasSalud)
 // que reenvía con el Host de la API.
 enrutador.use('/panel', rutasPanel)
 enrutador.use('/admin', rutasAdmin)
+enrutador.use('/planes', rutasPlanes)
 
 // A partir de aquí, toda petición pasa por la resolución de tenant por Host.
 enrutador.use(resolverTenant)

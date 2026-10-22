@@ -6,13 +6,12 @@ interface Props {
 }
 
 /**
- * Encabezado de las páginas interiores: titular centrado y enorme sobre un
- * halo azul, que entra con la misma animación lenta de llanostudio.co.
+ * Encabezado de las páginas interiores, como en llanostudio.co: titular
+ * centrado y enorme sobre negro, que entra con la animación lenta de subida.
  */
 export function CabeceraPagina({ rotulo, titulo, descripcion, children }: Props) {
   return (
-    <section className="relative isolate overflow-hidden px-5 pt-[140px] text-center md:pt-[190px]">
-      <div aria-hidden="true" className="halo" />
+    <section className="relative px-5 pt-[140px] text-center md:pt-[190px]">
       <div className="entrada mx-auto flex max-w-4xl flex-col items-center">
         <span className="antetitulo mb-[22px]">{rotulo}</span>
         <h1 className="titulo-1 !text-[clamp(40px,6vw,84px)]">{titulo}</h1>

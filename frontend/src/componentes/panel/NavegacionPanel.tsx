@@ -168,11 +168,14 @@ export function NavegacionPanel() {
         <button
           type="button"
           onClick={abrirBuscador}
-          className="mx-4 mt-3 flex h-9 items-center gap-2 rounded-lg border border-sitio-borde px-3 text-[12.5px] text-sitio-tenue transition-colors hover:border-white/20 hover:text-sitio-suave"
+          className="group mx-4 mt-3 flex h-9 items-center gap-2.5 rounded-lg bg-white/[0.04] px-3 text-[12.5px] text-sitio-tenue ring-1 ring-sitio-borde transition-[background,color,box-shadow] duration-300 ring-inset hover:bg-white/[0.07] hover:text-sitio-suave"
         >
-          <Search aria-hidden="true" className="h-3.5 w-3.5" />
-          Buscar…
-          <kbd className="ml-auto rounded border border-white/12 px-1.5 text-[10px]">Ctrl K</kbd>
+          <Search aria-hidden="true" className="h-3.5 w-3.5 transition-transform duration-500 ease-salida group-hover:scale-110" />
+          <span className="flex-1 text-left">Buscar</span>
+          <span className="flex items-center gap-0.5">
+            <kbd className="grid h-5 min-w-5 place-items-center rounded-[5px] bg-white/[0.07] px-1 font-sans text-[10px] text-sitio-suave">Ctrl</kbd>
+            <kbd className="grid h-5 w-5 place-items-center rounded-[5px] bg-white/[0.07] font-sans text-[10px] text-sitio-suave">K</kbd>
+          </span>
         </button>
 
         <nav className="mt-5 flex flex-col gap-5 overflow-y-auto px-3">
@@ -223,18 +226,23 @@ export function NavegacionPanel() {
 
         <div className="mt-auto p-4">
           {!esPro && (
-            <div className="mb-4 rounded-[10px] border border-sitio-borde p-4">
-              <span className="antetitulo !text-[10px]">Tu plan</span>
-              <p className="mt-1.5 text-[22px] leading-none tracking-[-0.04em]">{plan.nombre}</p>
-              <p className="mt-2 text-[12px] leading-snug text-sitio-tenue">Más productos, tus colores y sin la marca de Mi Tienda.</p>
-              <Link href="/precios" target="_blank" className="group boton boton-primario boton-chico mt-4 !h-9 w-full">
-                Mejorar plan
+            <Link
+              href="/precios"
+              target="_blank"
+              className="group mb-3 flex items-center gap-3 rounded-[10px] px-3 py-2.5 ring-1 ring-sitio-borde transition-colors duration-300 ring-inset hover:bg-white/[0.04]"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-[9.5px] tracking-[0.16em] text-sitio-tenue uppercase">Tu plan</span>
+                <span className="block text-[14px] leading-tight tracking-[-0.01em]">{plan.nombre}</span>
+              </span>
+              <span className="inline-flex h-7 items-center gap-1 rounded-[3px] bg-white px-2.5 text-[10px] font-medium tracking-[0.09em] text-black uppercase transition-colors group-hover:bg-sitio-hover-primario">
+                Mejorar
                 <ArrowUpRight
                   aria-hidden="true"
-                  className="h-3.5 w-3.5 transition-transform duration-500 ease-salida group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  className="h-3 w-3 transition-transform duration-500 ease-salida group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                 />
-              </Link>
-            </div>
+              </span>
+            </Link>
           )}
 
           <div className="flex items-center gap-3 border-t border-sitio-borde pt-4">

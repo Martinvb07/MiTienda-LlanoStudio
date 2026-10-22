@@ -23,6 +23,21 @@ import {
   subirMedioPanel,
 } from '../controladores/panel.controlador.js'
 import {
+  actualizarCupon,
+  crearCupon,
+  eliminarCupon,
+  esquemaCupon,
+  listarCupones,
+} from '../controladores/cupones.controlador.js'
+import {
+  esquemaCategoria,
+  esquemaImportar,
+  esquemaLote,
+  importarProductos,
+  loteProductos,
+  renombrarCategoria,
+} from '../controladores/catalogo.controlador.js'
+import {
   actualizarPedidoPanel,
   esquemaActualizarPedido,
   listarPedidosPanel,
@@ -50,8 +65,17 @@ enrutador.put('/tienda', validar(esquemaTienda), actualizarTiendaPanel)
 
 enrutador.get('/productos', listarProductosPanel)
 enrutador.post('/productos', validar(esquemaProducto), crearProductoPanel)
+// Antes de /productos/:id, para que "lote" e "importar" no se lean como ids.
+enrutador.post('/productos/lote', validar(esquemaLote), loteProductos)
+enrutador.post('/productos/importar', validar(esquemaImportar), importarProductos)
+enrutador.put('/categorias', validar(esquemaCategoria), renombrarCategoria)
 enrutador.put('/productos/:id', validar(esquemaProducto), actualizarProductoPanel)
 enrutador.delete('/productos/:id', eliminarProductoPanel)
+
+enrutador.get('/cupones', listarCupones)
+enrutador.post('/cupones', validar(esquemaCupon), crearCupon)
+enrutador.put('/cupones/:id', validar(esquemaCupon), actualizarCupon)
+enrutador.delete('/cupones/:id', eliminarCupon)
 
 enrutador.get('/pedidos', listarPedidosPanel)
 enrutador.patch('/pedidos/:id', validar(esquemaActualizarPedido), actualizarPedidoPanel)

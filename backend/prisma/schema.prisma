@@ -161,6 +161,7 @@ model Tienda {
   tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   productos Producto[]
   pedidos   Pedido[]
+  cupones   Cupon[]
 
   @@map("tiendas")
 }
@@ -186,6 +187,14 @@ model Producto {
   presentacion      String?
 
   activo Boolean @default(true)
+  /// Sale primero en el catálogo y en las secciones "sólo destacados".
+  destacado Boolean @default(false)
+
+  /// Opciones del producto: [{ nombre: "Talla", valores: ["S", "M"] }].
+  opciones  Json @default("[]")
+  /// Una por combinación de valores: [{ id, nombre, valores, precio?, stock }].
+  /// Si hay variantes, `stock` es la suma de las suyas.
+  variantes Json @default("[]")
 
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
@@ -310,4 +319,40 @@ model OfertaPlan {
   actualizadoEn DateTime @updatedAt
 
   @@map("ofertas_planes")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Descuentos
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TipoCupon {
+  PORCENTAJE
+  FIJO
+  ENVIO_GRATIS
+}
+
+model Cupon {
+  id       String @id @default(cuid())
+  tiendaId String
+
+  /// En mayúsculas, como lo escribe el cliente: "BIENVENIDA10".
+  codigo String
+  tipo   TipoCupon
+  /// Porcentaje (1-100) o pesos, según el tipo. Ignorado en envío gratis.
+  valor  Decimal    @default(0) @db.Decimal(12, 2)
+  /// Subtotal mínimo para que aplique.
+  minimo Decimal?   @db.Decimal(12, 2)
+
+  usosMaximos Int?
+  usos        Int       @default(0)
+  venceEn     DateTime?
+  activo      Boolean   @default(true)
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  tienda Tienda @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+
+  @@unique([tiendaId, codigo])
+  @@map("cupones")
 }

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../config/prisma.js'
 import { Prisma } from '../generado/prisma/client.js'
 import { ErrorHttp, noEncontrado, solicitudInvalida } from '../utilidades/errores.js'
+import { evaluarCupon } from './cupones.controlador.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Esquemas
@@ -115,14 +116,37 @@ function serializarPedido(pedido: PedidoBd) {
   }
 }
 
-/** Descuento de un cupón sobre el subtotal. Lo completa la fase de cupones. */
-async function aplicarCupon(
-  _tx: Prisma.TransactionClient,
-  _tiendaId: string,
-  _codigo: string | undefined,
-  _subtotal: number,
-): Promise<{ descuento: number; codigo: string | null }> {
-  return { descuento: 0, codigo: null }
+interface Variante {
+  id: string
+  nombre: string
+  precio?: number | string | null
+  stock: number
+}
+
+const variantesDe = (valor: unknown): Variante[] => (Array.isArray(valor) ? (valor as Variante[]) : [])
+
+/**
+ * Mueve unidades de una variante dentro del JSON del producto. Bloquea la fila
+ * (FOR UPDATE) para que dos pedidos simultáneos no lean el mismo stock.
+ * `delta` negativo descuenta; devuelve false si no alcanza.
+ */
+async function moverStockVariante(
+  tx: Prisma.TransactionClient,
+  productoId: string,
+  varianteNombreOId: string,
+  delta: number,
+): Promise<boolean> {
+  const [fila] = await tx.$queryRaw<{ variantes: unknown }[]>`SELECT variantes FROM productos WHERE id = ${productoId} FOR UPDATE`
+  const variantes = variantesDe(fila?.variantes)
+  const variante = variantes.find((v) => v.id === varianteNombreOId || v.nombre === varianteNombreOId)
+  if (!variante) return delta > 0
+  if (variante.stock + delta < 0) return false
+  variante.stock += delta
+  await tx.producto.update({
+    where: { id: productoId },
+    data: { variantes: variantes as unknown as Prisma.InputJsonValue, stock: { increment: delta } },
+  })
+  return true
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -166,18 +190,27 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
   const ids = [...new Set([...lineas.values()].map((linea) => linea.productoId))]
   const productos = await prisma.producto.findMany({
     where: { tiendaId, id: { in: ids }, activo: true },
-    select: { id: true, nombre: true, precio: true, stock: true, fotos: true },
+    select: { id: true, nombre: true, precio: true, stock: true, fotos: true, variantes: true },
   })
   const porId = new Map(productos.map((producto) => [producto.id, producto]))
+
+  const sinStock = (nombre: string, quedan: number) =>
+    new ErrorHttp(409, quedan === 0 ? `"${nombre}" se agotó` : `Sólo quedan ${quedan} unidades de "${nombre}"`, 'SIN_STOCK')
 
   const items = [...lineas.values()].map((linea) => {
     const producto = porId.get(linea.productoId)
     if (!producto) throw solicitudInvalida('Uno de los productos del carrito ya no está disponible')
-    const precio = Number(producto.precio)
+    const variantes = variantesDe(producto.variantes)
+    // Un producto con variantes exige elegir una que exista.
+    const variante = variantes.length ? variantes.find((v) => v.id === linea.variante) : undefined
+    if (variantes.length && !variante) throw solicitudInvalida(`Elige una opción de "${producto.nombre}"`)
+    if (variante && variante.stock < linea.cantidad) throw sinStock(`${producto.nombre} (${variante.nombre})`, variante.stock)
+    const precio = Number(variante?.precio ?? producto.precio)
     return {
       productoId: producto.id,
+      varianteId: variante?.id ?? null,
       nombreProducto: producto.nombre,
-      variante: linea.variante ?? null,
+      variante: variante?.nombre ?? null,
       foto: producto.fotos[0] ?? null,
       cantidad: linea.cantidad,
       precioUnitario: precio,
@@ -185,22 +218,15 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
     }
   })
 
-  // Stock por producto, sumando sus líneas.
+  // Productos sin variantes: stock del producto, sumando sus líneas.
   const pedidoPorProducto = new Map<string, number>()
   for (const item of items) {
+    if (item.varianteId) continue
     pedidoPorProducto.set(item.productoId, (pedidoPorProducto.get(item.productoId) ?? 0) + item.cantidad)
   }
   for (const [productoId, cantidad] of pedidoPorProducto) {
     const producto = porId.get(productoId)!
-    if (producto.stock < cantidad) {
-      throw new ErrorHttp(
-        409,
-        producto.stock === 0
-          ? `"${producto.nombre}" se agotó`
-          : `Sólo quedan ${producto.stock} unidades de "${producto.nombre}"`,
-        'SIN_STOCK',
-      )
-    }
+    if (producto.stock < cantidad) throw sinStock(producto.nombre, producto.stock)
   }
 
   const subtotal = items.reduce((suma, item) => suma + item.subtotal, 0)
@@ -222,9 +248,30 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
             throw new ErrorHttp(409, `"${porId.get(productoId)!.nombre}" se agotó mientras comprabas`, 'SIN_STOCK')
           }
         }
+        for (const item of items) {
+          if (!item.varianteId) continue
+          if (!(await moverStockVariante(tx, item.productoId, item.varianteId, -item.cantidad))) {
+            throw new ErrorHttp(409, `"${item.nombreProducto} (${item.variante})" se agotó mientras comprabas`, 'SIN_STOCK')
+          }
+        }
 
-        const { descuento, codigo } = await aplicarCupon(tx, tiendaId, datos.cupon, subtotal)
-        const envio = calcularEnvio(ajustes, subtotal - descuento)
+        // El cupón se valida otra vez aquí y su uso se cuenta en la misma
+        // transacción: si se agota justo ahora, el pedido no sale con descuento.
+        let descuento = 0
+        let codigo: string | null = null
+        let envioGratis = false
+        if (datos.cupon) {
+          const cupon = await evaluarCupon(tx, tiendaId, datos.cupon, subtotal)
+          const { count } = await tx.cupon.updateMany({
+            where: { id: cupon.id, OR: [{ usosMaximos: null }, { usos: { lt: tx.cupon.fields.usosMaximos } }] },
+            data: { usos: { increment: 1 } },
+          })
+          if (count === 0) throw solicitudInvalida('Ese código ya se usó todas las veces')
+          descuento = cupon.descuento
+          codigo = cupon.codigo
+          envioGratis = cupon.envioGratis
+        }
+        const envio = envioGratis ? 0 : calcularEnvio(ajustes, subtotal - descuento)
         const ultimo = await tx.pedido.findFirst({
           where: { tiendaId },
           orderBy: { numero: 'desc' },
@@ -251,7 +298,7 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
             descuento,
             envio,
             total: subtotal - descuento + envio,
-            items: { create: items },
+            items: { create: items.map(({ varianteId: _varianteId, ...item }) => item) },
           },
           select: camposPedido,
         })
@@ -306,7 +353,10 @@ export async function actualizarPedidoPanel(req: Request, res: Response): Promis
   const pedido = await prisma.$transaction(async (tx) => {
     const actual = await tx.pedido.findFirst({
       where: { id, tiendaId },
-      select: { estado: true, items: { select: { productoId: true, cantidad: true, nombreProducto: true } } },
+      select: {
+        estado: true,
+        items: { select: { productoId: true, cantidad: true, nombreProducto: true, variante: true } },
+      },
     })
     if (!actual) throw noEncontrado('Ese pedido no existe')
 
@@ -314,7 +364,15 @@ export async function actualizarPedidoPanel(req: Request, res: Response): Promis
       const liberaba = SIN_STOCK_APARTADO.has(actual.estado)
       const libera = SIN_STOCK_APARTADO.has(datos.estado)
       for (const item of actual.items) {
-        if (!item.productoId) continue
+        // Sólo cruzar entre "apartado" y "liberado" mueve inventario.
+        if (!item.productoId || liberaba === libera) continue
+        if (item.variante) {
+          const ok = await moverStockVariante(tx, item.productoId, item.variante, libera ? item.cantidad : -item.cantidad)
+          if (!ok && !libera) {
+            throw new ErrorHttp(409, `No hay stock de "${item.nombreProducto} (${item.variante})" para reactivar el pedido`, 'SIN_STOCK')
+          }
+          continue
+        }
         if (!liberaba && libera) {
           await tx.producto.updateMany({
             where: { id: item.productoId, tiendaId },

@@ -167,7 +167,36 @@ export const esquemaProducto = z.object({
   categoria: z.string().trim().max(60).nullable().optional(),
   presentacion: z.string().trim().max(60).nullable().optional(),
   activo: z.boolean(),
+  // Opcionales a propósito: quien no los manda (ocultar, duplicar) no los borra.
+  destacado: z.boolean().optional(),
+  opciones: z
+    .array(
+      z.object({
+        nombre: z.string().trim().min(1).max(30),
+        valores: z.array(z.string().trim().min(1).max(30)).min(1).max(20),
+      }),
+    )
+    .max(3)
+    .optional(),
+  variantes: z
+    .array(
+      z.object({
+        id: z.string().min(1).max(40),
+        nombre: z.string().trim().min(1).max(100),
+        valores: z.record(z.string(), z.string()),
+        precio: precio.nullable().optional(),
+        stock: z.coerce.number().int().min(0).max(1_000_000),
+      }),
+    )
+    .max(150)
+    .optional(),
 })
+
+/** Con variantes, el stock del producto es la suma de las suyas. */
+function conStockDeVariantes<T extends { stock: number; variantes?: { stock: number }[] }>(datos: T): T {
+  if (!datos.variantes || datos.variantes.length === 0) return datos
+  return { ...datos, stock: datos.variantes.reduce((suma, variante) => suma + variante.stock, 0) }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sesión
@@ -446,6 +475,9 @@ const camposProducto = {
   categoria: true,
   presentacion: true,
   activo: true,
+  destacado: true,
+  opciones: true,
+  variantes: true,
   actualizadoEn: true,
 } as const
 
@@ -467,7 +499,7 @@ export async function listarProductosPanel(req: Request, res: Response): Promise
   const productos = await prisma.producto.findMany({
     where: { tiendaId },
     select: camposProducto,
-    orderBy: { creadoEn: 'desc' },
+    orderBy: [{ destacado: 'desc' }, { creadoEn: 'desc' }],
   })
   res.json({ productos: productos.map(serializar) })
 }
@@ -503,7 +535,12 @@ export async function crearProductoPanel(req: Request, res: Response): Promise<v
   await slugLibre(tiendaId, datos.slug)
 
   const producto = await prisma.producto.create({
-    data: { ...datos, categoria: datos.categoria || null, presentacion: datos.presentacion || null, tiendaId },
+    data: {
+      ...conStockDeVariantes(datos),
+      categoria: datos.categoria || null,
+      presentacion: datos.presentacion || null,
+      tiendaId,
+    },
     select: camposProducto,
   })
   res.status(201).json({ producto: serializar(producto) })
@@ -526,7 +563,11 @@ export async function actualizarProductoPanel(req: Request, res: Response): Prom
 
   const producto = await prisma.producto.update({
     where: { id },
-    data: { ...datos, categoria: datos.categoria || null, presentacion: datos.presentacion || null },
+    data: {
+      ...conStockDeVariantes(datos),
+      categoria: datos.categoria || null,
+      presentacion: datos.presentacion || null,
+    },
     select: camposProducto,
   })
   res.json({ producto: serializar(producto) })

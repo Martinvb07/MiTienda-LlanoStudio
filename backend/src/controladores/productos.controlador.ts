@@ -17,6 +17,9 @@ function serializarProducto(producto: {
   fotos: string[]
   categoria: string | null
   presentacion: string | null
+  destacado: boolean
+  opciones: unknown
+  variantes: unknown
 }) {
   return {
     ...producto,
@@ -36,6 +39,9 @@ const camposPublicos = {
   fotos: true,
   categoria: true,
   presentacion: true,
+  destacado: true,
+  opciones: true,
+  variantes: true,
 } as const
 
 /** Catálogo público de la tienda del Host actual. */
@@ -45,7 +51,7 @@ export async function listarProductosPublicos(req: Request, res: Response): Prom
   const productos = await prisma.producto.findMany({
     where: { tiendaId, activo: true },
     select: camposPublicos,
-    orderBy: { creadoEn: 'desc' },
+    orderBy: [{ destacado: 'desc' }, { creadoEn: 'desc' }],
     take: 200,
   })
 

@@ -123,7 +123,7 @@ export function NavegacionPanel() {
   return (
     <>
       {/* ── Escritorio ── */}
-      <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 flex-col border-r border-sitio-borde bg-sitio-lateral md:flex">
+      <aside className="sticky top-0 z-30 hidden h-screen w-[264px] shrink-0 flex-col border-r border-sitio-borde bg-sitio-lateral md:flex">
         <div className="flex items-center justify-between gap-3 px-5 pt-6">
           <Link href="/panel" className="flex items-center gap-[11px] pl-1">
             <LogoMarca className="h-7 w-auto" />

@@ -1,4 +1,4 @@
-import type { Bloque, TipoBloque } from '@/tipos/bloques'
+import type { Bloque, EstiloSeccion, TipoBloque } from '@/tipos/bloques'
 import type { AjustesTienda } from '@/tipos/tienda'
 
 /**
@@ -31,9 +31,28 @@ export interface LimitesPlan {
   itemsCategorias: number
   /** Grilla con tarjetas, 5 columnas y filtro por categoría. */
   grillaAvanzada: boolean
+  /** Hasta qué nivel se puede cambiar la apariencia de cada sección. */
+  estiloSeccion: NivelEstilo
+  /** Elementos por lista en las secciones nuevas (columnas, testimonios, fotos…). */
+  itemsLista: number
 }
 
-const TODOS_LOS_BLOQUES: readonly TipoBloque[] = [
+/**
+ * Qué del estilo de sección incluye cada nivel:
+ * - basico: fondo, color de texto, espaciado y ancla para el menú.
+ * - avanzado: además ancho, animación de entrada, forma de tarjeta y en qué
+ *   dispositivos se ve.
+ * - completo: además imagen de fondo con oscurecido.
+ */
+export type NivelEstilo = 'ninguno' | 'basico' | 'avanzado' | 'completo'
+
+const NIVELES: readonly NivelEstilo[] = ['ninguno', 'basico', 'avanzado', 'completo']
+
+export function nivelIncluye(actual: NivelEstilo, requerido: NivelEstilo) {
+  return NIVELES.indexOf(actual) >= NIVELES.indexOf(requerido)
+}
+
+const BLOQUES_EMPRENDE: readonly TipoBloque[] = [
   'anuncio',
   'hero',
   'carrusel',
@@ -42,7 +61,17 @@ const TODOS_LOS_BLOQUES: readonly TipoBloque[] = [
   'imagen-texto',
   'texto',
   'pie',
+  'espaciador',
+  'columnas',
+  'preguntas',
+  'galeria',
+  'banner-doble',
+  'llamado',
 ]
+
+const BLOQUES_NEGOCIO: readonly TipoBloque[] = [...BLOQUES_EMPRENDE, 'testimonios', 'video', 'logos', 'mapa']
+
+const TODOS_LOS_BLOQUES: readonly TipoBloque[] = [...BLOQUES_NEGOCIO, 'cuenta-regresiva']
 
 export const PLANES: Record<Plan, LimitesPlan> = {
   GRATIS: {
@@ -50,7 +79,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     productos: 10,
     fotosPorProducto: 4,
     secciones: 6,
-    bloques: ['hero', 'grilla-productos', 'texto', 'pie'],
+    bloques: ['hero', 'grilla-productos', 'texto', 'pie', 'espaciador'],
     temaLibre: false,
     quitarMarca: false,
     cabeceraCompleta: false,
@@ -61,13 +90,15 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     bannersCarrusel: 0,
     itemsCategorias: 0,
     grillaAvanzada: false,
+    estiloSeccion: 'ninguno',
+    itemsLista: 0,
   },
   EMPRENDE: {
     nombre: 'Emprende',
     productos: 100,
     fotosPorProducto: 8,
     secciones: 12,
-    bloques: TODOS_LOS_BLOQUES,
+    bloques: BLOQUES_EMPRENDE,
     temaLibre: true,
     quitarMarca: true,
     cabeceraCompleta: true,
@@ -78,13 +109,15 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     bannersCarrusel: 3,
     itemsCategorias: 6,
     grillaAvanzada: true,
+    estiloSeccion: 'basico',
+    itemsLista: 6,
   },
   NEGOCIO: {
     nombre: 'Negocio',
     productos: null,
     fotosPorProducto: 10,
     secciones: 30,
-    bloques: TODOS_LOS_BLOQUES,
+    bloques: BLOQUES_NEGOCIO,
     temaLibre: true,
     quitarMarca: true,
     cabeceraCompleta: true,
@@ -95,23 +128,27 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     bannersCarrusel: 8,
     itemsCategorias: 12,
     grillaAvanzada: true,
+    estiloSeccion: 'avanzado',
+    itemsLista: 12,
   },
   PRO: {
     nombre: 'Pro',
     productos: null,
     fotosPorProducto: 10,
-    secciones: 30,
+    secciones: 60,
     bloques: TODOS_LOS_BLOQUES,
     temaLibre: true,
     quitarMarca: true,
     cabeceraCompleta: true,
     buscador: true,
-    enlacesMenu: 8,
+    enlacesMenu: 12,
     whatsappFlotante: true,
     pieColumnas: true,
-    bannersCarrusel: 8,
-    itemsCategorias: 12,
+    bannersCarrusel: 15,
+    itemsCategorias: 24,
     grillaAvanzada: true,
+    estiloSeccion: 'completo',
+    itemsLista: 30,
   },
 }
 
@@ -155,10 +192,23 @@ export function ajustarAlPlan(
     ...(limites.pieColumnas ? {} : { direccion: undefined, correo: undefined, horario: undefined }),
   }
 
+  const items = limites.itemsLista
+
   const permitidos = bloques
     .filter((bloque) => limites.bloques.includes(bloque.tipo))
+    .map((bloque): Bloque => ({ ...bloque, estilo: estiloDelPlan(bloque.estilo, limites.estiloSeccion) }) as Bloque)
     .map((bloque): Bloque => {
       switch (bloque.tipo) {
+        case 'columnas':
+          return { ...bloque, props: { ...bloque.props, items: bloque.props.items.slice(0, items) } }
+        case 'galeria':
+          return { ...bloque, props: { ...bloque.props, imagenes: bloque.props.imagenes.slice(0, items) } }
+        case 'testimonios':
+        case 'preguntas':
+        case 'logos':
+          return { ...bloque, props: { ...bloque.props, items: bloque.props.items.slice(0, items) } } as Bloque
+        case 'banner-doble':
+          return { ...bloque, props: { ...bloque.props, items: bloque.props.items.slice(0, 3) } }
         case 'carrusel':
           return {
             ...bloque,
@@ -193,4 +243,18 @@ export function ajustarAlPlan(
     })
 
   return { ajustes: ajustados, bloques: permitidos }
+}
+
+/** Deja del estilo de una sección sólo lo que el nivel del plan incluye. */
+export function estiloDelPlan(estilo: EstiloSeccion | undefined, nivel: NivelEstilo): EstiloSeccion | undefined {
+  if (!estilo || nivel === 'ninguno') return undefined
+  const { fondo, texto, espaciado, ancla, ancho, animacion, dispositivos, forma, imagenFondo, oscurecer } = estilo
+  return {
+    fondo,
+    texto,
+    espaciado,
+    ancla,
+    ...(nivelIncluye(nivel, 'avanzado') ? { ancho, animacion, dispositivos, forma } : {}),
+    ...(nivelIncluye(nivel, 'completo') ? { imagenFondo, oscurecer } : {}),
+  }
 }

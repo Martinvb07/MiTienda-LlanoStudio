@@ -7,6 +7,7 @@ import { FichaProducto } from '@/componentes/tienda/FichaProducto'
 import { RenderizadorBloques } from '@/componentes/tienda/RenderizadorBloques'
 import { ajustarAlPlan, limitesDe } from '@/utilidades/planes'
 import { variablesTema } from '@/utilidades/tema'
+import { BarraSeccion } from './BarraSeccion'
 import type { MensajeVistaPrevia } from './mensajes'
 
 /**
@@ -69,8 +70,10 @@ export function LienzoVistaPrevia() {
           cabecera={cabecera}
           quitarMarca={limitesDe(tienda.plan).quitarMarca}
           ajustes={ajustes}
+          nombreTienda={tienda.nombre}
         />
       )}
+      {datos.editable && datos.vista !== 'producto' && <BarraSeccion bloques={bloques.filter((bloque) => bloque.visible !== false)} />}
       {ajustes.whatsappFlotante && ajustes.whatsapp && <BotonWhatsapp numero={ajustes.whatsapp} tienda={tienda.nombre} />}
     </div>
   )

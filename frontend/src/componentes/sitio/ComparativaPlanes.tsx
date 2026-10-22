@@ -29,6 +29,22 @@ const GRUPOS: { titulo: string; filas: Fila[] }[] = [
       { etiqueta: 'Carrusel de banners', valor: (l) => (l.bannersCarrusel ? `Hasta ${l.bannersCarrusel}` : false) },
       { etiqueta: 'Categorías con foto', valor: (l) => (l.itemsCategorias ? `Hasta ${l.itemsCategorias}` : false) },
       { etiqueta: 'Tarjetas de producto, 5 columnas y filtro', valor: (l) => l.grillaAvanzada },
+      { etiqueta: 'Tipos de sección disponibles', valor: (l) => l.bloques.length },
+      { etiqueta: 'Columnas, galería, preguntas y banners', valor: (l) => l.bloques.includes('galeria') },
+      { etiqueta: 'Testimonios, video, logos y mapa', valor: (l) => l.bloques.includes('video') },
+      { etiqueta: 'Cuenta regresiva para ofertas', valor: (l) => l.bloques.includes('cuenta-regresiva') },
+    ],
+  },
+  {
+    titulo: 'Estilo de cada sección',
+    filas: [
+      { etiqueta: 'Fondo, colores, espaciado y enlace desde el menú', valor: (l) => l.estiloSeccion !== 'ninguno' },
+      {
+        etiqueta: 'Animaciones, ancho, forma de tarjeta y por dispositivo',
+        valor: (l) => l.estiloSeccion === 'avanzado' || l.estiloSeccion === 'completo',
+      },
+      { etiqueta: 'Imagen de fondo en cualquier sección', valor: (l) => l.estiloSeccion === 'completo' },
+      { etiqueta: 'Elementos por sección (fotos, testimonios…)', valor: (l) => l.itemsLista || false },
     ],
   },
   {

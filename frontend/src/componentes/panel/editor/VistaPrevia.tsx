@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { MensajeVistaPrevia } from '@/app/panel/vista-previa/mensajes'
+import type { AccionSeccion, MensajeAccionVista, MensajeVistaPrevia } from '@/app/panel/vista-previa/mensajes'
 
 export type Dispositivo = 'escritorio' | 'movil'
 
@@ -19,9 +19,12 @@ const TELEFONO = { ancho: 390, alto: 844 }
 export function VistaPrevia({
   datos,
   dispositivo,
+  alAccion,
 }: {
   datos: MensajeVistaPrevia['datos']
   dispositivo: Dispositivo
+  /** Acciones pedidas desde la barra de cada sección dentro de la vista. */
+  alAccion?: (id: string, accion: AccionSeccion) => void
 }) {
   const panel = useRef<HTMLDivElement>(null)
   const marco = useRef<HTMLIFrameElement>(null)
@@ -46,13 +49,21 @@ export function VistaPrevia({
   }, [datos])
 
   const enviarRef = useRef(enviar)
+  const accionRef = useRef(alAccion)
   useEffect(() => {
     enviarRef.current = enviar
-  }, [enviar])
+    accionRef.current = alAccion
+  }, [enviar, alAccion])
 
   useEffect(() => {
     function alMensaje(evento: MessageEvent) {
-      if (evento.origin === window.location.origin && evento.data?.tipo === 'mt-vista-lista') {
+      if (evento.origin !== window.location.origin) return
+      if (evento.data?.tipo === 'mt-vista-accion') {
+        const { id, accion } = evento.data as MensajeAccionVista
+        accionRef.current?.(id, accion)
+        return
+      }
+      if (evento.data?.tipo === 'mt-vista-lista') {
         setLista(true)
         // Responde al iframe que saludó: al cambiar de dispositivo se monta
         // uno nuevo y también tiene que recibir el borrador.

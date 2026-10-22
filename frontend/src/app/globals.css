@@ -328,3 +328,47 @@ html:has(.marco-oscuro)::-webkit-scrollbar-corner,
   background-image: radial-gradient(currentColor 1px, transparent 1px);
   background-size: 22px 22px;
 }
+
+/* ── Estilo por sección de las tiendas (EnvolturaSeccion) ── */
+[data-espaciado='ninguno'] > section,
+[data-espaciado='ninguno'] > div:not([aria-hidden]) {
+  padding-block: 0 !important;
+}
+[data-espaciado='compacto'] > section {
+  padding-block: 2rem !important;
+}
+[data-espaciado='amplio'] > section {
+  padding-block: 7rem !important;
+}
+[data-ancho='estrecho'] > section {
+  max-width: 48rem !important;
+  margin-inline: auto;
+}
+[data-ancho='amplio'] > section {
+  max-width: 88rem !important;
+  margin-inline: auto;
+}
+[data-animacion] {
+  transition:
+    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-animacion][data-visible='false'] {
+  opacity: 0;
+}
+[data-animacion='deslizar'][data-visible='false'] {
+  transform: translateY(48px);
+}
+[data-animacion='zoom'][data-visible='false'] {
+  transform: scale(0.94);
+}
+[data-animacion='desenfoque'][data-visible='false'] {
+  filter: blur(12px);
+  transform: translateY(20px);
+}
+@keyframes mt-cinta {
+  to {
+    transform: translateX(-50%);
+  }
+}

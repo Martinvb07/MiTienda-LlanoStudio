@@ -9,6 +9,18 @@ import { GrillaProductos } from './bloques/GrillaProductos'
 import { ImagenTexto } from './bloques/ImagenTexto'
 import { Texto } from './bloques/Texto'
 import { Pie } from './bloques/Pie'
+import { Columnas } from './bloques/Columnas'
+import { Galeria } from './bloques/Galeria'
+import { Video } from './bloques/Video'
+import { Testimonios } from './bloques/Testimonios'
+import { Preguntas } from './bloques/Preguntas'
+import { CuentaRegresiva } from './bloques/CuentaRegresiva'
+import { Logos } from './bloques/Logos'
+import { BannerDoble } from './bloques/BannerDoble'
+import { Llamado } from './bloques/Llamado'
+import { Mapa } from './bloques/Mapa'
+import { Espaciador } from './bloques/Espaciador'
+import { EnvolturaSeccion } from './EnvolturaSeccion'
 import { categoriasDe } from './ListadoProductos'
 
 interface Props {
@@ -21,6 +33,7 @@ interface Props {
   quitarMarca?: boolean
   /** Contacto y redes: el pie los usa para armar sus columnas. */
   ajustes?: AjustesTienda
+  nombreTienda?: string
 }
 
 interface Contexto {
@@ -29,9 +42,10 @@ interface Contexto {
   quitarMarca: boolean
   ajustes: AjustesTienda
   categorias: string[]
+  nombreTienda?: string
 }
 
-function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categorias }: Contexto) {
+function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda }: Contexto) {
   switch (bloque.tipo) {
     case 'anuncio':
       return <Anuncio {...bloque.props} />
@@ -49,6 +63,28 @@ function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categ
       return <Texto {...bloque.props} />
     case 'pie':
       return <Pie {...bloque.props} quitarMarcaPermitido={quitarMarca} ajustes={ajustes} categorias={categorias} />
+    case 'columnas':
+      return <Columnas {...bloque.props} />
+    case 'galeria':
+      return <Galeria {...bloque.props} />
+    case 'video':
+      return <Video {...bloque.props} />
+    case 'testimonios':
+      return <Testimonios {...bloque.props} />
+    case 'preguntas':
+      return <Preguntas {...bloque.props} />
+    case 'cuenta-regresiva':
+      return <CuentaRegresiva {...bloque.props} />
+    case 'logos':
+      return <Logos {...bloque.props} />
+    case 'banner-doble':
+      return <BannerDoble {...bloque.props} />
+    case 'llamado':
+      return <Llamado {...bloque.props} whatsapp={ajustes.whatsapp} tienda={nombreTienda} />
+    case 'mapa':
+      return <Mapa {...bloque.props} direccion={bloque.props.direccion || ajustes.direccion || ''} />
+    case 'espaciador':
+      return <Espaciador {...bloque.props} />
     default:
       return null
   }
@@ -72,9 +108,10 @@ export function RenderizadorBloques({
   cabecera,
   quitarMarca = false,
   ajustes = {},
+  nombreTienda,
 }: Props) {
   const categorias = categoriasDe(productos)
-  const contexto: Contexto = { productos, moneda, quitarMarca, ajustes, categorias }
+  const contexto: Contexto = { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda }
   const visibles = bloques.filter((bloque) => bloque.visible !== false)
   const anunciosIniciales = visibles.findIndex((bloque) => bloque.tipo !== 'anuncio')
   const corte = anunciosIniciales === -1 ? visibles.length : anunciosIniciales
@@ -82,9 +119,11 @@ export function RenderizadorBloques({
   return (
     <>
       {visibles.map((bloque, indice) => (
-        <div key={bloque.id} data-bloque={bloque.id}>
+        <div key={bloque.id}>
           {indice === corte && cabecera}
-          {pintar(bloque, contexto)}
+          <EnvolturaSeccion id={bloque.id} estilo={bloque.estilo}>
+            {pintar(bloque, contexto)}
+          </EnvolturaSeccion>
         </div>
       ))}
       {corte === visibles.length && cabecera}

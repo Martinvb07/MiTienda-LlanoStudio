@@ -20,7 +20,26 @@ export interface LimitesPlan {
   quitarMarca: boolean
 }
 
-const TODOS_LOS_BLOQUES = ['anuncio', 'hero', 'carrusel', 'categorias', 'grilla-productos', 'imagen-texto', 'texto', 'pie'] as const
+const BLOQUES_EMPRENDE = [
+  'anuncio',
+  'hero',
+  'carrusel',
+  'categorias',
+  'grilla-productos',
+  'imagen-texto',
+  'texto',
+  'pie',
+  'espaciador',
+  'columnas',
+  'preguntas',
+  'galeria',
+  'banner-doble',
+  'llamado',
+] as const
+
+const BLOQUES_NEGOCIO = [...BLOQUES_EMPRENDE, 'testimonios', 'video', 'logos', 'mapa'] as const
+
+const TODOS_LOS_BLOQUES = [...BLOQUES_NEGOCIO, 'cuenta-regresiva'] as const
 
 export const PLANES: Record<Plan, LimitesPlan> = {
   GRATIS: {
@@ -28,7 +47,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     productos: 10,
     fotosPorProducto: 4,
     secciones: 6,
-    bloques: ['hero', 'grilla-productos', 'texto', 'pie'],
+    bloques: ['hero', 'grilla-productos', 'texto', 'pie', 'espaciador'],
     temaLibre: false,
     quitarMarca: false,
   },
@@ -37,7 +56,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     productos: 100,
     fotosPorProducto: 8,
     secciones: 12,
-    bloques: TODOS_LOS_BLOQUES,
+    bloques: BLOQUES_EMPRENDE,
     temaLibre: true,
     quitarMarca: true,
   },
@@ -46,7 +65,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     productos: null,
     fotosPorProducto: 10,
     secciones: 30,
-    bloques: TODOS_LOS_BLOQUES,
+    bloques: BLOQUES_NEGOCIO,
     temaLibre: true,
     quitarMarca: true,
   },
@@ -54,7 +73,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     nombre: 'Pro',
     productos: null,
     fotosPorProducto: 10,
-    secciones: 30,
+    secciones: 60,
     bloques: TODOS_LOS_BLOQUES,
     temaLibre: true,
     quitarMarca: true,
@@ -71,6 +90,17 @@ export const ETIQUETAS_BLOQUE_PLAN: Record<string, string> = {
   categorias: 'Categorías',
   texto: 'Texto',
   pie: 'Pie de página',
+  columnas: 'Columnas con íconos',
+  galeria: 'Galería de fotos',
+  video: 'Video',
+  testimonios: 'Testimonios',
+  preguntas: 'Preguntas frecuentes',
+  'cuenta-regresiva': 'Cuenta regresiva',
+  logos: 'Logos de marcas',
+  'banner-doble': 'Banners de promoción',
+  llamado: 'Llamado a la acción',
+  mapa: 'Mapa',
+  espaciador: 'Espacio o línea',
 }
 
 export function limitesDe(plan: string): LimitesPlan {

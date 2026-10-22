@@ -1,9 +1,11 @@
 'use client'
 
-import { ArrowUpRight } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ArrowUpRight, Redo2, Undo2 } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence } from 'motion/react'
+import type { AccionSeccion } from '@/app/panel/vista-previa/mensajes'
 import { guardarTienda, listarProductos, type DatosTienda } from '@/servicios/panel'
+import { duplicarBloque } from '@/tipos/bloques'
 import type { AjustesTienda, Producto, TemaTienda, Tienda } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
 import { ESTILOS_PREDEFINIDOS, FUENTES_TITULOS, RADIOS } from '@/utilidades/tema'
@@ -80,9 +82,108 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       .catch(() => setProductos([]))
   }, [])
 
+  // Historial para deshacer. Los cambios seguidos (escribir un título letra a
+  // letra) se agrupan en un solo paso si llegan con menos de 700 ms entre sí.
+  const pasado = useRef<DatosTienda[]>([])
+  const futuro = useRef<DatosTienda[]>([])
+  const ultimoCambio = useRef(0)
+  const [, setVersionHistorial] = useState(0)
+
+  const actualRef = useRef(borrador)
+  actualRef.current = borrador
+  const marcar = () => setVersionHistorial((version) => version + 1)
+
   const cambiar = useCallback((cambios: Partial<DatosTienda>) => {
+    const ahora = Date.now()
+    if (ahora - ultimoCambio.current > 700) {
+      pasado.current = [...pasado.current.slice(-79), actualRef.current]
+      futuro.current = []
+      marcar()
+    }
+    ultimoCambio.current = ahora
     setBorrador((actual) => ({ ...actual, ...cambios }))
   }, [])
+
+  const deshacer = useCallback(() => {
+    const anterior = pasado.current.at(-1)
+    if (!anterior) return
+    pasado.current = pasado.current.slice(0, -1)
+    futuro.current = [actualRef.current, ...futuro.current]
+    ultimoCambio.current = 0
+    setBorrador(anterior)
+    marcar()
+  }, [])
+
+  const rehacer = useCallback(() => {
+    const siguiente = futuro.current[0]
+    if (!siguiente) return
+    futuro.current = futuro.current.slice(1)
+    pasado.current = [...pasado.current, actualRef.current]
+    ultimoCambio.current = 0
+    setBorrador(siguiente)
+    marcar()
+  }, [])
+
+  // Ctrl/Cmd+Z y Ctrl/Cmd+Shift+Z (o Ctrl+Y). Dentro de un campo de texto se
+  // deja el deshacer propio del navegador.
+  useEffect(() => {
+    function alTeclear(evento: KeyboardEvent) {
+      if (!(evento.metaKey || evento.ctrlKey)) return
+      const objetivo = evento.target as HTMLElement
+      if (objetivo.closest('input, textarea, [contenteditable="true"]')) return
+      const tecla = evento.key.toLowerCase()
+      if (tecla === 'z' && !evento.shiftKey) {
+        evento.preventDefault()
+        deshacer()
+      } else if ((tecla === 'z' && evento.shiftKey) || tecla === 'y') {
+        evento.preventDefault()
+        rehacer()
+      }
+    }
+    window.addEventListener('keydown', alTeclear)
+    return () => window.removeEventListener('keydown', alTeclear)
+  }, [deshacer, rehacer])
+
+  /** Lo que se pide desde la barra de cada sección en la vista previa. */
+  const alAccionVista = useCallback(
+    (id: string, accion: AccionSeccion) => {
+      if (accion === 'elegir') {
+        setAbierto(id)
+        return
+      }
+      const bloques = borrador.configuracionBloques
+      const indice = bloques.findIndex((bloque) => bloque.id === id)
+      const bloque = bloques[indice]
+      if (!bloque) return
+      const copia = [...bloques]
+      switch (accion) {
+        case 'subir':
+        case 'bajar': {
+          const destino = indice + (accion === 'subir' ? -1 : 1)
+          if (destino < 0 || destino >= copia.length) return
+          copia.splice(indice, 1)
+          copia.splice(destino, 0, bloque)
+          break
+        }
+        case 'duplicar': {
+          if (copia.length >= limites.secciones) return
+          const nuevo = duplicarBloque(bloque)
+          copia.splice(indice + 1, 0, nuevo)
+          setAbierto(nuevo.id)
+          break
+        }
+        case 'ocultar':
+          copia[indice] = { ...bloque, visible: false }
+          break
+        case 'eliminar':
+          if (!confirm('¿Eliminar esta sección? Puedes deshacerlo con Ctrl+Z.')) return
+          copia.splice(indice, 1)
+          break
+      }
+      cambiar({ configuracionBloques: copia })
+    },
+    [borrador.configuracionBloques, cambiar, limites.secciones],
+  )
   const cambiarTema = (cambios: Partial<TemaTienda>) => cambiar({ tema: { ...borrador.tema, ...cambios } })
   const cambiarAjustes = (cambios: Partial<AjustesTienda>) => cambiar({ ajustes: { ...borrador.ajustes, ...cambios } })
   const categorias = useMemo(
@@ -147,6 +248,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       productos,
       vista: 'tienda' as const,
       enfocar: abierto,
+      editable: true,
     }),
     [borrador, productos, abierto, tienda.moneda, plan],
   )
@@ -171,6 +273,29 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       dispositivo={dispositivo}
       alCambiarDispositivo={setDispositivo}
       acciones={
+        <>
+        <span className="hidden items-center gap-0.5 md:flex">
+          <button
+            type="button"
+            onClick={deshacer}
+            disabled={pasado.current.length === 0}
+            aria-label="Deshacer"
+            title="Deshacer (Ctrl+Z)"
+            className="grid h-[34px] w-[34px] place-items-center rounded-lg text-sitio-suave transition-colors enabled:hover:bg-white/[0.07] enabled:hover:text-white disabled:opacity-30"
+          >
+            <Undo2 aria-hidden="true" className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={rehacer}
+            disabled={futuro.current.length === 0}
+            aria-label="Rehacer"
+            title="Rehacer (Ctrl+Shift+Z)"
+            className="grid h-[34px] w-[34px] place-items-center rounded-lg text-sitio-suave transition-colors enabled:hover:bg-white/[0.07] enabled:hover:text-white disabled:opacity-30"
+          >
+            <Redo2 aria-hidden="true" className="h-4 w-4" />
+          </button>
+        </span>
         <a
           href={urlTienda(subdominio)}
           target="_blank"
@@ -179,6 +304,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
         >
           Ver tienda <ArrowUpRight aria-hidden="true" className="inline h-3 w-3 align-[-1px]" />
         </a>
+        </>
       }
       lateral={
         <>
@@ -370,7 +496,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
           </Seccion>
         </>
       }
-      vista={<VistaPrevia datos={datosVista} dispositivo={dispositivo} />}
+      vista={<VistaPrevia datos={datosVista} dispositivo={dispositivo} alAccion={alAccionVista} />}
     />
   )
 }

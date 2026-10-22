@@ -2,9 +2,19 @@
 
 import type { ReactNode } from 'react'
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react'
-import type { Bloque, DiapositivaCarrusel, ItemCategoria } from '@/tipos/bloques'
+import type {
+  BannerPromo,
+  Bloque,
+  DiapositivaCarrusel,
+  ImagenGaleria,
+  ItemCategoria,
+  ItemColumna,
+  LogoMarca,
+  Pregunta,
+  Testimonio,
+} from '@/tipos/bloques'
 import { planMinimo, type LimitesPlan } from '@/utilidades/planes'
-import { Campo, CampoArea, Candado, Interruptor, Segmentado } from '../ui/basicos'
+import { CLASES_ENTRADA, Campo, CampoArea, Candado, Interruptor, Segmentado } from '../ui/basicos'
 import { ZonaImagen } from '../ui/imagenes'
 
 interface Props {
@@ -494,6 +504,364 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
         </>
       )
 
+    case 'columnas':
+      return (
+        <>
+          <Campo etiqueta="Título" valor={bloque.props.titulo ?? ''} alCambiar={(titulo) => alCambiar({ titulo })} marcador="Vacío = sin título" />
+          <Campo etiqueta="Bajada" valor={bloque.props.subtitulo ?? ''} alCambiar={(subtitulo) => alCambiar({ subtitulo })} />
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11.5px] text-sitio-suave">Columnas</span>
+              <Segmentado
+                opciones={[
+                  { valor: '2', etiqueta: '2' },
+                  { valor: '3', etiqueta: '3' },
+                  { valor: '4', etiqueta: '4' },
+                ]}
+                valor={String(bloque.props.columnas ?? 3) as '2' | '3' | '4'}
+                alCambiar={(columnas) => alCambiar({ columnas: Number(columnas) })}
+                chico
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11.5px] text-sitio-suave">Alineación</span>
+              <Segmentado opciones={ALINEACIONES} valor={bloque.props.alineacion ?? 'centro'} alCambiar={(alineacion) => alCambiar({ alineacion })} chico />
+            </div>
+          </div>
+          <ListaEditable
+            elementos={bloque.props.items}
+            alCambiar={(items) => alCambiar({ items })}
+            crear={(): ItemColumna => ({ id: nuevoId(), icono: '✨', titulo: 'Nuevo beneficio' })}
+            maximo={limites.itemsLista}
+            textoAgregar={`Agregar columna (hasta ${limites.itemsLista})`}
+            titulo={(item, indice) => item.titulo || `Columna ${indice + 1}`}
+          >
+            {(item, cambiar) => (
+              <>
+                <div className="grid grid-cols-[64px_1fr] gap-2.5">
+                  <Campo etiqueta="Ícono" valor={item.icono ?? ''} alCambiar={(icono) => cambiar({ icono })} maximo={4} marcador="🚚" />
+                  <Campo etiqueta="Título" valor={item.titulo} alCambiar={(titulo) => cambiar({ titulo })} maximo={60} />
+                </div>
+                <CampoArea etiqueta="Texto" valor={item.texto ?? ''} alCambiar={(texto) => cambiar({ texto })} filas={2} maximo={240} />
+                <ZonaImagen
+                  url={item.imagenUrl}
+                  alCambiar={(imagenUrl) => cambiar({ imagenUrl: imagenUrl ?? undefined })}
+                  proporcion="aspect-[4/3]"
+                  texto="Foto en vez de ícono (opcional)"
+                  {...subida}
+                />
+              </>
+            )}
+          </ListaEditable>
+        </>
+      )
+
+    case 'galeria':
+      return (
+        <>
+          <Campo etiqueta="Título" valor={bloque.props.titulo ?? ''} alCambiar={(titulo) => alCambiar({ titulo })} marcador="Vacío = sin título" />
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11.5px] text-sitio-suave">Disposición</span>
+            <Segmentado
+              opciones={[
+                { valor: 'cuadricula', etiqueta: 'Cuadrícula' },
+                { valor: 'mosaico', etiqueta: 'Mosaico' },
+                { valor: 'tira', etiqueta: 'Tira' },
+              ]}
+              valor={bloque.props.disposicion ?? 'cuadricula'}
+              alCambiar={(disposicion) => alCambiar({ disposicion })}
+              chico
+            />
+          </div>
+          {bloque.props.disposicion !== 'tira' && (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11.5px] text-sitio-suave">Columnas</span>
+              <Segmentado
+                opciones={[
+                  { valor: '2', etiqueta: '2' },
+                  { valor: '3', etiqueta: '3' },
+                  { valor: '4', etiqueta: '4' },
+                ]}
+                valor={String(bloque.props.columnas ?? 3) as '2' | '3' | '4'}
+                alCambiar={(columnas) => alCambiar({ columnas: Number(columnas) })}
+                chico
+              />
+            </div>
+          )}
+          <ListaEditable
+            elementos={bloque.props.imagenes}
+            alCambiar={(imagenes) => alCambiar({ imagenes })}
+            crear={(): ImagenGaleria => ({ id: nuevoId() })}
+            maximo={limites.itemsLista}
+            textoAgregar={`Agregar foto (hasta ${limites.itemsLista})`}
+            titulo={(_, indice) => `Foto ${indice + 1}`}
+          >
+            {(imagen, cambiar) => (
+              <div className="grid grid-cols-[88px_1fr] items-start gap-2.5">
+                <ZonaImagen url={imagen.url} alCambiar={(url) => cambiar({ url: url ?? undefined })} proporcion="aspect-square" texto="Foto" {...subida} />
+                <Campo etiqueta="Enlace (opcional)" valor={imagen.enlace ?? ''} alCambiar={(enlace) => cambiar({ enlace })} marcador="#productos" />
+              </div>
+            )}
+          </ListaEditable>
+        </>
+      )
+
+    case 'video':
+      return (
+        <>
+          <Campo etiqueta="Título" valor={bloque.props.titulo ?? ''} alCambiar={(titulo) => alCambiar({ titulo })} marcador="Vacío = sin título" />
+          <Campo
+            etiqueta="Enlace del video"
+            valor={bloque.props.url}
+            alCambiar={(url) => alCambiar({ url })}
+            marcador="https://youtube.com/watch?v=…"
+            ayuda="YouTube (también Shorts) o Vimeo."
+          />
+          <CampoArea etiqueta="Texto (opcional)" valor={bloque.props.texto ?? ''} alCambiar={(texto) => alCambiar({ texto })} filas={2} maximo={240} />
+        </>
+      )
+
+    case 'testimonios':
+      return (
+        <>
+          <Campo etiqueta="Título" valor={bloque.props.titulo ?? ''} alCambiar={(titulo) => alCambiar({ titulo })} marcador="Vacío = sin título" />
+          <ListaEditable
+            elementos={bloque.props.items}
+            alCambiar={(items) => alCambiar({ items })}
+            crear={(): Testimonio => ({ id: nuevoId(), nombre: 'Cliente', texto: '¡Excelente!', estrellas: 5 })}
+            maximo={limites.itemsLista}
+            textoAgregar={`Agregar testimonio (hasta ${limites.itemsLista})`}
+            titulo={(item, indice) => item.nombre || `Testimonio ${indice + 1}`}
+          >
+            {(item, cambiar) => (
+              <>
+                <CampoArea etiqueta="Lo que dijo" valor={item.texto} alCambiar={(texto) => cambiar({ texto })} filas={3} maximo={400} />
+                <div className="grid grid-cols-2 gap-2.5">
+                  <Campo etiqueta="Nombre" valor={item.nombre} alCambiar={(nombre) => cambiar({ nombre })} maximo={40} />
+                  <Campo etiqueta="Ciudad o detalle" valor={item.detalle ?? ''} alCambiar={(detalle) => cambiar({ detalle })} maximo={40} />
+                </div>
+                <div className="grid grid-cols-[72px_1fr] items-start gap-2.5">
+                  <ZonaImagen
+                    url={item.fotoUrl}
+                    alCambiar={(fotoUrl) => cambiar({ fotoUrl: fotoUrl ?? undefined })}
+                    proporcion="aspect-square"
+                    texto="Foto"
+                    {...subida}
+                  />
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[11.5px] text-sitio-suave">Estrellas</span>
+                    <Segmentado
+                      opciones={[
+                        { valor: '0', etiqueta: 'No' },
+                        { valor: '3', etiqueta: '3' },
+                        { valor: '4', etiqueta: '4' },
+                        { valor: '5', etiqueta: '5' },
+                      ]}
+                      valor={String(item.estrellas ?? 0) as '0' | '3' | '4' | '5'}
+                      alCambiar={(estrellas) => cambiar({ estrellas: Number(estrellas) })}
+                      chico
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+          </ListaEditable>
+        </>
+      )
+
+    case 'preguntas':
+      return (
+        <>
+          <Campo etiqueta="Título" valor={bloque.props.titulo ?? ''} alCambiar={(titulo) => alCambiar({ titulo })} marcador="Vacío = sin título" />
+          <ListaEditable
+            elementos={bloque.props.items}
+            alCambiar={(items) => alCambiar({ items })}
+            crear={(): Pregunta => ({ id: nuevoId(), pregunta: '¿Nueva pregunta?', respuesta: '' })}
+            maximo={limites.itemsLista}
+            textoAgregar={`Agregar pregunta (hasta ${limites.itemsLista})`}
+            titulo={(item, indice) => item.pregunta || `Pregunta ${indice + 1}`}
+          >
+            {(item, cambiar) => (
+              <>
+                <Campo etiqueta="Pregunta" valor={item.pregunta} alCambiar={(pregunta) => cambiar({ pregunta })} maximo={140} />
+                <CampoArea etiqueta="Respuesta" valor={item.respuesta} alCambiar={(respuesta) => cambiar({ respuesta })} filas={3} maximo={800} />
+              </>
+            )}
+          </ListaEditable>
+        </>
+      )
+
+    case 'cuenta-regresiva':
+      return (
+        <>
+          <Campo etiqueta="Título" valor={bloque.props.titulo} alCambiar={(titulo) => alCambiar({ titulo })} maximo={80} />
+          <Campo etiqueta="Bajada" valor={bloque.props.subtitulo ?? ''} alCambiar={(subtitulo) => alCambiar({ subtitulo })} maximo={160} />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11.5px] text-sitio-suave" htmlFor={`fecha-${bloque.id}`}>
+              Termina el
+            </label>
+            <input
+              id={`fecha-${bloque.id}`}
+              type="datetime-local"
+              value={bloque.props.fecha}
+              onChange={(evento) => alCambiar({ fecha: evento.target.value })}
+              className={CLASES_ENTRADA}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            <Campo etiqueta="Texto del botón" valor={bloque.props.textoBoton ?? ''} alCambiar={(textoBoton) => alCambiar({ textoBoton })} marcador="Vacío = sin botón" />
+            <Campo etiqueta="Enlace" valor={bloque.props.enlaceBoton ?? ''} alCambiar={(enlaceBoton) => alCambiar({ enlaceBoton })} marcador="#productos" />
+          </div>
+          <Campo
+            etiqueta="Al terminar dice"
+            valor={bloque.props.textoFinal ?? ''}
+            alCambiar={(textoFinal) => alCambiar({ textoFinal })}
+            maximo={120}
+          />
+        </>
+      )
+
+    case 'logos':
+      return (
+        <>
+          <Campo etiqueta="Título" valor={bloque.props.titulo ?? ''} alCambiar={(titulo) => alCambiar({ titulo })} marcador="Vacío = sin título" />
+          <Interruptor activo={bloque.props.animado ?? false} alCambiar={(animado) => alCambiar({ animado })}>
+            Pasan en una cinta animada
+          </Interruptor>
+          <ListaEditable
+            elementos={bloque.props.items}
+            alCambiar={(items) => alCambiar({ items })}
+            crear={(): LogoMarca => ({ id: nuevoId(), nombre: 'Marca' })}
+            maximo={limites.itemsLista}
+            textoAgregar={`Agregar marca (hasta ${limites.itemsLista})`}
+            titulo={(item, indice) => item.nombre || `Marca ${indice + 1}`}
+          >
+            {(item, cambiar) => (
+              <div className="grid grid-cols-[88px_1fr] items-start gap-2.5">
+                <ZonaImagen
+                  url={item.imagenUrl}
+                  alCambiar={(imagenUrl) => cambiar({ imagenUrl: imagenUrl ?? undefined })}
+                  proporcion="aspect-[3/2]"
+                  texto="Logo"
+                  {...subida}
+                />
+                <Campo etiqueta="Nombre" valor={item.nombre ?? ''} alCambiar={(nombre) => cambiar({ nombre })} maximo={40} ayuda="Se lee si no hay logo." />
+              </div>
+            )}
+          </ListaEditable>
+        </>
+      )
+
+    case 'banner-doble':
+      return (
+        <>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11.5px] text-sitio-suave">Alto</span>
+            <Segmentado
+              opciones={[
+                { valor: 'bajo', etiqueta: 'Bajo' },
+                { valor: 'medio', etiqueta: 'Medio' },
+                { valor: 'alto', etiqueta: 'Alto' },
+              ]}
+              valor={bloque.props.alto ?? 'medio'}
+              alCambiar={(alto) => alCambiar({ alto })}
+              chico
+            />
+          </div>
+          <ListaEditable
+            elementos={bloque.props.items}
+            alCambiar={(items) => alCambiar({ items })}
+            crear={(): BannerPromo => ({ id: nuevoId(), titulo: 'Nuevo banner' })}
+            maximo={3}
+            textoAgregar="Agregar banner (hasta 3)"
+            titulo={(item, indice) => item.titulo || `Banner ${indice + 1}`}
+          >
+            {(item, cambiar) => (
+              <>
+                <ZonaImagen
+                  url={item.imagenUrl}
+                  alCambiar={(imagenUrl) => cambiar({ imagenUrl: imagenUrl ?? undefined })}
+                  proporcion="aspect-[16/10]"
+                  texto="Imagen (vacío = color de marca)"
+                  {...subida}
+                />
+                <Campo etiqueta="Título" valor={item.titulo ?? ''} alCambiar={(titulo) => cambiar({ titulo })} maximo={60} />
+                <Campo etiqueta="Subtítulo" valor={item.subtitulo ?? ''} alCambiar={(subtitulo) => cambiar({ subtitulo })} maximo={120} />
+                <div className="grid grid-cols-2 gap-2.5">
+                  <Campo etiqueta="Texto del botón" valor={item.textoBoton ?? ''} alCambiar={(textoBoton) => cambiar({ textoBoton })} />
+                  <Campo etiqueta="Enlace" valor={item.enlace ?? ''} alCambiar={(enlace) => cambiar({ enlace })} marcador="#productos" />
+                </div>
+              </>
+            )}
+          </ListaEditable>
+        </>
+      )
+
+    case 'llamado':
+      return (
+        <>
+          <Campo etiqueta="Título" valor={bloque.props.titulo} alCambiar={(titulo) => alCambiar({ titulo })} maximo={90} />
+          <CampoArea etiqueta="Texto" valor={bloque.props.texto ?? ''} alCambiar={(texto) => alCambiar({ texto })} filas={2} maximo={240} />
+          <Campo etiqueta="Texto del botón" valor={bloque.props.textoBoton ?? ''} alCambiar={(textoBoton) => alCambiar({ textoBoton })} marcador="Vacío = sin botón" />
+          <Interruptor activo={bloque.props.aWhatsapp ?? false} alCambiar={(aWhatsapp) => alCambiar({ aWhatsapp })}>
+            El botón abre WhatsApp
+            <small className="block text-[11.5px] text-sitio-tenue">Usa el número de “Contacto y redes”.</small>
+          </Interruptor>
+          {!bloque.props.aWhatsapp && (
+            <Campo etiqueta="Enlace del botón" valor={bloque.props.enlaceBoton ?? ''} alCambiar={(enlaceBoton) => alCambiar({ enlaceBoton })} marcador="#productos" />
+          )}
+        </>
+      )
+
+    case 'mapa':
+      return (
+        <>
+          <Campo etiqueta="Título" valor={bloque.props.titulo ?? ''} alCambiar={(titulo) => alCambiar({ titulo })} marcador="Vacío = sin título" />
+          <Campo
+            etiqueta="Dirección"
+            valor={bloque.props.direccion}
+            alCambiar={(direccion) => alCambiar({ direccion })}
+            marcador="Calle 10 # 5-20, Villavicencio"
+            ayuda="Vacío = la de “Contacto y redes”."
+          />
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11.5px] text-sitio-suave">Alto</span>
+            <Segmentado
+              opciones={[
+                { valor: 'bajo', etiqueta: 'Bajo' },
+                { valor: 'medio', etiqueta: 'Medio' },
+                { valor: 'alto', etiqueta: 'Alto' },
+              ]}
+              valor={bloque.props.alto ?? 'medio'}
+              alCambiar={(alto) => alCambiar({ alto })}
+              chico
+            />
+          </div>
+        </>
+      )
+
+    case 'espaciador':
+      return (
+        <>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11.5px] text-sitio-suave">Alto</span>
+            <Segmentado
+              opciones={[
+                { valor: 'chico', etiqueta: 'Chico' },
+                { valor: 'medio', etiqueta: 'Medio' },
+                { valor: 'grande', etiqueta: 'Grande' },
+              ]}
+              valor={bloque.props.alto ?? 'medio'}
+              alCambiar={(alto) => alCambiar({ alto })}
+              chico
+            />
+          </div>
+          <Interruptor activo={bloque.props.linea ?? false} alCambiar={(linea) => alCambiar({ linea })}>
+            Con línea divisoria
+          </Interruptor>
+        </>
+      )
+
     default:
       return null
   }
@@ -520,6 +888,25 @@ export function resumenBloque(bloque: Bloque): string {
       return bloque.props.titulo || bloque.props.contenido
     case 'pie':
       return bloque.props.texto ?? ''
+    case 'columnas':
+    case 'testimonios':
+    case 'preguntas':
+    case 'logos':
+      return bloque.props.titulo || `${bloque.props.items.length} elementos`
+    case 'galeria':
+      return bloque.props.titulo || `${bloque.props.imagenes.length} fotos`
+    case 'video':
+      return bloque.props.titulo || bloque.props.url || 'Sin enlace'
+    case 'cuenta-regresiva':
+      return bloque.props.fecha ? `Hasta ${new Date(bloque.props.fecha).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}` : 'Sin fecha'
+    case 'banner-doble':
+      return bloque.props.items.map((item) => item.titulo).filter(Boolean).join(' · ')
+    case 'llamado':
+      return bloque.props.titulo
+    case 'mapa':
+      return bloque.props.direccion
+    case 'espaciador':
+      return bloque.props.linea ? 'Con línea' : 'Espacio'
     default:
       return ''
   }

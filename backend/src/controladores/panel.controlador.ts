@@ -60,6 +60,9 @@ const esquemaBloque = z.object({
   tipo: z.string().min(1).max(40),
   props: z.record(z.string(), z.unknown()),
   visible: z.boolean().optional(),
+  // La apariencia de la sección: se recorta al plan al pintar, no al guardar,
+  // para que bajar de plan no borre lo configurado.
+  estilo: z.record(z.string(), z.unknown()).optional(),
 })
 
 const urlMedio = z.string().max(600)
@@ -89,7 +92,7 @@ export const esquemaTienda = z.object({
   logoUrl: urlMedio.nullable(),
   plantilla: z.string().max(40),
   tema: esquemaTema,
-  configuracionBloques: z.array(esquemaBloque).max(40),
+  configuracionBloques: z.array(esquemaBloque).max(60),
   ajustes: esquemaAjustes.default({}),
   publicada: z.boolean(),
 })

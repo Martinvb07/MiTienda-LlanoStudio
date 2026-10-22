@@ -1,6 +1,7 @@
 'use client'
 
 import { useId, useState, type ReactNode } from 'react'
+import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChevronDown, Lock } from 'lucide-react'
 import { cn } from '@/utilidades/clases'
@@ -406,14 +407,12 @@ export function Candado({ plan, children }: { plan: string; children?: ReactNode
       <Lock aria-hidden="true" className="mt-[3px] h-3 w-3 shrink-0" strokeWidth={2} />
       <span>
         {children} Incluido desde {plan}.{' '}
-        <a
-          href="/precios"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href="/panel/plan"
           className="text-sitio-suave underline decoration-white/20 underline-offset-2 transition-colors hover:text-white"
         >
           Ver planes
-        </a>
+        </Link>
       </span>
     </p>
   )

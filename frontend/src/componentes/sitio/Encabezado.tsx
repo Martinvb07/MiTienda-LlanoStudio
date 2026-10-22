@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/react'
@@ -9,6 +9,7 @@ import { Flecha } from './Boton'
 import { cn } from '@/utilidades/clases'
 import { LogoMarca } from '@/componentes/comunes/LogoMarca'
 import { BotonTema } from '@/componentes/comunes/BotonTema'
+import { leerToken } from '@/servicios/panel'
 
 const ENLACES = [
   { href: '/caracteristicas', etiqueta: 'Producto' },
@@ -27,6 +28,10 @@ export function Encabezado() {
   const [menuAbierto, setMenuAbierto] = useState(false)
   const rutaActual = usePathname()
   const { scrollY } = useScroll()
+  // Con la sesión del panel abierta no tiene sentido ofrecer ingresar o crear
+  // otra cuenta: se ofrece volver al panel.
+  const [conSesion, setConSesion] = useState(false)
+  useEffect(() => setConSesion(Boolean(leerToken())), [])
 
   useMotionValueEvent(scrollY, 'change', (valor) => setDesplazado(valor > 12))
 
@@ -68,16 +73,25 @@ export function Encabezado() {
 
           <div className="hidden items-center gap-5 justify-self-end md:flex">
             <BotonTema />
-            <Link
-              href="/panel/ingresar"
-              className="text-[11.5px] font-medium tracking-[0.1em] text-white/60 uppercase transition-colors hover:text-white"
-            >
-              Ingresar
-            </Link>
-            <Link href="/panel/crear-cuenta" className="group boton boton-primario boton-chico">
-              Crear tienda
-              <Flecha className="h-[15px] w-[15px] transition-transform duration-500 ease-salida group-hover:translate-x-1" />
-            </Link>
+            {conSesion ? (
+              <Link href="/panel" className="group boton boton-primario boton-chico">
+                Ir a mi panel
+                <Flecha className="h-[15px] w-[15px] transition-transform duration-500 ease-salida group-hover:translate-x-1" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/panel/ingresar"
+                  className="text-[11.5px] font-medium tracking-[0.1em] text-white/60 uppercase transition-colors hover:text-white"
+                >
+                  Ingresar
+                </Link>
+                <Link href="/panel/crear-cuenta" className="group boton boton-primario boton-chico">
+                  Crear tienda
+                  <Flecha className="h-[15px] w-[15px] transition-transform duration-500 ease-salida group-hover:translate-x-1" />
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
@@ -131,20 +145,28 @@ export function Encabezado() {
                   {enlace.etiqueta}
                 </Link>
               ))}
-              <Link
-                href="/panel/ingresar"
-                onClick={() => setMenuAbierto(false)}
-                className="border-b border-white/5 py-[13px] text-[17px] text-sitio-suave"
-              >
-                Ingresar
-              </Link>
-              <Link
-                href="/panel/crear-cuenta"
-                onClick={() => setMenuAbierto(false)}
-                className="boton boton-primario mt-5"
-              >
-                Crear mi tienda
-              </Link>
+              {conSesion ? (
+                <Link href="/panel" onClick={() => setMenuAbierto(false)} className="boton boton-primario mt-5">
+                  Ir a mi panel
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/panel/ingresar"
+                    onClick={() => setMenuAbierto(false)}
+                    className="border-b border-white/5 py-[13px] text-[17px] text-sitio-suave"
+                  >
+                    Ingresar
+                  </Link>
+                  <Link
+                    href="/panel/crear-cuenta"
+                    onClick={() => setMenuAbierto(false)}
+                    className="boton boton-primario mt-5"
+                  >
+                    Crear mi tienda
+                  </Link>
+                </>
+              )}
             </Contenedor>
           </motion.div>
         )}

@@ -61,7 +61,7 @@ export async function TablaPrecios() {
                 </ul>
 
                 <Boton
-                  href={plan.plan === 'PRO' ? '/contacto' : '/panel/crear-cuenta'}
+                  href={plan.plan === 'PRO' ? '/contacto' : plan.precio === 0 ? '/panel/crear-cuenta' : '/panel/crear-cuenta?plan=1'}
                   variante={plan.destacado ? 'primario' : 'secundario'}
                   tamano="normal"
                   className="mt-7 w-full"

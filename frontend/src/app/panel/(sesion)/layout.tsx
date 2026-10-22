@@ -1,4 +1,5 @@
 import { MarcoSesion } from '@/componentes/panel/MarcoSesion'
+import { RedirigirConSesion } from '@/componentes/panel/RedirigirConSesion'
 
 /**
  * Marco de las pantallas de sesión: pantalla partida, con una tienda real a
@@ -6,5 +7,10 @@ import { MarcoSesion } from '@/componentes/panel/MarcoSesion'
  * productos grandes. Siempre con salida de vuelta al inicio.
  */
 export default function LayoutSesion({ children }: { children: React.ReactNode }) {
-  return <MarcoSesion>{children}</MarcoSesion>
+  return (
+    <MarcoSesion>
+      <RedirigirConSesion />
+      {children}
+    </MarcoSesion>
+  )
 }

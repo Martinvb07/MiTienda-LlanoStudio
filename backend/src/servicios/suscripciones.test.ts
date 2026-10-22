@@ -1,11 +1,13 @@
 import { createHash, createHmac } from 'node:crypto'
 import { beforeAll, describe, expect, it } from 'vitest'
+import type * as Servicio from './suscripciones.servicio.js'
 
 process.env.DATABASE_URL ??= 'postgresql://prueba:prueba@localhost:5432/prueba'
 process.env.JWT_SECRETO ??= 'secreto-de-pruebas-123'
 process.env.BOLD_LLAVE_SECRETA = 'llave-secreta'
 
-let servicio: typeof import('./suscripciones.servicio.js')
+// Se importa después de fijar las variables de entorno, que entorno.ts lee al cargar.
+let servicio: typeof Servicio
 beforeAll(async () => {
   servicio = await import('./suscripciones.servicio.js')
 })

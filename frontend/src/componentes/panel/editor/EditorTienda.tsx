@@ -99,7 +99,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       ...actual,
       tema: { ...elegida.tema },
       plantilla: elegida.estilo,
-      configuracionBloques: elegida.bloques(actual.nombre || 'Mi tienda'),
+      configuracionBloques: elegida.bloques(actual.nombre || 'Mi negocio'),
       ajustes: ajustesConPlantilla(actual.ajustes, elegida),
     }))
   }, [plantillaInicial, plan])
@@ -265,7 +265,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     cambiar({
       tema: { ...plantilla.tema },
       plantilla: plantilla.estilo,
-      configuracionBloques: plantilla.bloques(borrador.nombre || 'Mi tienda'),
+      configuracionBloques: plantilla.bloques(borrador.nombre || 'Mi negocio'),
       ajustes: ajustesConPlantilla(borrador.ajustes, plantilla),
     })
     setAbierto(null)
@@ -371,7 +371,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     <MarcoEditor
       volver="Panel"
       alCerrar={cerrar}
-      titulo={borrador.nombre || 'Mi tienda'}
+      titulo={borrador.nombre || 'Mi negocio'}
       estado={borrador.publicada ? { texto: 'Publicada', tono: 'verde' } : { texto: 'Borrador', tono: 'ambar' }}
       sucio={sucio}
       guardadoReciente={guardadoReciente}

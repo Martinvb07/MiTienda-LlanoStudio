@@ -440,7 +440,7 @@ export const PROPS_INICIALES: { [T in TipoBloque]: Extract<Bloque, { tipo: T }>[
     lado: 'izquierda',
   },
   texto: { contenido: 'Escribe aquí el texto de la sección.' },
-  pie: { texto: '© Mi tienda', mostrarRedes: true },
+  pie: { texto: '© Mi negocio', mostrarRedes: true },
   columnas: {
     titulo: 'Por qué comprarnos',
     columnas: 3,

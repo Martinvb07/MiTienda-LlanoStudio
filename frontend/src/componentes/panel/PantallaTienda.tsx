@@ -16,7 +16,7 @@ import { VistaPrevia } from './editor/VistaPrevia'
 import { useSesion } from './SesionPanel'
 import { Aviso, BotonPanel, Etiqueta } from './ui/basicos'
 
-/** "Mi tienda": cómo se ve hoy, sus datos, y la entrada al editor. */
+/** "Mi sitio": cómo se ve hoy, sus datos, y la entrada al editor. */
 export function PantallaTienda() {
   const router = useRouter()
   const parametros = useSearchParams()
@@ -65,7 +65,7 @@ export function PantallaTienda() {
   return (
     <>
       <CabeceraPanel
-        titulo="Mi tienda"
+        titulo="Mi sitio"
         descripcion="Diseña tu página con secciones, cambia colores y letras, y mira el resultado en vivo."
         accion={
           <BotonPanel variante="primario" onClick={() => setEditando(true)} className="h-10 px-5">

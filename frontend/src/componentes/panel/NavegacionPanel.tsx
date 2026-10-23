@@ -155,7 +155,7 @@ export function NavegacionPanel() {
         >
           <SelloTienda className="h-10 w-10" />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-[13.5px] font-medium">{sesion.tienda?.nombre ?? 'Mi tienda'}</span>
+            <span className="block truncate text-[13.5px] font-medium">{sesion.tienda?.nombre ?? 'Mi negocio'}</span>
             <span className="mt-1.5 flex items-center gap-2 text-[10px] tracking-[0.12em] text-sitio-tenue uppercase">
               <span
                 aria-hidden="true"
@@ -285,7 +285,7 @@ export function NavegacionPanel() {
         <Link href="/panel" className="flex min-w-0 items-center gap-2.5">
           <SelloTienda className="h-8 w-8" />
           <span className="min-w-0">
-            <span className="block truncate text-[14px] leading-tight font-medium">{sesion.tienda?.nombre ?? 'Mi tienda'}</span>
+            <span className="block truncate text-[14px] leading-tight font-medium">{sesion.tienda?.nombre ?? 'Mi negocio'}</span>
             <span className="mt-0.5 flex items-center gap-2 text-[9.5px] tracking-[0.12em] text-sitio-tenue uppercase">
               <span aria-hidden="true" className="estado-punto" data-tono={publicada ? 'verde' : 'ambar'} />
               {publicada ? 'En línea' : 'Borrador'}

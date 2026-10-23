@@ -97,7 +97,7 @@ export function LienzoVistaPrevia() {
           />
         )}
         {datos.editable && datos.vista !== 'producto' && (
-          <BarraSeccion bloques={bloques.filter((bloque) => bloque.visible !== false)} />
+          <BarraSeccion bloques={bloques.filter((bloque) => bloque.visible !== false)} plan={tienda.plan} />
         )}
         {datos.editable && datos.vista !== 'producto' && <EditorLienzo externo={datos.lienzoElegido ?? null} />}
         {ajustes.whatsappFlotante && ajustes.whatsapp && (

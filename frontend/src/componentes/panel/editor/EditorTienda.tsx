@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowUpRight, LayoutTemplate, Palette, Redo2, Settings2, Undo2 } from 'lucide-react'
+import { ArrowUpRight, LayoutTemplate, Move, Palette, Redo2, Settings2, Undo2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { AccionSeccion, MensajeLienzo } from '@/app/panel/vista-previa/mensajes'
@@ -23,6 +23,8 @@ import { CamposVentas } from './CamposVentas'
 import { ListaBloques } from './ListaBloques'
 import { ContextoEditorLienzo } from './ContextoLienzo'
 import { cambiarCapa, conCaja, duplicarElemento } from '@/utilidades/lienzo'
+import { aLienzo, avisoConversion, esConvertible } from '@/utilidades/editarLibre'
+import { medirSecciones } from '@/utilidades/medirSecciones'
 import { MarcoEditor, useAtajosEditor } from './MarcoEditor'
 import { VistaPrevia, type Dispositivo } from './VistaPrevia'
 import { SALIR_SIN_GUARDAR, confirmar } from '../ui/confirmar'
@@ -177,6 +179,10 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
   /** Lo que se pide desde la barra de cada sección en la vista previa. */
   const alAccionVista = useCallback(
     (id: string, accion: AccionSeccion) => {
+      if (accion === 'libre') {
+        void editarLibre([id])
+        return
+      }
       if (accion === 'elegir') {
         // Desde cualquier pestaña: lleva a la lista de secciones con ésta abierta.
         setPestana('pagina')
@@ -219,6 +225,9 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       }
       cambiar({ configuracionBloques: copia })
     },
+    // editarLibre se declara más abajo: toma el borrador de actualRef, y el plan y los
+    // productos que usa no cambian mientras el editor está abierto.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [borrador.configuracionBloques, cambiar, limites.secciones],
   )
   const cambiarTema = (cambios: Partial<TemaTienda>) => cambiar({ tema: { ...borrador.tema, ...cambios } })
@@ -336,6 +345,57 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     },
     [cambiarLienzo],
   )
+
+  // ── Editar libre: una sección (o toda la página) pasa a Lienzo libre ──
+  const conLienzo = limites.bloques.includes('lienzo')
+  const [convirtiendo, setConvirtiendo] = useState(false)
+
+  async function editarLibre(ids: string[] | 'todas') {
+    if (!conLienzo) return
+    const bloques = actualRef.current.configuracionBloques
+    const elegidos = bloques.filter((bloque) => (ids === 'todas' || ids.includes(bloque.id)) && esConvertible(bloque.tipo))
+    if (elegidos.length === 0) return
+    const avisos = elegidos.map(avisoConversion).filter(Boolean)
+    const si = await confirmar({
+      titulo:
+        ids === 'todas'
+          ? `¿Pasar ${elegidos.length === 1 ? 'la sección' : `las ${elegidos.length} secciones`} a edición libre?`
+          : `¿Editar libre "${ETIQUETAS_BLOQUE[elegidos[0]!.tipo]}"?`,
+      mensaje: [
+        ids === 'todas'
+          ? 'Las secciones que se pueden pasar a edición libre cambian; las de productos, categorías y demás quedan igual. Puedes volver atrás con Ctrl+Z.'
+          : 'Esta sección pasa a edición libre. Puedes volver atrás con Ctrl+Z.',
+        ...avisos,
+      ].join(' '),
+      confirmar: 'Editar libre',
+    })
+    if (!si) return
+
+    // Se mide la sección pintada (a 1440 y a 390) para dejar cada pieza donde estaba.
+    setConvirtiendo(true)
+    const actual = actualRef.current
+    const medidas = await medirSecciones(
+      { ...datosVista, tienda: { ...datosVista.tienda, tema: actual.tema, configuracionBloques: actual.configuracionBloques } },
+      elegidos,
+    ).catch(() => new Map())
+    setConvirtiendo(false)
+    const tema = actualRef.current.tema
+    const nuevos = new Map(elegidos.map((bloque) => [bloque.id, aLienzo(bloque, tema, medidas.get(bloque.id))]))
+    // Un solo paso en el historial: ni se junta con lo anterior ni con lo que siga.
+    ultimoCambio.current = 0
+    cambiar({
+      configuracionBloques: actualRef.current.configuracionBloques.map((bloque) => nuevos.get(bloque.id) ?? bloque),
+    })
+    ultimoCambio.current = 0
+
+    const primero = nuevos.get(elegidos[0]!.id)
+    setPestana('pagina')
+    setPlantillaEditada('portada')
+    setAbierto(primero?.id ?? null)
+    const pieza = primero?.props.elementos.find((elemento) => elemento.tipo !== 'imagen' && elemento.tipo !== 'forma') ?? primero?.props.elementos[0]
+    setLienzoElegido(primero && pieza ? { bloque: primero.id, elemento: pieza.id } : null)
+  }
+  const convertibles = borrador.configuracionBloques.filter((bloque) => esConvertible(bloque.tipo)).length
 
   async function cerrar() {
     if (sucio && !(await confirmar(SALIR_SIN_GUARDAR))) return
@@ -467,6 +527,21 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
           </div>
 
           <AnimatePresence>{error && <Aviso>{error}</Aviso>}</AnimatePresence>
+          <AnimatePresence>
+            {convirtiendo && (
+              <motion.p
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3, ease: CURVA }}
+                role="status"
+                className="flex items-center gap-2 rounded-lg border border-sitio-borde bg-white/[0.03] px-3 py-2.5 text-[12px] text-sitio-suave"
+              >
+                <span aria-hidden="true" className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                Pasando a edición libre…
+              </motion.p>
+            )}
+          </AnimatePresence>
 
           {pestana === 'pagina' && plantillaEditada === 'portada' && (
             <>
@@ -485,7 +560,32 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
                   limites={limites}
                   categorias={categorias}
                   esquemas={esquemas}
+                  alEditarLibre={(id) => void editarLibre([id])}
                 />
+                {convertibles > 0 && (
+                  <div className="mt-1 flex flex-col gap-2 border-t border-sitio-borde pt-3">
+                    <button
+                      type="button"
+                      disabled={!conLienzo || convirtiendo}
+                      onClick={() => void editarLibre('todas')}
+                      className="flex h-9 items-center justify-center gap-2 rounded-lg border border-sitio-borde text-[12.5px] text-sitio-suave transition-colors enabled:hover:border-white/30 enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {convirtiendo ? (
+                        <span aria-hidden="true" className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                      ) : (
+                        <Move aria-hidden="true" className="h-3.5 w-3.5" />
+                      )}
+                      {convirtiendo ? 'Pasando a edición libre…' : 'Editar toda la página en libre'}
+                    </button>
+                    {conLienzo ? (
+                      <p className="text-[11.5px] leading-relaxed text-sitio-tenue">
+                        Pasa a edición libre {convertibles === 1 ? 'la sección que se puede' : `las ${convertibles} secciones que se pueden`}; las de productos y demás quedan igual.
+                      </p>
+                    ) : (
+                      <Candado plan={planMinimo((opcion) => opcion.bloques.includes('lienzo'))}>Mueve y estira cada pieza de tus secciones.</Candado>
+                    )}
+                  </div>
+                )}
               </Seccion>
             </>
           )}

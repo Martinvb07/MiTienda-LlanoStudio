@@ -21,7 +21,8 @@ export interface MensajeVistaPrevia {
   }
 }
 
-export type AccionSeccion = 'elegir' | 'subir' | 'bajar' | 'duplicar' | 'ocultar' | 'eliminar'
+/** 'libre' pasa la sección a Lienzo libre (Editar libre). */
+export type AccionSeccion = 'elegir' | 'libre' | 'subir' | 'bajar' | 'duplicar' | 'ocultar' | 'eliminar'
 
 /** Lo que el iframe le devuelve al editor cuando se toca una sección. */
 export interface MensajeAccionVista {

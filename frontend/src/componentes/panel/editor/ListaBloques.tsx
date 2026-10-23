@@ -27,7 +27,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronDown, Copy, Eye, EyeOff, GripVertical, Lock, Plus, Trash2, X } from 'lucide-react'
+import { ChevronDown, Copy, Eye, EyeOff, GripVertical, Lock, Move, Plus, Trash2, X } from 'lucide-react'
 import {
   DESCRIPCIONES_BLOQUE,
   ETIQUETAS_BLOQUE,
@@ -45,6 +45,7 @@ import { CURVA, Candado, PlanRequerido, Segmentado } from '../ui/basicos'
 import { CamposBloque, resumenBloque } from './CamposBloque'
 import { CamposEstilo } from './CamposEstilo'
 import { confirmar } from '../ui/confirmar'
+import { motivoNoLibre } from '@/utilidades/editarLibre'
 
 interface Props {
   bloques: Bloque[]
@@ -58,6 +59,8 @@ interface Props {
   categorias?: string[]
   /** Esquemas de color del tema, para la pestaña Estilo. */
   esquemas: EsquemaColor[]
+  /** Pasa la sección a Lienzo libre (pide confirmación el editor). */
+  alEditarLibre?: (id: string) => void
 }
 
 const PREFIJO_NUEVO = 'nuevo:'
@@ -99,6 +102,7 @@ export function ListaBloques({
   limites,
   categorias,
   esquemas,
+  alEditarLibre,
 }: Props) {
   const [paleta, setPaleta] = useState(false)
   const [arrastrando, setArrastrando] = useState<string | null>(null)
@@ -206,6 +210,7 @@ export function ListaBloques({
                 limites={limites}
                 categorias={categorias}
                 esquemas={esquemas}
+                alEditarLibre={alEditarLibre && (() => alEditarLibre(bloque.id))}
               />
             ))}
           </ul>
@@ -351,6 +356,7 @@ function FilaBloque({
   limites,
   categorias,
   esquemas,
+  alEditarLibre,
 }: {
   bloque: Bloque
   abierto: boolean
@@ -367,6 +373,7 @@ function FilaBloque({
   limites: LimitesPlan
   categorias?: string[]
   esquemas: EsquemaColor[]
+  alEditarLibre?: () => void
 }) {
   // Misma curva y duración que el reordenamiento del editor de llanostudio.co.
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -394,6 +401,10 @@ function FilaBloque({
   const conEstilo = Boolean(bloque.estilo && Object.values(bloque.estilo).some((valor) => valor !== undefined))
   const boton =
     'grid h-7 w-7 shrink-0 place-items-center rounded-md text-sitio-tenue transition-colors hover:bg-white/10 hover:text-white'
+  // Editar libre: el botón sólo en lo que pasa a lienzo; con candado si el plan no trae el lienzo.
+  const noLibre = motivoNoLibre(bloque.tipo)
+  const conLienzo = limites.bloques.includes('lienzo')
+  const planLienzo = planMinimo((plan) => plan.bloques.includes('lienzo'))
 
   return (
     <li
@@ -431,6 +442,18 @@ function FilaBloque({
           <span className="block truncate text-[11.5px] text-sitio-tenue">{resumenBloque(bloque) || '—'}</span>
         </button>
 
+        {alEditarLibre && !noLibre && (
+          <button
+            type="button"
+            onClick={conLienzo ? alEditarLibre : undefined}
+            aria-disabled={!conLienzo}
+            aria-label="Editar libre"
+            title={conLienzo ? 'Editar libre: mueve y estira cada pieza' : `Editar libre: desde el plan ${planLienzo}`}
+            className={cn(boton, !conLienzo && 'cursor-not-allowed hover:bg-transparent hover:text-sitio-tenue')}
+          >
+            {conLienzo ? <Move aria-hidden="true" className="h-3.5 w-3.5" /> : <Lock aria-hidden="true" className="h-3 w-3" />}
+          </button>
+        )}
         {alDuplicar && (
           <button type="button" onClick={alDuplicar} aria-label="Duplicar sección" title="Duplicar" className={boton}>
             <Copy aria-hidden="true" className="h-3.5 w-3.5" />
@@ -503,6 +526,25 @@ function FilaBloque({
                   alSubiendo={alSubiendo}
                   esquemas={esquemas}
                 />
+              )}
+              {alEditarLibre && bloque.tipo !== 'lienzo' && (
+                noLibre ? (
+                  <p className="flex items-start gap-2 text-[11.5px] leading-relaxed text-sitio-tenue">
+                    <Move aria-hidden="true" className="mt-[3px] h-3 w-3 shrink-0" />
+                    {noLibre}
+                  </p>
+                ) : conLienzo ? (
+                  <button
+                    type="button"
+                    onClick={alEditarLibre}
+                    className="flex h-8 items-center justify-center gap-2 rounded-lg border border-sitio-borde text-[12px] text-sitio-suave transition-colors hover:border-white/30 hover:text-white"
+                  >
+                    <Move aria-hidden="true" className="h-3.5 w-3.5" />
+                    Editar libre
+                  </button>
+                ) : (
+                  <Candado plan={planLienzo}>Editar libre: mueve y estira cada pieza de esta sección.</Candado>
+                )
               )}
               <button
                 type="button"

@@ -253,3 +253,29 @@ location /api/tiempo-real {
 Luego `nginx -t && systemctl reload nginx`. Si algún día la API corre con más
 de una instancia en PM2, el chat necesita *sticky sessions* (o un adaptador de
 Redis para socket.io).
+
+## Actualizar el VPS con un solo comando
+
+```bash
+cd /var/www/llanostudio/sitios/mitienda
+sudo bash deploy/actualizar-vps.sh
+```
+
+Trae lo último de `main`, instala lo que falte (pg_dump, certbot), completa
+`backend/.env` sin pisar lo que ya tienes, saca un respaldo de la base de datos
+en `/var/backups/mitienda`, migra, construye, agrega el bloque del chat a nginx,
+programa los dominios propios con HTTPS y recarga PM2. Se puede correr las veces
+que quieras.
+
+## Dominios propios (www.tutienda.com)
+
+`deploy/dominios-propios.sh` corre cada 5 minutos (lo programa el comando de
+arriba en `/etc/cron.d/mitienda-dominios`). Toma los dominios verificados de las
+tiendas con plan Negocio o Pro, les crea el sitio en
+`/etc/nginx/sites-available/mitienda-dominios.conf` y les saca el certificado
+con certbot. Para ver qué está haciendo:
+
+```bash
+sudo bash deploy/dominios-propios.sh --ver
+tail -f /var/log/mitienda-dominios.log
+```

@@ -127,6 +127,7 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
     }
   }
   const porWhatsapp = Boolean(ajustes.pedidosWhatsapp && ajustes.whatsapp)
+  const pagoEnLinea = metodo === 'wompi' || metodo === 'epayco' || metodo === 'bold'
   const faltaMinimo = ajustes.pedidoMinimo && subtotal < ajustes.pedidoMinimo ? ajustes.pedidoMinimo - subtotal : 0
 
   async function confirmar(evento: FormEvent<HTMLFormElement>) {
@@ -313,14 +314,20 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
             porWhatsapp ? 'bg-[#25d366] text-white' : 'bg-marca text-marca-contraste'
           }`}
         >
-          {porWhatsapp && <MessageCircle aria-hidden="true" className="h-5 w-5" />}
+          {pagoEnLinea ? (
+            <CreditCard aria-hidden="true" className="h-5 w-5" />
+          ) : (
+            porWhatsapp && <MessageCircle aria-hidden="true" className="h-5 w-5" />
+          )}
           {enviando
             ? 'Enviando tu pedido…'
             : faltaMinimo > 0
               ? `Faltan ${formatearPrecio(faltaMinimo, moneda)} para el pedido mínimo`
-              : porWhatsapp
-                ? 'Pedir por WhatsApp'
-                : `Confirmar pedido · ${formatearPrecio(total, moneda)}`}
+              : pagoEnLinea
+                ? `Ir a pagar · ${formatearPrecio(total, moneda)}`
+                : porWhatsapp
+                  ? 'Pedir por WhatsApp'
+                  : `Confirmar pedido · ${formatearPrecio(total, moneda)}`}
         </button>
       </form>
 

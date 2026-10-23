@@ -17,7 +17,7 @@ export default function PaginaPlantillas() {
     <>
       <CabeceraPagina
         rotulo="Plantillas"
-        titulo="Nueve tiendas listas para hacer tuyas"
+        titulo="Diez tiendas listas para hacer tuyas"
         descripcion="Elige el diseño que más se parezca a lo que vendes y cambia lo que quieras. Puedes saltar de una plantilla a otra sin perder productos ni textos."
       >
         <Boton href="/panel/crear-cuenta" flecha>

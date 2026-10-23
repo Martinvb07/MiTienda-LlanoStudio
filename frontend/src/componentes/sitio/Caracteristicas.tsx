@@ -113,7 +113,7 @@ export function Caracteristicas() {
 
 const PASOS = [
   { titulo: 'Crea tu cuenta', texto: 'Tu nombre, tu correo y la dirección de tu tienda. Dos minutos.' },
-  { titulo: 'Elige una plantilla', texto: 'Nueve diseños listos por rubro, del catálogo sencillo al supermercado en línea. Cambia colores, letra y textos a tu gusto.' },
+  { titulo: 'Elige una plantilla', texto: 'Diez diseños listos por rubro, del catálogo sencillo al supermercado en línea. Cambia colores, letra y textos a tu gusto.' },
   { titulo: 'Sube tus productos', texto: 'Arrastra las fotos, pon el precio y el inventario. Se ven al instante.' },
   { titulo: 'Publica y comparte', texto: 'Actívala con un clic y comparte tu dirección por WhatsApp e Instagram.' },
 ]

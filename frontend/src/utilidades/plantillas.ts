@@ -20,8 +20,8 @@ export interface PlantillaTienda {
   plan: Plan
   /** Valor que se guarda en Tienda.plantilla: un estilo predefinido o la clave propia. */
   estilo: string
-  /** El tema base, y el color del precio si la plantilla lo trae. */
-  tema: TemaBase & Pick<TemaTienda, 'colorPrecio'>
+  /** El tema base, y los detalles de tarjetas y títulos si la plantilla los trae. */
+  tema: TemaBase & Pick<TemaTienda, 'colorPrecio' | 'tarjetaProporcion' | 'tarjetaSegundaFoto' | 'titulosMayusculas'>
   destacada?: boolean
   /** Columnas de la grilla, para la miniatura. */
   columnas: 2 | 3 | 4
@@ -210,6 +210,68 @@ export const PLANTILLAS_TIENDA: PlantillaTienda[] = [
       { id: id('grilla'), tipo: 'grilla-productos', props: { titulo: 'Lo más vendido', limite: 10, columnas: 5, estilo: 'tarjeta' } },
       { id: id('grilla'), tipo: 'grilla-productos', props: { titulo: 'Yoga y pilates', limite: 5, columnas: 5, estilo: 'tarjeta', categoria: 'Yoga y pilates' } },
       { id: id('grilla'), tipo: 'grilla-productos', props: { titulo: 'Relojes', limite: 5, columnas: 5, estilo: 'tarjeta', categoria: 'Relojes' } },
+      pie(nombre),
+    ],
+  },
+  {
+    clave: 'ropa',
+    nombre: 'Ropa y Moda',
+    categoria: 'Ropa para hombre y mujer',
+    plan: 'EMPRENDE',
+    estilo: 'ropa',
+    tema: {
+      colorMarca: '#111111',
+      colorContraste: '#ffffff',
+      colorFondo: '#ffffff',
+      colorTexto: '#111111',
+      fuenteTitulos: 'moderna',
+      radio: '0rem',
+      titulosMayusculas: true,
+      tarjetaProporcion: 'vertical',
+      tarjetaSegundaFoto: true,
+    },
+    columnas: 4,
+    captura: '/ejemplos/sabana-wear.webp',
+    capturaMovil: '/ejemplos/sabana-wear-movil.webp',
+    ejemplo: 'Sabana Wear',
+    descripcion:
+      'Para marcas de ropa: banners altos, categorías por prenda, fotos verticales que cambian a la segunda al pasar el cursor y doble banner de campaña.',
+    ajustes: {
+      cabecera: 'completa',
+      buscador: true,
+      colorBarra: '#8a6a48',
+      menu: [aCategoria('Chaquetas'), aCategoria('Buzos'), aCategoria('Camisetas'), aCategoria('Esqueletos')],
+      botonDestacado: { texto: 'Nueva colección', enlace: '/buscar' },
+    },
+    bloques: (nombre) => [
+      { id: id('anuncio'), tipo: 'anuncio', props: { texto: 'Envío gratis desde $199.000 · Cambios gratis durante 30 días' } },
+      {
+        id: id('carrusel'),
+        tipo: 'carrusel',
+        props: {
+          intervalo: 5,
+          alto: 'alto',
+          diapositivas: [
+            { id: id('d'), titulo: 'Nueva colección', subtitulo: `Lo último de ${nombre} ya está en línea.`, textoBoton: 'Comprar ahora', enlaceBoton: '/buscar' },
+            { id: id('d'), titulo: 'Abrígate con estilo', subtitulo: 'Chaquetas y buzos para las mañanas frías.', textoBoton: 'Ver chaquetas', enlaceBoton: '/categoria/chaquetas' },
+            { id: id('d'), titulo: 'Hecha para moverte', subtitulo: 'Camisetas y esqueletos que respiran contigo.', textoBoton: 'Ver camisetas', enlaceBoton: '/categoria/camisetas' },
+          ],
+        },
+      },
+      { id: id('categorias'), tipo: 'categorias', props: { titulo: 'Compra por prenda', items: categorias('Chaquetas', 'Buzos', 'Camisetas', 'Esqueletos') } },
+      { id: id('grilla'), tipo: 'grilla-productos', props: { titulo: 'Nuevos ingresos', limite: 8, columnas: 4 } },
+      {
+        id: id('banner-doble'),
+        tipo: 'banner-doble',
+        props: {
+          alto: 'medio',
+          items: [
+            { id: id('b'), titulo: 'Para entrenar', subtitulo: 'Esqueletos y camisetas livianas', textoBoton: 'Ver más', enlace: '/categoria/esqueletos' },
+            { id: id('b'), titulo: 'Básicos de siempre', subtitulo: 'Buzos que combinan con todo', textoBoton: 'Ver buzos', enlace: '/categoria/buzos' },
+          ],
+        },
+      },
+      { id: id('grilla'), tipo: 'grilla-productos', props: { titulo: 'Chaquetas', limite: 4, columnas: 4, categoria: 'Chaquetas' } },
       pie(nombre),
     ],
   },

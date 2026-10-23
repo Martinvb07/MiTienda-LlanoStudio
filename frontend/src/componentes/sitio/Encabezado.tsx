@@ -1,18 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/react'
+import { ChevronDown } from 'lucide-react'
 import { Contenedor } from './Contenedor'
 import { Flecha } from './Boton'
+import { PRODUCTOS } from './productos'
 import { cn } from '@/utilidades/clases'
 import { LogoMarca } from '@/componentes/comunes/LogoMarca'
 import { BotonTema } from '@/componentes/comunes/BotonTema'
 import { leerToken } from '@/servicios/panel'
 
 const ENLACES = [
-  { href: '/caracteristicas', etiqueta: 'Producto' },
   { href: '/plantillas', etiqueta: 'Plantillas' },
   { href: '/precios', etiqueta: 'Precios' },
   { href: '/blog', etiqueta: 'Recursos' },
@@ -57,6 +58,7 @@ export function Encabezado() {
           </Link>
 
           <nav className="hidden items-center gap-0.5 md:flex">
+            <MenuProductos rutaActual={rutaActual} />
             {ENLACES.map((enlace) => (
               <Link
                 key={enlace.href}
@@ -87,7 +89,7 @@ export function Encabezado() {
                   Ingresar
                 </Link>
                 <Link href="/panel/crear-cuenta" className="group boton boton-primario boton-chico">
-                  Crear tienda
+                  Empezar gratis
                   <Flecha className="h-[15px] w-[15px] transition-transform duration-500 ease-salida group-hover:translate-x-1" />
                 </Link>
               </>
@@ -135,6 +137,21 @@ export function Encabezado() {
             className="overflow-hidden border-t border-sitio-borde bg-black/95 md:hidden"
           >
             <Contenedor className="flex flex-col pt-3 pb-7">
+              <p className="pt-2 pb-1 text-[11px] tracking-[0.14em] text-white/40 uppercase">Productos</p>
+              {PRODUCTOS.map((producto) => (
+                <Link
+                  key={producto.href}
+                  href={producto.href}
+                  onClick={() => setMenuAbierto(false)}
+                  className="flex items-center gap-3 border-b border-white/5 py-[13px] text-[17px] text-sitio-suave transition-colors hover:text-white"
+                >
+                  <producto.icono aria-hidden="true" strokeWidth={1.5} className="h-[18px] w-[18px] text-white/45" />
+                  {producto.nombre}
+                  {!producto.disponible && (
+                    <span className="ml-auto text-[10.5px] tracking-[0.14em] text-white/35 uppercase">Pronto</span>
+                  )}
+                </Link>
+              ))}
               {ENLACES.map((enlace) => (
                 <Link
                   key={enlace.href}
@@ -163,7 +180,7 @@ export function Encabezado() {
                     onClick={() => setMenuAbierto(false)}
                     className="boton boton-primario mt-5"
                   >
-                    Crear mi tienda
+                    Empezar gratis
                   </Link>
                 </>
               )}
@@ -172,5 +189,89 @@ export function Encabezado() {
         )}
       </AnimatePresence>
     </header>
+  )
+}
+
+/**
+ * Las tres formas de usar Mi Sitio en un panel que baja del menú. Se abre al
+ * pasar el cursor o con clic, y se cierra con Escape, al salir o al navegar.
+ */
+function MenuProductos({ rutaActual }: { rutaActual: string }) {
+  const [abierto, setAbierto] = useState(false)
+  const caja = useRef<HTMLDivElement>(null)
+  const activo = PRODUCTOS.some((producto) => rutaActual.startsWith(producto.href))
+
+  useEffect(() => setAbierto(false), [rutaActual])
+
+  useEffect(() => {
+    if (!abierto) return
+    const alTeclear = (evento: KeyboardEvent) => evento.key === 'Escape' && setAbierto(false)
+    const alTocar = (evento: PointerEvent) => {
+      if (!caja.current?.contains(evento.target as Node)) setAbierto(false)
+    }
+    window.addEventListener('keydown', alTeclear)
+    window.addEventListener('pointerdown', alTocar)
+    return () => {
+      window.removeEventListener('keydown', alTeclear)
+      window.removeEventListener('pointerdown', alTocar)
+    }
+  }, [abierto])
+
+  return (
+    <div ref={caja} className="relative" onMouseEnter={() => setAbierto(true)} onMouseLeave={() => setAbierto(false)}>
+      <button
+        type="button"
+        aria-expanded={abierto}
+        aria-haspopup="true"
+        onClick={() => setAbierto((actual) => !actual)}
+        className={cn(
+          'inline-flex h-9 items-center gap-1.5 px-3.5 text-[11.5px] font-medium tracking-[0.1em] uppercase transition-colors duration-300',
+          activo || abierto ? 'text-white' : 'text-white/60 hover:text-white',
+        )}
+      >
+        Productos
+        <ChevronDown
+          aria-hidden="true"
+          strokeWidth={1.6}
+          className={cn('h-3.5 w-3.5 transition-transform duration-500 ease-salida', abierto && 'rotate-180')}
+        />
+      </button>
+
+      <AnimatePresence>
+        {abierto && (
+          // El pt-3 es un puente invisible: el cursor baja al panel sin cerrarlo.
+          <motion.div
+            initial={{ opacity: 0, y: 10, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: 6, filter: 'blur(4px)', transition: { duration: 0.2 } }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute top-full left-1/2 w-[440px] -translate-x-1/2 pt-3"
+          >
+            <div className="overflow-hidden rounded-[8px] border border-white/10 bg-sitio-modal p-2 shadow-[0_30px_80px_-20px_rgba(0,0,0,1)]">
+              {PRODUCTOS.map((producto) => (
+                <Link
+                  key={producto.href}
+                  href={producto.href}
+                  className="group flex items-start gap-4 rounded-[6px] p-3.5 transition-colors duration-300 hover:bg-white/[0.05]"
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[6px] border border-white/10 text-white/70 transition-colors duration-300 group-hover:text-white">
+                    <producto.icono aria-hidden="true" strokeWidth={1.5} className="h-[17px] w-[17px]" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className="text-[14.5px] tracking-[-0.01em] text-white">{producto.nombre}</span>
+                      {!producto.disponible && (
+                        <span className="text-[10px] tracking-[0.14em] text-white/35 uppercase">Próximamente</span>
+                      )}
+                    </span>
+                    <span className="mt-1 block text-[12.5px] leading-snug text-white/50">{producto.resumen}</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }

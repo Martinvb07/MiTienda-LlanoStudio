@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Check, Minus, Plus } from 'lucide-react'
 import { Contenedor, Rotulo } from './Contenedor'
 import { Revelar } from './Revelar'
-import { ORDEN_PLANES, PLANES, type LimitesPlan } from '@/utilidades/planes'
+import { ORDEN_PLANES, PLANES, experienciaIncluye, type LimitesPlan } from '@/utilidades/planes'
 
 type Valor = boolean | number | string | null
 
@@ -31,7 +31,10 @@ const GRUPOS: { titulo: string; filas: Fila[] }[] = [
     titulo: 'Ventas',
     filas: [
       { etiqueta: 'Carrito, pedidos y pago contra entrega', valor: () => true },
+      { etiqueta: 'Pagos en línea con Wompi, ePayco o Bold', valor: () => true },
       { etiqueta: 'Terminar la compra por WhatsApp', valor: () => true },
+      { etiqueta: 'Agregar en las tarjetas y aviso con foto', valor: (l) => experienciaIncluye(l.experienciaCompra, 'avanzada') },
+      { etiqueta: 'Foto que vuela a la bolsa y barra fija', valor: (l) => experienciaIncluye(l.experienciaCompra, 'completa') },
       { etiqueta: 'Cupones de descuento activos', valor: (l) => (l.cupones === null ? 'Ilimitados' : l.cupones || false) },
       { etiqueta: 'Exportar pedidos a Excel', valor: (l) => l.exportarPedidos },
       { etiqueta: 'Estadísticas de ventas y visitas', valor: (l) => (l.diasMetricas >= 365 ? '1 año' : `${l.diasMetricas} días`) },
@@ -42,7 +45,7 @@ const GRUPOS: { titulo: string; filas: Fila[] }[] = [
     titulo: 'Cuenta',
     filas: [
       { etiqueta: 'Personas en el panel', valor: (l) => l.usuarios },
-      { etiqueta: 'Dominio propio (www.tutienda.com)', valor: (l) => l.dominioPropio },
+      { etiqueta: 'Dominio propio con HTTPS', valor: (l) => l.dominioPropio },
     ],
   },
   {
@@ -56,6 +59,7 @@ const GRUPOS: { titulo: string; filas: Fila[] }[] = [
       { etiqueta: 'Tipos de sección disponibles', valor: (l) => l.bloques.length },
       { etiqueta: 'Columnas, galería, preguntas y banners', valor: (l) => l.bloques.includes('galeria') },
       { etiqueta: 'Testimonios, video, logos y mapa', valor: (l) => l.bloques.includes('video') },
+      { etiqueta: 'Lienzo libre', valor: (l) => l.bloques.includes('lienzo') },
       { etiqueta: 'Cuenta regresiva para ofertas', valor: (l) => l.bloques.includes('cuenta-regresiva') },
     ],
   },

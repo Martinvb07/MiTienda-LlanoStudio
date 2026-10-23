@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     default: 'Mi Sitio',
     template: '%s · Mi Sitio',
   },
-  description: 'Crea tu tienda en línea sin escribir una sola línea de código.',
+  description: 'Mi Sitio: tu tienda, tu página y tus enlaces, sin escribir código.',
 }
 
 /**

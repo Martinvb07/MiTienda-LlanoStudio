@@ -12,7 +12,8 @@ import { obtenerArticulos } from '@/servicios/contenido.servicio'
 export const metadata: Metadata = {
   title: 'Recursos',
   description:
-    'Guías para vender en línea en Colombia: fotos de producto, descripciones, pagos, envíos y cómo elegir la plantilla de tu tienda.',
+    'Guías cortas para vender en línea en Colombia: fotos de producto, descripciones, pagos, envíos y plantillas.',
+  alternates: { canonical: '/blog' },
 }
 
 export const revalidate = 60
@@ -25,7 +26,7 @@ export default async function PaginaRecursos() {
       <CabeceraPagina
         rotulo="Recursos"
         titulo="Aprende a vender en línea, sin vueltas"
-        descripcion="Guías cortas y concretas sobre lo que de verdad hace que una tienda venda en Colombia."
+        descripcion="Guías cortas sobre lo que de verdad hace vender."
       />
 
       <section className="pt-24 pb-[110px] md:pb-[150px]">

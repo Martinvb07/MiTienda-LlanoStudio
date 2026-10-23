@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, type MotionValue } from 'motion/react'
 import { Boton } from './Boton'
+import { PLANTILLAS_TIENDA } from '@/utilidades/plantillas'
 
 const SALIDA = [0.16, 1, 0.3, 1] as const
 
@@ -16,14 +17,15 @@ const VITRINA = [
 ] as const
 
 const CIFRAS = [
-  { valor: '6', etiqueta: 'plantillas listas' },
+  { valor: String(PLANTILLAS_TIENDA.length), etiqueta: 'plantillas listas' },
   { valor: '0', etiqueta: 'líneas de código' },
   { valor: '0%', etiqueta: 'de comisión por venta' },
 ]
 
 /**
  * Portada como la de llanostudio.co: titular enorme, un botón, y una vitrina
- * de tiendas reales hechas con Mi Sitio que se abre al bajar.
+ * de tiendas reales hechas con Mi Sitio que se abre al bajar. La tienda es lo
+ * que ya está; la página y los enlaces se nombran como lo que viene.
  */
 export function Hero() {
   const zona = useRef<HTMLDivElement>(null)
@@ -32,24 +34,24 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden pt-[150px] md:pt-[190px]">
       <div className="entrada flex flex-col items-center px-5 text-center">
+        <span className="antetitulo mb-[22px]">Mi Sitio, de Llano Studio</span>
         <h1 className="titulo-1">
-          Tu tienda en línea,
+          Todo tu negocio,
           <br />
-          lista hoy
+          en un solo sitio
         </h1>
         <p className="bajada mx-auto mt-[22px] hidden !text-base md:block">
-          Elige una plantilla, sube tus productos y vende desde tu propia dirección. Sin escribir una
-          sola línea de código.
+          Tu tienda, tu página y tus enlaces. Una cuenta, una dirección.
         </p>
         <div className="mt-[30px] flex w-full max-w-[400px] justify-center gap-3 md:mt-[34px] md:w-auto md:max-w-none">
           <Boton href="/panel/crear-cuenta" flecha className="w-full md:w-auto">
-            Crear mi tienda gratis
+            Empezar gratis
           </Boton>
           <Boton href="/plantillas" variante="secundario" className="hidden md:inline-flex">
             Ver plantillas
           </Boton>
         </div>
-        <p className="mt-5 text-[13px] text-white/45 md:text-xs">Sin tarjeta de crédito · Tu tienda en línea el mismo día</p>
+        <p className="mt-5 text-[13px] text-white/45 md:text-xs">Sin tarjeta de crédito · Sin código</p>
       </div>
 
       <div ref={zona} className="relative mx-auto mt-12 h-[calc(54vw+44px)] max-w-[1400px] [--abrir:31vw] md:mt-24 md:h-[clamp(260px,46vw,620px)] md:[--abrir:22vw]">

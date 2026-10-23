@@ -12,6 +12,9 @@ import { FUENTES_TITULOS } from '@/utilidades/tema'
 
 const SALIDA = [0.16, 1, 0.3, 1] as const
 
+/** Las cuatro estilo supermercado: cabecera completa, categorías y grillas por pasillo. */
+export const PLANTILLAS_PRO: ReadonlySet<string> = new Set(['mercado', 'ropa', 'vivero', 'megadeporte'])
+
 const textoPlan = (plantilla: PlantillaTienda) =>
   plantilla.plan === 'GRATIS' ? 'Gratis' : `Desde ${PLANES[plantilla.plan].nombre}`
 
@@ -20,9 +23,11 @@ const textoPlan = (plantilla: PlantillaTienda) =>
  * la captura crece hasta el modal con todo lo que trae (layoutId de Motion)
  * y al cerrar vuelve a su sitio.
  */
-export function GaleriaPlantillas({ limite }: { limite?: number }) {
+export function GaleriaPlantillas({ limite, pro }: { limite?: number; pro?: boolean }) {
   const [abierta, setAbierta] = useState<PlantillaTienda | null>(null)
-  const plantillas = limite ? PLANTILLAS_TIENDA.slice(0, limite) : PLANTILLAS_TIENDA
+  const filtradas =
+    pro === undefined ? PLANTILLAS_TIENDA : PLANTILLAS_TIENDA.filter((plantilla) => PLANTILLAS_PRO.has(plantilla.clave) === pro)
+  const plantillas = limite ? filtradas.slice(0, limite) : filtradas
 
   return (
     <>
@@ -55,7 +60,10 @@ export function GaleriaPlantillas({ limite }: { limite?: number }) {
             <div className="mt-5 flex items-baseline justify-between gap-4">
               <div>
                 <h3 className="text-[19px] tracking-[-0.02em] text-white">{plantilla.nombre}</h3>
-                <p className="mt-1 text-[13px] text-white/45">{plantilla.categoria}</p>
+                <p className="mt-1 text-[13px] text-white/45">
+                  {PLANTILLAS_PRO.has(plantilla.clave) && 'Pro · '}
+                  {plantilla.categoria}
+                </p>
               </div>
               <span className="shrink-0 text-[11px] tracking-[0.12em] text-white/45 uppercase">{textoPlan(plantilla)}</span>
             </div>
@@ -158,7 +166,10 @@ function ModalPlantilla({ plantilla, alCerrar }: { plantilla: PlantillaTienda; a
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, delay: 0.15, ease: SALIDA }}
           >
-            <span className="antetitulo">{textoPlan(plantilla)}</span>
+            <span className="antetitulo">
+              {PLANTILLAS_PRO.has(plantilla.clave) && 'Plantilla pro · '}
+              {textoPlan(plantilla)}
+            </span>
             <h3 className="mt-3 text-[34px] leading-[1.02] tracking-[-0.04em]">{plantilla.nombre}</h3>
             <p className="mt-2 text-[13px] text-white/45">
               {plantilla.categoria} · Ejemplo: {plantilla.ejemplo}

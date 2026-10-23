@@ -9,7 +9,8 @@ import { GaleriaPlantillas } from '@/componentes/sitio/GaleriaPlantillas'
 export const metadata: Metadata = {
   title: 'Plantillas',
   description:
-    'Diseños listos para moda, tecnología, hogar, alimentos, artesanía y belleza. Todos editables bloque a bloque, sin escribir código.',
+    'Diez plantillas para tu tienda en línea, cuatro de ellas pro estilo supermercado: mercado, ropa, vivero y deporte. Editables sin código.',
+  alternates: { canonical: '/plantillas' },
 }
 
 export default function PaginaPlantillas() {
@@ -18,20 +19,33 @@ export default function PaginaPlantillas() {
       <CabeceraPagina
         rotulo="Plantillas"
         titulo="Diez tiendas listas para hacer tuyas"
-        descripcion="Elige el diseño que más se parezca a lo que vendes y cambia lo que quieras. Puedes saltar de una plantilla a otra sin perder productos ni textos."
+        descripcion="Cámbiala cuando quieras, sin perder productos ni textos."
       >
-        <Boton href="/panel/crear-cuenta" flecha>
+        <Boton href="/panel/crear-cuenta?producto=tienda" flecha>
           Crear mi tienda
         </Boton>
       </CabeceraPagina>
 
       <section className="pt-24 pb-[110px] md:pb-[150px]">
         <Contenedor>
-          <GaleriaPlantillas />
+          <Revelar className="mb-14">
+            <span className="antetitulo mb-[22px]">Pro</span>
+            <h2 className="titulo-2 max-w-[14ch]">Estilo supermercado</h2>
+          </Revelar>
+          <GaleriaPlantillas pro />
+        </Contenedor>
+      </section>
+
+      <section className="pb-[110px] md:pb-[150px]">
+        <Contenedor>
+          <Revelar className="mb-14">
+            <span className="antetitulo mb-[22px]">Por rubro</span>
+            <h2 className="titulo-2 max-w-[14ch]">Más plantillas</h2>
+          </Revelar>
+          <GaleriaPlantillas pro={false} />
           <Revelar>
             <p className="mx-auto mt-20 max-w-[52ch] text-center text-[15px] leading-relaxed text-white/50">
-              Las plantillas Gratis están para todos; las demás se desbloquean con el plan indicado. Todas
-              parten de los mismos bloques, así que también puedes armar la tuya desde cero.
+              Cada una indica desde qué plan se usa. También puedes armar la tuya desde cero.
             </p>
           </Revelar>
         </Contenedor>

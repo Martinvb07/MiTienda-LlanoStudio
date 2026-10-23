@@ -173,7 +173,7 @@ export const ARTICULOS: Articulo[] = [
       {
         titulo: 'En Mi Sitio',
         parrafos: [
-          'La integración de pagos con Wompi y PSE está en camino. Mientras tanto, muchas tiendas cierran la venta por WhatsApp con el enlace del producto y cobran por transferencia o link de pago.',
+          'Conectas tu propia cuenta de Wompi, ePayco o Bold desde el panel y el pago llega directo a ti, sin comisión nuestra. También puedes recibir pedidos por WhatsApp y aceptar pago contra entrega.',
         ],
       },
     ],

@@ -9,7 +9,8 @@ import { obtenerContenidoSitio } from '@/servicios/contenido.servicio'
 export const metadata: Metadata = {
   title: 'Precios',
   description:
-    'Planes desde $0 para vender en línea en Colombia. Empieza gratis y pasa a un plan pago cuando tu tienda lo pida.',
+    'Planes de Mi Sitio desde $0 para vender en línea en Colombia. Sin comisión por venta y sin permanencia.',
+  alternates: { canonical: '/precios' },
 }
 
 const PREGUNTAS = [
@@ -17,6 +18,10 @@ const PREGUNTAS = [
     pregunta: '¿Necesito tarjeta de crédito para empezar?',
     respuesta:
       'No. El plan Gratis no pide datos de pago: creas tu cuenta, armas la tienda y la publicas. Si pasas a un plan pago, lo pagas desde tu panel con Bold: tarjeta, PSE, Nequi o Botón Bancolombia, mes a mes o por un año con descuento.',
+  },
+  {
+    pregunta: '¿Los planes incluyen la página y los enlaces?',
+    respuesta: 'Hoy los planes cubren la tienda. La página y los enlaces están en construcción; cuando lleguen te contamos aquí cómo quedan.',
   },
   {
     pregunta: '¿Puedo cambiar de plan más adelante?',
@@ -31,12 +36,12 @@ const PREGUNTAS = [
   {
     pregunta: '¿El dominio propio está incluido en el precio?',
     respuesta:
-      'La conexión sí, desde el plan Emprende. La compra del dominio se hace aparte, con el proveedor que prefieras, y nosotros te indicamos qué apuntar.',
+      'La conexión sí, desde el plan Negocio, con HTTPS incluido. El dominio lo compras aparte, con el proveedor que prefieras.',
   },
   {
     pregunta: '¿Cobran comisión por cada venta?',
     respuesta:
-      'No cobramos comisión sobre tus ventas. Lo que sí aplica son las tarifas de la pasarela de pago que elijas, que cobra Wompi o PSE directamente y no pasan por nosotros.',
+      'No. Sólo aplica la tarifa de la pasarela que conectes (Wompi, ePayco o Bold), que la cobra ella directamente.',
   },
   {
     pregunta: '¿Qué pasa con mi tienda si dejo de pagar?',
@@ -53,7 +58,7 @@ export default async function PaginaPrecios() {
       <CabeceraPagina
         rotulo="Precios"
         titulo="Empieza gratis. Paga cuando tu tienda lo pida."
-        descripcion="Sin comisiones sobre tus ventas y sin permanencia. El plan Gratis no vence: si te alcanza, te puedes quedar ahí."
+        descripcion="Sin comisión por venta y sin permanencia. El plan Gratis no vence."
       />
 
       <TablaPrecios />

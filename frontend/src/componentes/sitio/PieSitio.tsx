@@ -2,29 +2,27 @@ import Link from 'next/link'
 import { Instagram, MapPin } from 'lucide-react'
 import { Contenedor } from './Contenedor'
 import { LogoMarca } from '@/componentes/comunes/LogoMarca'
+import { PRODUCTOS } from './productos'
 
 const COLUMNAS = [
   {
-    titulo: 'Producto',
+    titulo: 'Productos',
+    enlaces: PRODUCTOS.map((producto) => ({ etiqueta: producto.nombre, href: producto.href })),
+  },
+  {
+    titulo: 'Mi Sitio',
     enlaces: [
-      { etiqueta: 'Características', href: '/caracteristicas' },
       { etiqueta: 'Plantillas', href: '/plantillas' },
       { etiqueta: 'Precios', href: '/precios' },
+      { etiqueta: 'Recursos', href: '/blog' },
     ],
   },
   {
     titulo: 'Empresa',
     enlaces: [
       { etiqueta: 'Sobre nosotros', href: '/sobre-nosotros' },
-      { etiqueta: 'Recursos', href: '/blog' },
       { etiqueta: 'Contacto', href: '/contacto' },
-    ],
-  },
-  {
-    titulo: 'Cuenta',
-    enlaces: [
       { etiqueta: 'Ingresar', href: '/panel/ingresar' },
-      { etiqueta: 'Crear tienda', href: '/panel/crear-cuenta' },
     ],
   },
   {
@@ -51,7 +49,7 @@ export function PieSitio() {
             </Link>
 
             <p className="mt-[18px] max-w-[16ch] text-xl leading-[1.3] tracking-[-0.02em] text-white">
-              Tiendas en línea para negocios colombianos.
+              Tu tienda, tu página y tus enlaces.
             </p>
 
             <p className="mt-5 flex items-center gap-2 text-sm text-white/55">

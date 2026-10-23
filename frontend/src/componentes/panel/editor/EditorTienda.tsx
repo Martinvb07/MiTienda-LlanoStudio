@@ -364,7 +364,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
           : `¿Editar libre "${ETIQUETAS_BLOQUE[elegidos[0]!.tipo]}"?`,
       mensaje: [
         ids === 'todas'
-          ? 'Las secciones que se pueden pasar a edición libre cambian; las de productos, categorías y demás quedan igual. Puedes volver atrás con Ctrl+Z.'
+          ? 'Todas tus secciones pasan a edición libre; los productos y las redes siguen al día. Puedes volver atrás con Ctrl+Z.'
           : 'Esta sección pasa a edición libre. Puedes volver atrás con Ctrl+Z.',
         ...avisos,
       ].join(' '),
@@ -382,6 +382,14 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     setConvirtiendo(false)
     const tema = actualRef.current.tema
     const nuevos = new Map(elegidos.map((bloque) => [bloque.id, aLienzo(bloque, tema, medidas.get(bloque.id))]))
+    // Lo que no se pudo medir se queda como estaba, y se avisa.
+    const fallidas = elegidos.filter((bloque) => !nuevos.get(bloque.id))
+    for (const bloque of fallidas) nuevos.delete(bloque.id)
+    if (fallidas.length)
+      setError(
+        `No pudimos pasar a libre ${fallidas.map((bloque) => `"${ETIQUETAS_BLOQUE[bloque.tipo]}"`).join(', ')}. Vuelve a intentarlo en un momento.`,
+      )
+    if (nuevos.size === 0) return
     // Un solo paso en el historial: ni se junta con lo anterior ni con lo que siga.
     ultimoCambio.current = 0
     cambiar({
@@ -389,7 +397,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     })
     ultimoCambio.current = 0
 
-    const primero = nuevos.get(elegidos[0]!.id)
+    const primero = [...nuevos.values()][0]
     setPestana('pagina')
     setPlantillaEditada('portada')
     setAbierto(primero?.id ?? null)
@@ -596,7 +604,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
                     </button>
                     {conLienzo ? (
                       <p className="text-[11.5px] leading-relaxed text-sitio-tenue">
-                        Pasa a edición libre {convertibles === 1 ? 'la sección que se puede' : `las ${convertibles} secciones que se pueden`}; las de productos y demás quedan igual.
+                        Pasa a edición libre {convertibles === 1 ? 'la sección' : `las ${convertibles} secciones`}; los productos y las redes siguen al día.
                       </p>
                     ) : (
                       <Candado plan={planMinimo((opcion) => opcion.bloques.includes('lienzo'))}>Mueve y estira cada pieza de tus secciones.</Candado>

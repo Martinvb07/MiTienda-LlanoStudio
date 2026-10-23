@@ -34,7 +34,7 @@ export function Pie({
   )
 
   const redes = mostrarRedes && (cuentaInstagram || ajustes.facebook || ajustes.tiktok || telefono) && (
-    <div className="flex gap-3">
+    <div data-lienzo-vivo="redes" className="flex gap-3">
       {cuentaInstagram && (
         <a href={`https://instagram.com/${cuentaInstagram.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="grid h-9 w-9 place-items-center rounded-full border border-current/20 opacity-75 transition hover:opacity-100">
           <Instagram aria-hidden="true" className="h-4 w-4" />

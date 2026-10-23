@@ -44,11 +44,11 @@ const DATOS_VIVOS: readonly TipoBloque[] = [
 
 /** Por qué una sección no se puede pasar a libre, o null si se puede. */
 export function motivoNoLibre(tipo: TipoBloque): string | null {
-  if (tipo in CONVERSORES) return null
-  if (tipo === 'lienzo') return 'Ya es un lienzo libre.'
-  if (DATOS_VIVOS.includes(tipo)) return 'Muestra datos que se actualizan solos, por eso no pasa a libre.'
-  return 'Esta sección todavía no se puede pasar a libre.'
+  return tipo === 'lienzo' ? 'Ya es un lienzo libre.' : null
 }
+
+/** Las que muestran datos vivos: al pasar a libre, esa parte queda como pieza viva. */
+export const tieneDatosVivos = (tipo: TipoBloque) => DATOS_VIVOS.includes(tipo)
 
 export const esConvertible = (tipo: TipoBloque) => motivoNoLibre(tipo) === null
 
@@ -136,6 +136,8 @@ interface Pieza {
   rol?: string
   /** Cubre toda la sección (foto u oscurecido de fondo). */
   cubre?: boolean
+  /** No se ve en el celular (la sección original la escondía ahí). */
+  ocultoMovil?: boolean
 }
 
 type Alineacion = NonNullable<ElementoLienzo['alineacion']>
@@ -150,10 +152,39 @@ export interface MedidaRol extends Caja {
   texto?: Caja
 }
 
+/**
+ * Una pieza encontrada al recorrer la sección pintada (para las secciones sin
+ * conversor propio). `clave` es su camino en el HTML: con ella se empareja la
+ * misma pieza en el computador y en el celular.
+ */
+export interface NodoMedido extends Caja {
+  clave: string
+  tipo: 'titulo' | 'texto' | 'boton' | 'enlace' | 'imagen' | 'forma' | 'icono' | 'video' | 'mapa' | 'vivo'
+  texto?: string
+  letra?: number
+  color?: string
+  fondo?: string
+  opacidad?: number
+  radio?: number
+  negrita?: boolean
+  alineacion?: Alineacion
+  enlace?: string
+  imagenUrl?: string
+  ajuste?: 'cubrir' | 'contener'
+  contorno?: boolean
+  icono?: string
+  url?: string
+  direccion?: string
+  /** Lo que sigue vivo: la grilla de productos, el reloj o las redes. */
+  vivo?: 'productos' | 'cuenta' | 'redes'
+  relleno?: boolean
+  sinSubrayado?: boolean
+}
+
 /** Medidas de la sección pintada a 1440 y a 390 (utilidades/medirSecciones). */
 export interface MedidasSeccion {
-  pc: { alto: number; roles: Record<string, MedidaRol> }
-  movil: { alto: number; roles: Record<string, MedidaRol> }
+  pc: { alto: number; roles: Record<string, MedidaRol>; nodos?: NodoMedido[] }
+  movil: { alto: number; roles: Record<string, MedidaRol>; nodos?: NodoMedido[] }
 }
 
 const nuevoId = () => Math.random().toString(36).slice(2, 9)
@@ -213,7 +244,7 @@ function armar(lista: Pieza[], altoCalculado: number, altoMovilCalculado: number
     alto: Math.round(alto * A_LIENZO),
     altoMovil: Math.round(altoMovil),
     ...(fondo ? { fondo } : {}),
-    elementos: piezas.map(({ base, pc, movil, letra, letraMovil }) => ({
+    elementos: piezas.map(({ base, pc, movil, letra, letraMovil, ocultoMovil }) => ({
       ...base,
       id: nuevoId(),
       x: redondear((pc.x / ANCHO) * 100),
@@ -227,6 +258,7 @@ function armar(lista: Pieza[], altoCalculado: number, altoMovilCalculado: number
         w: redondear((movil.w / ANCHO_MOVIL) * 100),
         h: redondear((movil.h / altoMovil) * 100),
         ...(letraMovil ? { tamano: Math.round(letraMovil * 10) / 10 } : {}),
+        ...(ocultoMovil ? { oculto: true } : {}),
       },
     })),
   }
@@ -623,6 +655,77 @@ const desdeTexto: Conversor<PropsTexto> = (props, tema, estilo, medidas) => {
   return armar([...fondoDeEstilo(estilo, alto, altoMovil), ...piezas], alto, altoMovil, paleta.fondo, medidas)
 }
 
+/** De un iframe de YouTube (youtube-nocookie.com/embed/ID) vuelve al enlace normal. */
+function enlaceVideo(src: string): string {
+  const id = src.match(/\/embed\/([\w-]{11})/)?.[1]
+  return id ? `https://youtu.be/${id}` : src
+}
+
+/**
+ * Cualquier sección, pieza por pieza, a partir de lo que se recorrió en la
+ * sección pintada (utilidades/medirSecciones). Lo vivo (la grilla de
+ * productos, el reloj, las redes) sale como pieza viva con los datos de la
+ * sección; lo demás, como textos, botones, fotos y formas fijas.
+ */
+function desdeNodos(bloque: Bloque, tema: TemaTienda, medidas: MedidasSeccion): BloqueLienzo['props'] {
+  const paleta = paletaDe(tema, bloque.estilo)
+  const enCelular = new Map((medidas.movil.nodos ?? []).map((nodo) => [nodo.clave, nodo]))
+  const props = bloque.props as unknown as Record<string, unknown>
+
+  const piezas: Pieza[] = []
+  for (const nodo of medidas.pc.nodos ?? []) {
+    const movil = enCelular.get(nodo.clave)
+    const cajaPc = { x: nodo.x, y: nodo.y, w: nodo.w, h: nodo.h }
+    const cajaMovil = movil ? { x: movil.x, y: movil.y, w: movil.w, h: movil.h } : { x: 0, y: 0, w: 10, h: 10 }
+    const comun = { pc: cajaPc, movil: cajaMovil, letra: nodo.letra, letraMovil: movil?.letra ?? nodo.letra, ocultoMovil: !movil }
+    const negrita = nodo.negrita ? ({ peso: 'negrita' } as const) : {}
+    let base: Base | null = null
+    switch (nodo.tipo) {
+      case 'titulo':
+      case 'texto':
+        base = { tipo: nodo.tipo, texto: nodo.texto, color: nodo.color, alineacion: nodo.alineacion, ...negrita }
+        break
+      case 'enlace':
+        base = { tipo: 'enlace', texto: nodo.texto, enlace: nodo.enlace, color: nodo.color, alineacion: nodo.alineacion, sinSubrayado: nodo.sinSubrayado }
+        break
+      case 'boton':
+        base = { tipo: 'boton', texto: nodo.texto, enlace: nodo.enlace, color: nodo.color, fondo: nodo.fondo, contorno: nodo.contorno, radio: nodo.radio, ...negrita }
+        break
+      case 'imagen':
+        base = { tipo: 'imagen', imagenUrl: nodo.imagenUrl, ajuste: nodo.ajuste, radio: nodo.radio, opacidad: nodo.opacidad, enlace: nodo.enlace }
+        break
+      case 'forma':
+        base = { tipo: 'forma', fondo: nodo.fondo, opacidad: nodo.opacidad, radio: nodo.radio }
+        break
+      case 'icono':
+        base = { tipo: 'icono', icono: nodo.icono, color: nodo.color, relleno: nodo.relleno }
+        break
+      case 'video':
+        base = { tipo: 'video', url: nodo.url ? enlaceVideo(nodo.url) : undefined, radio: nodo.radio }
+        break
+      case 'mapa':
+        base = { tipo: 'mapa', direccion: nodo.direccion, radio: nodo.radio }
+        break
+      case 'vivo':
+        if (nodo.vivo === 'productos')
+          base = {
+            tipo: 'productos',
+            categoria: props.categoria as string | undefined,
+            limite: (props.limite as number | undefined) ?? 8,
+            columnas: (props.columnas as number | undefined) ?? 3,
+            columnasMovil: 2,
+            soloDestacados: props.soloDestacados as boolean | undefined,
+            tarjeta: { estilo: props.estilo === 'tarjeta' ? 'tarjeta' : 'simple' },
+          }
+        else if (nodo.vivo === 'cuenta') base = { tipo: 'cuenta', fecha: props.fecha as string | undefined, fondo: paleta.marca, color: paleta.contraste }
+        else base = { tipo: 'redes', color: nodo.color, alineacion: 'izquierda' }
+        break
+    }
+    if (base) piezas.push({ base, ...comun })
+  }
+  return armar(piezas, medidas.pc.alto, medidas.movil.alto, paleta.fondo, undefined)
+}
+
 const CONVERSORES: Partial<Record<TipoBloque, Conversor<never>>> = {
   hero: desdeHero as Conversor<never>,
   carrusel: desdeCarrusel as Conversor<never>,
@@ -639,8 +742,11 @@ const CONVERSORES: Partial<Record<TipoBloque, Conversor<never>>> = {
  */
 export function aLienzo(bloque: Bloque, tema: TemaTienda, medidas?: MedidasSeccion): BloqueLienzo | null {
   const conversor = CONVERSORES[bloque.tipo]
-  if (!conversor) return null
-  const props = (conversor as Conversor<Bloque['props']>)(bloque.props, tema, bloque.estilo, medidas)
+  let props: BloqueLienzo['props'] | null
+  if (conversor) props = (conversor as Conversor<Bloque['props']>)(bloque.props, tema, bloque.estilo, medidas)
+  // Sin conversor propio hace falta la sección medida: se arma pieza por pieza.
+  else props = medidas?.pc.nodos ? desdeNodos(bloque, tema, medidas) : null
+  if (!props) return null
   const { esquema, fondo, texto, ancla, animacion, dispositivos, forma } = bloque.estilo ?? {}
   const estilo = Object.fromEntries(
     Object.entries({ esquema, fondo, texto, ancla, animacion, dispositivos, forma }).filter(([, valor]) => valor !== undefined),
@@ -658,5 +764,6 @@ export function aLienzo(bloque: Bloque, tema: TemaTienda, medidas?: MedidasSecci
 export function avisoConversion(bloque: Bloque): string | null {
   if (bloque.tipo === 'carrusel' && bloque.props.diapositivas.length > 1)
     return 'Del carrusel se toma la primera diapositiva; las demás se descartan.'
+  if (bloque.tipo === 'preguntas') return 'Las preguntas quedan abiertas, como texto.'
   return null
 }

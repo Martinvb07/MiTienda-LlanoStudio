@@ -16,10 +16,12 @@ import {
   Home,
   Instagram,
   Leaf,
+  Lock,
   Mail,
   MapPin,
   MessageCircle,
   Music2,
+  Package,
   Phone,
   Scissors,
   Search,
@@ -77,6 +79,8 @@ export const ICONOS_LIENZO: Record<string, { Icono: LucideIcon; nombre: string }
   tijeras: { Icono: Scissors, nombre: 'Hecho a mano' },
   casa: { Icono: Home, nombre: 'Hogar' },
   listo: { Icono: Check, nombre: 'Listo' },
+  candado: { Icono: Lock, nombre: 'Seguro' },
+  paquete: { Icono: Package, nombre: 'Paquete' },
 }
 
 const REDES: Record<RedSocial, { Icono: LucideIcon; nombre: string; enlace: (ajustes: AjustesTienda) => string | null }> = {
@@ -276,12 +280,20 @@ export function PiezaEspecial({ elemento, contexto = {} }: { elemento: ElementoL
       )
     case 'icono': {
       const { Icono } = ICONOS_LIENZO[elemento.icono ?? 'estrella'] ?? ICONOS_LIENZO.estrella!
-      return <Icono aria-hidden="true" className="h-full w-full" style={{ color: color ?? 'var(--marca)' }} strokeWidth={1.5} />
+      return (
+        <Icono
+          aria-hidden="true"
+          className="h-full w-full"
+          style={{ color: color ?? 'var(--marca)' }}
+          fill={elemento.relleno ? 'currentColor' : 'none'}
+          strokeWidth={1.5}
+        />
+      )
     }
     case 'enlace':
       return (
         <span className="flex h-full w-full items-center" style={{ justifyContent: alineacion }}>
-          <a href={elemento.enlace || '#'} className="underline underline-offset-4 transition hover:opacity-70" style={{ color }}>
+          <a href={elemento.enlace || '#'} className={`transition hover:opacity-70 ${elemento.sinSubrayado ? '' : 'underline underline-offset-4'}`} style={{ color }}>
             {elemento.texto || 'Ver más'}
           </a>
         </span>

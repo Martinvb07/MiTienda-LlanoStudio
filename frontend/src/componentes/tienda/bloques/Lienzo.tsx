@@ -97,9 +97,11 @@ function Pieza({ elemento, contexto }: { elemento: ElementoLienzo; contexto?: Co
           {elemento.texto || 'Botón'}
         </a>
       )
-    case 'imagen':
+    case 'imagen': {
+      // Una foto con enlace lleva a donde diga, como los cuadros de categorías.
+      const Marco = elemento.enlace ? 'a' : 'div'
       return (
-        <div className="relative h-full w-full overflow-hidden" style={{ borderRadius: radio, opacity: opacidad }}>
+        <Marco {...(elemento.enlace ? { href: elemento.enlace } : {})} className="relative block h-full w-full overflow-hidden" style={{ borderRadius: radio, opacity: opacidad }}>
           {elemento.imagenUrl ? (
             <Image
               src={elemento.imagenUrl}
@@ -115,8 +117,9 @@ function Pieza({ elemento, contexto }: { elemento: ElementoLienzo; contexto?: Co
               Foto
             </span>
           )}
-        </div>
+        </Marco>
       )
+    }
     case 'forma':
       return (
         <div className="h-full w-full" style={{ background: elemento.fondo ?? 'var(--marca)', borderRadius: radio, opacity: opacidad }} />

@@ -348,6 +348,10 @@ export interface ElementoLienzo extends CajaLienzo {
   fecha?: string
   /** whatsapp: mensaje con que se abre el chat. */
   mensaje?: string
+  /** icono: relleno en vez de sólo el trazo (como las estrellas de una reseña). */
+  relleno?: boolean
+  /** enlace: sin subrayar. */
+  sinSubrayado?: boolean
 }
 
 export interface PropsLienzo {

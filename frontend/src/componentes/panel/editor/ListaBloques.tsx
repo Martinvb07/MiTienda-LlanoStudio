@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -374,6 +374,21 @@ function FilaBloque({
     transition: { duration: 450, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
   })
   const [pestana, setPestana] = useState<'contenido' | 'estilo'>('contenido')
+  const fila = useRef<HTMLLIElement | null>(null)
+  const unirRef = useCallback(
+    (nodo: HTMLLIElement | null) => {
+      fila.current = nodo
+      setNodeRef(nodo)
+    },
+    [setNodeRef],
+  )
+  // Al abrirla (también desde el lápiz de la vista previa) la fila se trae a
+  // la vista; la espera deja que el panel termine de desplegarse.
+  useEffect(() => {
+    if (!abierto) return
+    const espera = setTimeout(() => fila.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 460)
+    return () => clearTimeout(espera)
+  }, [abierto])
   const oculto = bloque.visible === false
   const fueraDelPlan = !limites.bloques.includes(bloque.tipo)
   const conEstilo = Boolean(bloque.estilo && Object.values(bloque.estilo).some((valor) => valor !== undefined))
@@ -382,8 +397,8 @@ function FilaBloque({
 
   return (
     <li
-      ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
+      ref={unirRef}
+      style={{ transform: CSS.Transform.toString(transform), transition, scrollMarginTop: 12 }}
       className={cn(
         'relative rounded-[10px] border bg-sitio-campo transition-[border-color,box-shadow]',
         abierto ? 'border-white/30' : 'border-sitio-borde hover:border-white/15',

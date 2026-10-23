@@ -176,6 +176,9 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
   const alAccionVista = useCallback(
     (id: string, accion: AccionSeccion) => {
       if (accion === 'elegir') {
+        // Desde cualquier pestaña: lleva a la lista de secciones con ésta abierta.
+        setPestana('pagina')
+        setPlantillaEditada('portada')
         setAbierto(id)
         return
       }
@@ -396,7 +399,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
                 <CamposCabecera ajustes={borrador.ajustes} alCambiar={cambiarAjustes} categorias={categorias} limites={limites} />
               </Seccion>
 
-              <Seccion titulo="Secciones" abierta>
+              <Seccion titulo="Secciones" abierta abrirCon={abierto}>
                 <ListaBloques
                   bloques={borrador.configuracionBloques}
                   alCambiar={(configuracionBloques) => cambiar({ configuracionBloques })}

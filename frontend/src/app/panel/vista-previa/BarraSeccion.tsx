@@ -6,7 +6,10 @@ import { ETIQUETAS_BLOQUE, type Bloque } from '@/tipos/bloques'
 import type { AccionSeccion, MensajeAccionVista } from './mensajes'
 
 function avisar(id: string, accion: AccionSeccion) {
-  window.parent.postMessage({ tipo: 'mt-vista-accion', id, accion } satisfies MensajeAccionVista, window.location.origin)
+  window.parent.postMessage(
+    { tipo: 'mt-vista-accion', id, accion } satisfies MensajeAccionVista,
+    window.location.origin,
+  )
 }
 
 /**
@@ -85,21 +88,36 @@ export function BarraSeccion({ bloques }: { bloques: Bloque[] }) {
         className="pointer-events-auto absolute flex items-center gap-0.5 rounded-lg bg-[#111] p-1 font-sans text-white shadow-[0_10px_30px_-6px_rgba(0,0,0,0.6)]"
         style={{ top: Math.max(8, 8 - caja.top), right: 8 }}
       >
-        <span className="px-2 text-[11px] font-medium whitespace-nowrap text-white/70">{ETIQUETAS_BLOQUE[bloque.tipo]}</span>
-        {acciones.map(({ accion, etiqueta, Icono, deshabilitado }) => (
-          <button
-            key={accion}
-            type="button"
-            title={etiqueta}
-            disabled={deshabilitado}
-            onClick={() => avisar(bloque.id, accion)}
-            className={`grid h-7 w-7 place-items-center rounded-md transition-colors hover:bg-white/15 disabled:opacity-30 ${
-              accion === 'eliminar' ? 'hover:!bg-red-500/80' : ''
-            }`}
-          >
-            <Icono className="h-3.5 w-3.5" />
-          </button>
-        ))}
+        <span className="px-2 text-[11px] font-medium whitespace-nowrap text-white/70">
+          {ETIQUETAS_BLOQUE[bloque.tipo]}
+        </span>
+        {acciones.map(({ accion, etiqueta, Icono, deshabilitado }) =>
+          accion === 'elegir' ? (
+            <button
+              key={accion}
+              type="button"
+              title="Editar esta sección en el panel de la izquierda"
+              onClick={() => avisar(bloque.id, accion)}
+              className="flex h-7 items-center gap-1.5 rounded-md bg-white px-2.5 text-[11.5px] font-medium text-black transition-colors hover:bg-white/85"
+            >
+              <Icono className="h-3.5 w-3.5" />
+              Editar
+            </button>
+          ) : (
+            <button
+              key={accion}
+              type="button"
+              title={etiqueta}
+              disabled={deshabilitado}
+              onClick={() => avisar(bloque.id, accion)}
+              className={`grid h-7 w-7 place-items-center rounded-md transition-colors hover:bg-white/15 disabled:opacity-30 ${
+                accion === 'eliminar' ? 'hover:!bg-red-500/80' : ''
+              }`}
+            >
+              <Icono className="h-3.5 w-3.5" />
+            </button>
+          ),
+        )}
       </div>
     </div>
   )

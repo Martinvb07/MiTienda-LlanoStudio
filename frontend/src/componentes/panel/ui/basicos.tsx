@@ -80,15 +80,23 @@ export function Aviso({ tono = 'error', children }: { tono?: 'error' | 'nota'; c
 export function Seccion({
   titulo,
   abierta: abiertaInicial = false,
+  abrirCon,
   extra,
   children,
 }: {
   titulo: string
   abierta?: boolean
+  /** Cuando este valor cambia a algo, la sección se abre sola (por ejemplo, al elegir algo adentro). */
+  abrirCon?: string | null
   extra?: ReactNode
   children: ReactNode
 }) {
   const [abierta, setAbierta] = useState(abiertaInicial)
+  const [ultimo, setUltimo] = useState(abrirCon)
+  if (abrirCon !== ultimo) {
+    setUltimo(abrirCon)
+    if (abrirCon) setAbierta(true)
+  }
 
   return (
     <section className="border-b border-sitio-borde">

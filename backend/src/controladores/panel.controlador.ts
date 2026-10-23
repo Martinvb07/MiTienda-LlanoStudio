@@ -67,6 +67,8 @@ const esquemaTema = z.object({
   tarjetaProporcion: z.enum(['cuadrada', 'vertical', 'horizontal']).optional(),
   tarjetaAlineacion: z.enum(['izquierda', 'centro']).optional(),
   tarjetaSegundaFoto: z.boolean().optional(),
+  /** Color del precio en las tarjetas de producto (el rojo de un supermercado). */
+  colorPrecio: colorHex.optional(),
   animarSecciones: z.boolean().optional(),
   esquemas: z
     .array(

@@ -64,6 +64,7 @@ export function variablesTema(tema: TemaTienda): CSSProperties {
     ...(pilaDe(tema.fuenteTitulos) ? { '--fuente-display': pilaDe(tema.fuenteTitulos) } : {}),
     ...(pilaDe(tema.fuenteCuerpo) ? { fontFamily: pilaDe(tema.fuenteCuerpo) } : {}),
     ...(tema.botonForma ? { '--radio-boton': RADIO_BOTON[tema.botonForma] } : {}),
+    ...(tema.colorPrecio ? { '--precio': tema.colorPrecio } : {}),
   } as CSSProperties
 }
 

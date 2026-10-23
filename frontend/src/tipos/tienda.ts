@@ -35,6 +35,8 @@ export interface TemaTienda {
   tarjetaAlineacion?: 'izquierda' | 'centro'
   /** Al pasar el cursor, la tarjeta muestra la segunda foto del producto. */
   tarjetaSegundaFoto?: boolean
+  /** Color del precio en las tarjetas de producto (el rojo de un supermercado); sin él, el de la marca. */
+  colorPrecio?: string
   /** Todas las secciones aparecen con una animación suave al bajar. */
   animarSecciones?: boolean
   esquemas?: EsquemaColor[]

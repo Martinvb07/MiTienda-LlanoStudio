@@ -286,6 +286,16 @@ export function CamposTema({ tema, alCambiar, limites }: Props) {
           <Interruptor activo={tema.tarjetaSegundaFoto ?? false} alCambiar={(tarjetaSegundaFoto) => alCambiar({ tarjetaSegundaFoto })}>
             Mostrar la segunda foto al pasar el cursor
           </Interruptor>
+          <Interruptor
+            activo={Boolean(tema.colorPrecio)}
+            alCambiar={(activo) => alCambiar({ colorPrecio: activo ? '#e11d2a' : undefined })}
+          >
+            Precio en color propio
+            <small className="block text-[11.5px] text-sitio-tenue">En las tarjetas con borde, como en un supermercado.</small>
+          </Interruptor>
+          {tema.colorPrecio && (
+            <CampoColor etiqueta="Color del precio" valor={tema.colorPrecio} alCambiar={(colorPrecio) => alCambiar({ colorPrecio })} />
+          )}
         </fieldset>
       </Seccion>
 

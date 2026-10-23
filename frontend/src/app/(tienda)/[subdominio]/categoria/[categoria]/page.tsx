@@ -17,18 +17,24 @@ async function cargar({ params }: Props) {
   const host = hostDesdeIdentificador(subdominio)
   const [tienda, productos] = await Promise.all([obtenerTienda(host), listarProductos(host)])
   const categorias = categoriasDe(productos)
-  const nombre = categorias.find((c) => generarSlug(c) === categoria)
+  // Si aún no hay productos en esa categoría (un menú recién armado con una
+  // plantilla), la página sale vacía con el nombre legible en vez de un 404.
+  const nombre =
+    categorias.find((c) => generarSlug(c) === categoria) ??
+    decodeURIComponent(categoria)
+      .replace(/-/g, ' ')
+      .replace(/^./, (letra) => letra.toUpperCase())
   return { tienda, productos, categorias, nombre }
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const { nombre } = await cargar(props)
-  return { title: nombre ?? 'Categoría' }
+  return { title: nombre }
 }
 
 export default async function PaginaCategoria(props: Props) {
   const { tienda, productos, categorias, nombre } = await cargar(props)
-  if (!tienda || !nombre) notFound()
+  if (!tienda) notFound()
 
   return (
     <>

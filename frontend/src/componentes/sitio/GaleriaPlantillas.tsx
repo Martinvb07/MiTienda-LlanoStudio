@@ -82,7 +82,11 @@ function ModalPlantilla({ plantilla, alCerrar }: { plantilla: PlantillaTienda; a
     }
   }, [alCerrar])
 
-  const secciones = Array.from(new Set(plantilla.bloques('').map((bloque) => ETIQUETAS_BLOQUE[bloque.tipo])))
+  const secciones = [
+    ...(plantilla.ajustes?.cabecera === 'completa' ? ['Cabecera completa con buscador, menú y WhatsApp'] : []),
+    ...new Set(plantilla.bloques('').map((bloque) => ETIQUETAS_BLOQUE[bloque.tipo])),
+    ...(plantilla.tema.colorPrecio ? ['Precios destacados en color'] : []),
+  ]
   const colores = [plantilla.tema.colorMarca, plantilla.tema.colorFondo, plantilla.tema.colorTexto]
 
   return (

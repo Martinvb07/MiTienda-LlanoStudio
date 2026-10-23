@@ -1,5 +1,6 @@
 import type { Bloque } from '@/tipos/bloques'
-import type { TemaBase } from '@/tipos/tienda'
+import type { AjustesTienda, EnlaceMenu, TemaBase, TemaTienda } from '@/tipos/tienda'
+import { generarSlug } from './formato'
 import type { Plan } from './planes'
 import { ESTILOS_PREDEFINIDOS } from './tema'
 
@@ -19,7 +20,8 @@ export interface PlantillaTienda {
   plan: Plan
   /** Valor que se guarda en Tienda.plantilla: un estilo predefinido o la clave propia. */
   estilo: string
-  tema: TemaBase
+  /** El tema base, y el color del precio si la plantilla lo trae. */
+  tema: TemaBase & Pick<TemaTienda, 'colorPrecio'>
   destacada?: boolean
   /** Columnas de la grilla, para la miniatura. */
   columnas: 2 | 3 | 4
@@ -29,8 +31,22 @@ export interface PlantillaTienda {
   /** Tienda de ejemplo de la captura. */
   ejemplo: string
   descripcion: string
+  /** Encabezado y menú. Los datos de contacto nunca vienen de la plantilla. */
+  ajustes?: AjustesTienda
   bloques: (nombreTienda: string) => Bloque[]
 }
+
+/** Lo de los ajustes que es diseño: al cambiar de plantilla se reemplaza; el contacto se conserva. */
+const CLAVES_DISENO = ['cabecera', 'buscador', 'colorBarra', 'menu', 'botonDestacado'] as const
+
+export function ajustesConPlantilla(actuales: AjustesTienda, plantilla: PlantillaTienda): AjustesTienda {
+  const contacto: AjustesTienda = { ...actuales }
+  for (const clave of CLAVES_DISENO) delete contacto[clave]
+  return { ...contacto, ...plantilla.ajustes }
+}
+
+const aCategoria = (texto: string): EnlaceMenu => ({ texto, enlace: `/categoria/${generarSlug(texto)}` })
+const categorias = (...nombres: string[]) => nombres.map((nombre) => ({ id: id('cat'), nombre }))
 
 const temaDe = (clave: string) => ESTILOS_PREDEFINIDOS.find((estilo) => estilo.clave === clave)!.tema
 const id = (tipo: string) => `${tipo}-${Math.random().toString(36).slice(2, 10)}`
@@ -41,6 +57,162 @@ const pie = (nombre: string, extra: Partial<Extract<Bloque, { tipo: 'pie' }>['pr
 })
 
 export const PLANTILLAS_TIENDA: PlantillaTienda[] = [
+  {
+    clave: 'mercado',
+    nombre: 'Mercado y Bebidas',
+    categoria: 'Supermercado, licores y despensa',
+    plan: 'EMPRENDE',
+    estilo: 'mercado',
+    tema: {
+      colorMarca: '#ffd200',
+      colorContraste: '#111111',
+      colorFondo: '#ffffff',
+      colorTexto: '#1a1a1a',
+      fuenteTitulos: 'moderna',
+      radio: '0.5rem',
+      colorPrecio: '#e11d2a',
+    },
+    destacada: true,
+    columnas: 4,
+    captura: '/ejemplos/mercado-la-sabana.webp',
+    capturaMovil: '/ejemplos/mercado-la-sabana-movil.webp',
+    ejemplo: 'Mercado La Sabana',
+    descripcion:
+      'Como un supermercado en línea: buscador grande, barra negra con menú y WhatsApp, banners que pasan solos, categorías con foto y precios en rojo.',
+    ajustes: {
+      cabecera: 'completa',
+      buscador: true,
+      colorBarra: '#111111',
+      menu: [aCategoria('Jugos'), aCategoria('Cervezas'), aCategoria('Vinos'), { texto: 'Ofertas', enlace: '/buscar' }],
+      botonDestacado: { texto: 'Tienda en línea', enlace: '/buscar' },
+    },
+    bloques: (nombre) => [
+      {
+        id: id('carrusel'),
+        tipo: 'carrusel',
+        props: {
+          intervalo: 5,
+          alto: 'medio',
+          diapositivas: [
+            { id: id('d'), titulo: 'Todo para tu mercado', subtitulo: `Pide en ${nombre} y recibe hoy mismo en tu casa.`, textoBoton: 'Comprar ahora', enlaceBoton: '/buscar' },
+            { id: id('d'), titulo: 'Jugos naturales', subtitulo: 'Recién hechos, sin azúcar añadida.', textoBoton: 'Ver jugos', enlaceBoton: '/categoria/jugos' },
+            { id: id('d'), titulo: 'Fin de semana de vinos', subtitulo: 'Lleva dos y el segundo va con 20% menos.', textoBoton: 'Ver vinos', enlaceBoton: '/categoria/vinos' },
+          ],
+        },
+      },
+      { id: id('categorias'), tipo: 'categorias', props: { titulo: 'Categorías', items: categorias('Jugos', 'Cervezas', 'Vinos') } },
+      { id: id('grilla'), tipo: 'grilla-productos', props: { titulo: 'Productos destacados', limite: 10, columnas: 5, estilo: 'tarjeta' } },
+      { id: id('grilla'), tipo: 'grilla-productos', props: { titulo: 'Jugos naturales', limite: 5, columnas: 5, estilo: 'tarjeta', categoria: 'Jugos' } },
+      pie(nombre),
+    ],
+  },
+  {
+    clave: 'vivero',
+    nombre: 'Vivero y Jardín',
+    categoria: 'Plantas, materas y jardinería',
+    plan: 'EMPRENDE',
+    estilo: 'vivero',
+    tema: {
+      colorMarca: '#2f6b3f',
+      colorContraste: '#ffffff',
+      colorFondo: '#f6f8f3',
+      colorTexto: '#1d2b20',
+      fuenteTitulos: 'redondeada',
+      radio: '1rem',
+    },
+    columnas: 4,
+    captura: '/ejemplos/verde-morichal.webp',
+    capturaMovil: '/ejemplos/verde-morichal-movil.webp',
+    ejemplo: 'Verde Morichal',
+    descripcion:
+      'Verde y cercana: cabecera con menú por tipo de planta, banners de temporada, categorías con foto y un bloque de cuidados para dar confianza.',
+    ajustes: {
+      cabecera: 'completa',
+      buscador: true,
+      colorBarra: '#1f3d2b',
+      menu: [aCategoria('Interior'), aCategoria('Suculentas'), aCategoria('Flores'), aCategoria('Jardinería')],
+      botonDestacado: { texto: 'Ver todas', enlace: '/buscar' },
+    },
+    bloques: (nombre) => [
+      {
+        id: id('carrusel'),
+        tipo: 'carrusel',
+        props: {
+          intervalo: 6,
+          alto: 'medio',
+          diapositivas: [
+            { id: id('d'), titulo: 'Llena tu casa de verde', subtitulo: 'Plantas de interior fáciles de cuidar, listas para regalar.', textoBoton: 'Ver plantas', enlaceBoton: '/categoria/interior' },
+            { id: id('d'), titulo: 'Suculentas desde $25.000', subtitulo: 'Poca agua, mucha luz y cero complicaciones.', textoBoton: 'Ver suculentas', enlaceBoton: '/categoria/suculentas' },
+            { id: id('d'), titulo: 'Flores para cada ocasión', subtitulo: `Arreglos de ${nombre} con entrega el mismo día.`, textoBoton: 'Ver flores', enlaceBoton: '/categoria/flores' },
+          ],
+        },
+      },
+      { id: id('categorias'), tipo: 'categorias', props: { titulo: 'Categorías', items: categorias('Interior', 'Suculentas', 'Flores', 'Jardinería') } },
+      { id: id('grilla'), tipo: 'grilla-productos', props: { titulo: 'Las más pedidas', limite: 8, columnas: 4, estilo: 'tarjeta' } },
+      {
+        id: id('imagen-texto'),
+        tipo: 'imagen-texto',
+        props: {
+          titulo: 'Te enseñamos a cuidarlas',
+          contenido: 'Cada planta sale con su guía de riego y luz. Si tienes dudas después de la compra, escríbenos por WhatsApp y te ayudamos.',
+          lado: 'izquierda',
+          textoBoton: 'Escríbenos',
+          enlaceBoton: '#',
+        },
+      },
+      pie(nombre),
+    ],
+  },
+  {
+    clave: 'megadeporte',
+    nombre: 'Megatienda Deportiva',
+    categoria: 'Deporte, fitness y accesorios',
+    plan: 'NEGOCIO',
+    estilo: 'megadeporte',
+    tema: {
+      colorMarca: '#ff5a1f',
+      colorContraste: '#ffffff',
+      colorFondo: '#ffffff',
+      colorTexto: '#0b1f3a',
+      fuenteTitulos: 'moderna',
+      radio: '0.25rem',
+    },
+    columnas: 4,
+    captura: '/ejemplos/zona-fit.webp',
+    capturaMovil: '/ejemplos/zona-fit-movil.webp',
+    ejemplo: 'Zona Fit',
+    descripcion:
+      'Para catálogos grandes: anuncio arriba, cuatro banners, menú por categoría, vitrinas en cinco columnas por categoría y precios destacados.',
+    ajustes: {
+      cabecera: 'completa',
+      buscador: true,
+      colorBarra: '#0b1f3a',
+      menu: [aCategoria('Yoga y pilates'), aCategoria('Entrenamiento'), aCategoria('Morrales'), aCategoria('Relojes'), { texto: 'Ofertas', enlace: '/buscar' }],
+      botonDestacado: { texto: 'Ver catálogo', enlace: '/buscar' },
+    },
+    bloques: (nombre) => [
+      { id: id('anuncio'), tipo: 'anuncio', props: { texto: 'Envío gratis a toda Colombia en compras desde $200.000' } },
+      {
+        id: id('carrusel'),
+        tipo: 'carrusel',
+        props: {
+          intervalo: 5,
+          alto: 'alto',
+          diapositivas: [
+            { id: id('d'), titulo: 'Entrena a tu ritmo', subtitulo: `Todo para tu rutina en ${nombre}, con envío a todo el país.`, textoBoton: 'Ver entrenamiento', enlaceBoton: '/categoria/entrenamiento' },
+            { id: id('d'), titulo: 'Semana del yoga', subtitulo: 'Tapetes, bloques y bandas con hasta 25% menos.', textoBoton: 'Ver yoga', enlaceBoton: '/categoria/yoga-y-pilates' },
+            { id: id('d'), titulo: 'Listos para la ruta', subtitulo: 'Morrales y relojes para cada aventura.', textoBoton: 'Ver morrales', enlaceBoton: '/categoria/morrales' },
+            { id: id('d'), titulo: 'Mide cada paso', subtitulo: 'Relojes deportivos con cronómetro y alarma.', textoBoton: 'Ver relojes', enlaceBoton: '/categoria/relojes' },
+          ],
+        },
+      },
+      { id: id('categorias'), tipo: 'categorias', props: { titulo: 'Compra por categoría', items: categorias('Yoga y pilates', 'Entrenamiento', 'Morrales', 'Relojes') } },
+      { id: id('grilla'), tipo: 'grilla-productos', props: { titulo: 'Lo más vendido', limite: 10, columnas: 5, estilo: 'tarjeta' } },
+      { id: id('grilla'), tipo: 'grilla-productos', props: { titulo: 'Yoga y pilates', limite: 5, columnas: 5, estilo: 'tarjeta', categoria: 'Yoga y pilates' } },
+      { id: id('grilla'), tipo: 'grilla-productos', props: { titulo: 'Relojes', limite: 5, columnas: 5, estilo: 'tarjeta', categoria: 'Relojes' } },
+      pie(nombre),
+    ],
+  },
   {
     clave: 'deporte',
     nombre: 'Deporte y Aire Libre',
@@ -298,5 +470,5 @@ export const PLANTILLAS_TIENDA: PlantillaTienda[] = [
       },
       pie(nombre),
     ],
-  },
+  }
 ]

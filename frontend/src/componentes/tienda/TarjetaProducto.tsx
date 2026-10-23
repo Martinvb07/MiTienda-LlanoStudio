@@ -6,7 +6,7 @@ import { esMedioLocal } from '@/utilidades/medios'
 
 /**
  * Un producto en una grilla. 'simple' es foto grande y texto suelto; 'tarjeta'
- * va en un recuadro con el precio en el color de la marca y la presentación,
+ * va en un recuadro con el precio destacado (color propio o el de la marca) y la presentación,
  * como el catálogo de un supermercado.
  */
 export function TarjetaProducto({
@@ -54,7 +54,7 @@ export function TarjetaProducto({
         </div>
         <h3 className="mt-3 line-clamp-2 text-center text-sm">{producto.nombre}</h3>
         <p className="mt-2 text-center">
-          <span className="font-display text-lg font-semibold text-marca">{formatearPrecio(producto.precio, moneda)}</span>
+          <span className="font-display text-lg font-semibold text-[var(--precio,var(--marca))]">{formatearPrecio(producto.precio, moneda)}</span>
           {producto.precioComparacion && (
             <s className="ml-1.5 text-xs text-tinta/40">{formatearPrecio(producto.precioComparacion, moneda)}</s>
           )}

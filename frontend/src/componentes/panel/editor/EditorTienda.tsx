@@ -11,7 +11,7 @@ import { urlTienda } from '@/utilidades/dominios'
 import { ESTILOS_PREDEFINIDOS, RADIOS, esquemasIniciales } from '@/utilidades/tema'
 import { cn } from '@/utilidades/clases'
 import { PLANES, limitesDe, planIncluye, planMinimo } from '@/utilidades/planes'
-import { PLANTILLAS_TIENDA, type PlantillaTienda } from '@/utilidades/plantillas'
+import { PLANTILLAS_TIENDA, ajustesConPlantilla, type PlantillaTienda } from '@/utilidades/plantillas'
 import { useSesion } from '../SesionPanel'
 import { Aviso, CURVA, Campo, CampoArea, CampoColor, Candado, Interruptor, PlanRequerido, Seccion, Segmentado } from '../ui/basicos'
 import { Selector } from '../ui/flotantes'
@@ -98,6 +98,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       tema: { ...elegida.tema },
       plantilla: elegida.estilo,
       configuracionBloques: elegida.bloques(actual.nombre || 'Mi tienda'),
+      ajustes: ajustesConPlantilla(actual.ajustes, elegida),
     }))
   }, [plantillaInicial, plan])
 
@@ -252,7 +253,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
   async function aplicarPlantilla(plantilla: PlantillaTienda) {
     const si = await confirmar({
       titulo: `¿Usar la plantilla ${plantilla.nombre}?`,
-      mensaje: 'Reemplaza las secciones y el estilo de tu página. Tus productos no cambian, y puedes deshacerlo con Ctrl+Z.',
+      mensaje: 'Reemplaza las secciones, el encabezado y el estilo de tu página. Tus productos y tus datos de contacto no cambian, y puedes deshacerlo con Ctrl+Z.',
       confirmar: 'Usar plantilla',
     })
     if (!si) return
@@ -260,6 +261,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       tema: { ...plantilla.tema },
       plantilla: plantilla.estilo,
       configuracionBloques: plantilla.bloques(borrador.nombre || 'Mi tienda'),
+      ajustes: ajustesConPlantilla(borrador.ajustes, plantilla),
     })
     setAbierto(null)
   }

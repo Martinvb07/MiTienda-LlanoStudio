@@ -63,7 +63,7 @@ export async function agregarDominio(req: Request, res: Response): Promise<void>
 }
 
 /** ¿El DNS del dominio ya apunta a la plataforma? */
-async function apuntaANosotros(dominio: string): Promise<boolean> {
+export async function apuntaANosotros(dominio: string): Promise<boolean> {
   const objetivo = entorno.CNAME_DOMINIOS.toLowerCase()
   const cnames = await dns.resolveCname(dominio).catch(() => [] as string[])
   if (cnames.some((cname) => cname.toLowerCase().replace(/\.$/, '') === objetivo)) return true
@@ -94,4 +94,36 @@ export async function quitarDominio(req: Request, res: Response): Promise<void> 
   })
   if (count === 0) throw noEncontrado('Ese dominio no está en tu tienda')
   res.status(204).end()
+}
+
+/**
+ * Revisa solos los dominios que aún no apuntan, para que la dueña no tenga que
+ * volver a darle a "Verificar" cuando el DNS por fin propague.
+ */
+export async function verificarDominiosPendientes() {
+  const pendientes = await prisma.dominioPropio.findMany({
+    where: { verificado: false, creadoEn: { gt: new Date(Date.now() - 14 * 86_400_000) } },
+    select: { id: true, dominio: true },
+    take: 100,
+  })
+  for (const pendiente of pendientes) {
+    if (await apuntaANosotros(pendiente.dominio)) {
+      await prisma.dominioPropio.update({ where: { id: pendiente.id }, data: { verificado: true } })
+    }
+  }
+}
+
+/**
+ * Lista interna para el VPS (deploy/dominios-propios.sh): los dominios
+ * verificados de tiendas activas cuyo plan incluye dominio propio. Texto
+ * plano, uno por línea. Sólo responde con el token interno.
+ */
+export async function dominiosParaServidor(req: Request, res: Response): Promise<void> {
+  if (!entorno.TOKEN_INTERNO || req.header('x-mitienda-interno') !== entorno.TOKEN_INTERNO) throw noEncontrado()
+  const filas = await prisma.dominioPropio.findMany({
+    where: { verificado: true, tenant: { activo: true, plan: { in: ['NEGOCIO', 'PRO'] } } },
+    select: { dominio: true },
+    orderBy: { dominio: 'asc' },
+  })
+  res.type('text/plain').send(filas.map((fila) => fila.dominio).join('\n'))
 }

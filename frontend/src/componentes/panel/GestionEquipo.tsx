@@ -273,7 +273,7 @@ export function GestionDominio() {
     try {
       const actualizado = await verificarDominio(dominio.id)
       reemplazar(actualizado)
-      if (!actualizado.verificado) setError('Todavía no vemos el registro DNS. Los cambios pueden tardar hasta unas horas en propagarse.')
+      if (!actualizado.verificado) setError('Todavía no vemos el registro DNS. Puede tardar unas horas en propagarse; lo revisamos solos cada hora y se conecta en cuanto aparezca.')
     } catch (problema) {
       setError(problema instanceof Error ? problema.message : 'No se pudo verificar')
     } finally {
@@ -309,6 +309,15 @@ export function GestionDominio() {
               <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
             </button>
           </div>
+          {dominio.verificado && (
+            <p className="mt-2.5 text-[12px] leading-relaxed text-sitio-tenue">
+              El DNS ya apunta a Mi Tienda. El candado de seguridad (HTTPS) se activa solo en unos 5 a 10 minutos; después abre{' '}
+              <a href={`https://${dominio.dominio}`} target="_blank" rel="noopener noreferrer" className="text-sitio-suave underline-offset-4 hover:underline">
+                https://{dominio.dominio}
+              </a>
+              .
+            </p>
+          )}
           {!dominio.verificado && datos && (
             <div className="mt-3 rounded-lg bg-white/[0.03] p-3 text-[12px] leading-relaxed text-sitio-suave">
               <p>En el panel de tu proveedor de dominio (GoDaddy, Namecheap, Hostinger…) crea este registro:</p>

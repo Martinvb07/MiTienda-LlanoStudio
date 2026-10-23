@@ -12,6 +12,7 @@ import { webhookBold } from '../controladores/suscripcion.controlador.js'
 import rutasContenido from './contenido.rutas.js'
 import rutasSoporte from './soporte.rutas.js'
 import { recibirAviso } from '../controladores/pasarelas.controlador.js'
+import { dominiosParaServidor } from '../controladores/dominios.controlador.js'
 
 const enrutador = Router()
 
@@ -29,6 +30,7 @@ enrutador.use('/contenido', rutasContenido)
 enrutador.use('/soporte', rutasSoporte)
 // Avisos de Wompi, ePayco y Bold de las tiendas (sin Host de tienda: la referencia dice cuál).
 enrutador.all('/pagos/aviso/:proveedor', recibirAviso)
+enrutador.get('/plataforma/dominios', dominiosParaServidor)
 
 // A partir de aquí, toda petición pasa por la resolución de tenant por Host.
 enrutador.use(resolverTenant)

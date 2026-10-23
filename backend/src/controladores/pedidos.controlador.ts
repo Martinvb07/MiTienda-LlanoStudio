@@ -4,12 +4,14 @@ import { prisma } from '../config/prisma.js'
 import { Prisma } from '../generado/prisma/client.js'
 import { ErrorHttp, noEncontrado, solicitudInvalida } from '../utilidades/errores.js'
 import { evaluarCupon } from './cupones.controlador.js'
+import { armarCheckout, leerSecretos, nuevaReferenciaPago } from '../servicios/pasarelas.servicio.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Esquemas
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const METODOS_PAGO = ['contra-entrega', 'transferencia', 'acordar'] as const
+export const METODOS_PAGO = ['contra-entrega', 'transferencia', 'acordar', 'wompi', 'epayco', 'bold'] as const
+const EN_LINEA = { wompi: 'WOMPI', epayco: 'EPAYCO', bold: 'BOLD' } as const
 
 export const esquemaPedidoPublico = z.object({
   cliente: z.object({
@@ -178,6 +180,11 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
   if (datos.metodoPago === 'transferencia' && !ajustes.pagoTransferencia) {
     throw solicitudInvalida('Esta tienda no recibe transferencias')
   }
+  const proveedor = datos.metodoPago in EN_LINEA ? EN_LINEA[datos.metodoPago as keyof typeof EN_LINEA] : null
+  const pasarela = proveedor
+    ? await prisma.pasarelaTienda.findUnique({ where: { tiendaId_proveedor: { tiendaId, proveedor } } })
+    : null
+  if (proveedor && !pasarela?.activa) throw solicitudInvalida('Esta tienda no recibe ese medio de pago')
 
   // Si el mismo producto viene en dos líneas con la misma variante, se suman.
   const lineas = new Map<string, { productoId: string; cantidad: number; variante?: string }>()
@@ -304,7 +311,27 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
         })
       })
 
-      res.status(201).json({ pedido: serializarPedido(pedido) })
+      // Pago en línea: se registra el intento y se arma el checkout de la pasarela.
+      let checkout = null
+      if (proveedor && pasarela) {
+        const referencia = nuevaReferenciaPago(pedido.numero)
+        await prisma.pago.create({ data: { pedidoId: pedido.id, proveedor, referencia, monto: pedido.total } })
+        const host = String(req.headers['x-mitienda-host'] ?? req.headers.host ?? '')
+        checkout = armarCheckout(
+          proveedor,
+          { llavePublica: pasarela.llavePublica, modoPrueba: pasarela.modoPrueba, secretos: leerSecretos(pasarela.secretos) },
+          {
+            referencia,
+            monto: Number(pedido.total),
+            descripcion: `Pedido #${pedido.numero}`,
+            correo: pedido.clienteEmail,
+            nombre: pedido.clienteNombre,
+            retorno: `https://${host}/pago?ref=${referencia}`,
+          },
+        )
+      }
+
+      res.status(201).json({ pedido: serializarPedido(pedido), checkout })
       return
     } catch (error) {
       const choque = error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'

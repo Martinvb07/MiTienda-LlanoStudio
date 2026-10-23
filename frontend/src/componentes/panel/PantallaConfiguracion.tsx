@@ -16,9 +16,10 @@ import { limitesDe } from '@/utilidades/planes'
 import { cn } from '@/utilidades/clases'
 import { CabeceraPanel } from './CabeceraPanel'
 import { useSesion } from './SesionPanel'
-import { BotonPanel, Campo, Etiqueta } from './ui/basicos'
+import { BotonPanel, Campo } from './ui/basicos'
 import { Aparecer, SALIDA } from './ui/movimiento'
 import { GestionDominio, GestionEquipo } from './GestionEquipo'
+import { GestionPasarelas } from './GestionPasarelas'
 
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
@@ -378,18 +379,16 @@ export function PantallaConfiguracion() {
           </>
         )}
 
+        {gestiona && (
         <Bloque
           titulo="Pagos en línea"
           descripcion="Conecta tu cuenta de Wompi, ePayco o Bold para cobrar en la tienda."
-          resumen={<Etiqueta tono="azul">Próximamente</Etiqueta>}
           Icono={CreditCard}
           orden={7}
         >
-          <p className="text-[13px] leading-relaxed text-sitio-tenue">
-            Muy pronto vas a poder conectar tu propia pasarela y recibir el dinero directo en tu cuenta. Mientras
-            tanto tus clientes te pagan por WhatsApp, transferencia o contra entrega.
-          </p>
+          <GestionPasarelas />
         </Bloque>
+        )}
 
         <Bloque titulo="Sesión" descripcion={`Conectado como ${sesion.usuario.email}.`} Icono={LogOut} orden={8}>
           <BotonPanel

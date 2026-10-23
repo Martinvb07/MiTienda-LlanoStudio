@@ -68,6 +68,7 @@ import {
   verificarPago,
 } from '../controladores/suscripcion.controlador.js'
 import { marcarNovedadesVistas, obtenerComunicados } from '../controladores/comunicados.controlador.js'
+import { esquemaPasarela, guardarPasarela, listarPasarelas } from '../controladores/pasarelas.controlador.js'
 
 const enrutador = Router()
 
@@ -121,6 +122,8 @@ enrutador.post('/suscripcion/checkout', gestion, validar(esquemaCheckout), crear
 enrutador.post('/suscripcion/pagos/:referencia/verificar', gestion, verificarPago)
 enrutador.post('/suscripcion/cupon', gestion, validar(esquemaCheckout), probarCupon)
 enrutador.get('/referidos', gestion, obtenerReferidos)
+enrutador.get('/pasarelas', gestion, listarPasarelas)
+enrutador.put('/pasarelas/:proveedor', gestion, validar(esquemaPasarela), guardarPasarela)
 
 enrutador.get('/equipo', gestion, listarEquipo)
 enrutador.post('/equipo', gestion, validar(esquemaMiembro), agregarMiembro)

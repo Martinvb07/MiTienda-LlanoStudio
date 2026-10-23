@@ -47,7 +47,7 @@ export function crearApp() {
       limit: '2mb',
       // Bold firma los bytes exactos del webhook: se guardan antes de parsear.
       verify(req, _res, buffer) {
-        if (req.url?.startsWith('/api/bold/')) (req as express.Request).cuerpoCrudo = Buffer.from(buffer)
+        if (req.url?.startsWith('/api/bold/') || req.url?.startsWith('/api/pagos/aviso/')) (req as express.Request).cuerpoCrudo = Buffer.from(buffer)
       },
     }),
   )

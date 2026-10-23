@@ -110,6 +110,8 @@ export interface AjustesTienda {
   pedidoMinimo?: number
   pagoContraEntrega?: boolean
   pagoTransferencia?: boolean
+  /** Pasarelas conectadas en el panel (la API las agrega a los ajustes públicos). */
+  pagosEnLinea?: ('WOMPI' | 'EPAYCO' | 'BOLD')[]
   datosTransferencia?: string
   /** El cliente termina la compra mandando el pedido por WhatsApp. */
   pedidosWhatsapp?: boolean

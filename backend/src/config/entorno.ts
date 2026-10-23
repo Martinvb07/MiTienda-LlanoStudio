@@ -43,6 +43,10 @@ const esquema = z.object({
   // A dónde vuelve la persona después de pagar. Vacío = https://<SUBDOMINIO_PANEL>.<DOMINIO_BASE>
   URL_PANEL: z.string().default(''),
 
+  // Cifra las llaves secretas de las pasarelas de cada tienda. Si cambia, hay
+  // que volver a pegar esas llaves. Vacío = se deriva de JWT_SECRETO.
+  CLAVE_CIFRADO: z.string().default(''),
+
   // Correos automáticos (bienvenida, plan por vencer, te extrañamos). Sin
   // SMTP_HOST no se envía nada y el resto sigue funcionando.
   SMTP_HOST: z.string().default(''),

@@ -1,4 +1,4 @@
-export type MetodoPago = 'contra-entrega' | 'transferencia' | 'acordar'
+export type MetodoPago = 'contra-entrega' | 'transferencia' | 'acordar' | 'wompi' | 'epayco' | 'bold'
 
 export type EstadoPedido = 'PENDIENTE' | 'PAGADO' | 'PREPARANDO' | 'ENVIADO' | 'ENTREGADO' | 'CANCELADO' | 'REEMBOLSADO'
 
@@ -60,6 +60,32 @@ export const ETIQUETAS_PAGO: Record<MetodoPago, string> = {
   'contra-entrega': 'Contra entrega',
   transferencia: 'Transferencia',
   acordar: 'Acordar por WhatsApp',
+  wompi: 'En línea con Wompi',
+  epayco: 'En línea con ePayco',
+  bold: 'En línea con Bold',
+}
+
+/** Lo que devuelve la API para cobrar en la pasarela elegida. */
+export type CheckoutPago =
+  | { tipo: 'redireccion'; url: string }
+  | { tipo: 'epayco'; llave: string; prueba: boolean; datos: Record<string, string> }
+  | {
+      tipo: 'bold'
+      llave: string
+      referencia: string
+      monto: number
+      moneda: string
+      firma: string
+      descripcion: string
+      redireccion: string
+      correo: string
+    }
+
+export interface EstadoPagoTienda {
+  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'ANULADO' | 'ERROR'
+  proveedor: string
+  monto: string
+  pedido: { numero: number; clienteNombre: string; clienteEmail: string; total: string }
 }
 
 export type TipoCupon = 'PORCENTAJE' | 'FIJO' | 'ENVIO_GRATIS'

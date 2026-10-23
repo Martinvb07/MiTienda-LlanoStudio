@@ -48,6 +48,8 @@ enum EstadoPedido {
 enum ProveedorPago {
   WOMPI
   PSE
+  EPAYCO
+  BOLD
 }
 
 enum EstadoPago {
@@ -176,11 +178,12 @@ model Tienda {
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
 
-  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   productos Producto[]
   pedidos   Pedido[]
   cupones   Cupon[]
   visitas   VisitaDiaria[]
+  pasarelas PasarelaTienda[]
 
   @@map("tiendas")
 }
@@ -692,4 +695,32 @@ model MensajeSoporte {
 
   @@index([ticketId, creadoEn])
   @@map("mensajes_soporte")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pasarelas de pago de cada tienda
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Cuenta de Wompi, ePayco o Bold de una tienda: el dinero de sus ventas va
+/// directo a esa cuenta. Los secretos se guardan cifrados (utilidades/cifrado).
+model PasarelaTienda {
+  id         String        @id @default(cuid())
+  tiendaId   String
+  proveedor  ProveedorPago
+  activa     Boolean       @default(false)
+  /// Llaves de prueba de la pasarela: el cobro no es real.
+  modoPrueba Boolean       @default(true)
+
+  /// Lo que se puede mostrar: llave pública (Wompi, ePayco) o de identidad (Bold).
+  llavePublica String
+  /// JSON cifrado con los secretos de cada pasarela.
+  secretos     String
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  tienda Tienda @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+
+  @@unique([tiendaId, proveedor])
+  @@map("pasarelas_tienda")
 }

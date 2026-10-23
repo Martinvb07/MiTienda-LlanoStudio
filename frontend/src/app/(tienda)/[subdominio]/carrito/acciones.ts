@@ -4,10 +4,10 @@ import { headers } from 'next/headers'
 import { revalidateTag } from 'next/cache'
 import { enviarApi } from '@/servicios/api'
 import { CABECERA_HOST } from '@/middleware'
-import type { PedidoCreado, SolicitudPedido } from '@/tipos/pedidos'
+import type { CheckoutPago, EstadoPagoTienda, PedidoCreado, SolicitudPedido } from '@/tipos/pedidos'
 
 export type ResultadoPedido =
-  | { ok: true; pedido: PedidoCreado }
+  | { ok: true; pedido: PedidoCreado; checkout: CheckoutPago | null }
   | { ok: false; mensaje: string; campos: Record<string, string> }
 
 /**
@@ -39,7 +39,7 @@ export async function crearPedido(solicitud: SolicitudPedido): Promise<Resultado
   const host = (await headers()).get(CABECERA_HOST)
   if (!host) return { ok: false, mensaje: 'No sabemos en qué tienda estás.', campos: {} }
 
-  const respuesta = await enviarApi<{ pedido: PedidoCreado }>('/api/pedidos', solicitud, host)
+  const respuesta = await enviarApi<{ pedido: PedidoCreado; checkout: CheckoutPago | null }>('/api/pedidos', solicitud, host)
   if (!respuesta.ok) return { ok: false, mensaje: respuesta.mensaje, campos: respuesta.campos }
 
   // El stock cambió: que el catálogo y las fichas no muestren lo ya vendido.
@@ -48,5 +48,32 @@ export async function crearPedido(solicitud: SolicitudPedido): Promise<Resultado
     if (item.slug) revalidateTag(`producto:${host}:${item.slug}`)
   }
 
-  return { ok: true, pedido: respuesta.datos.pedido }
+  return { ok: true, pedido: respuesta.datos.pedido, checkout: respuesta.datos.checkout ?? null }
+}
+
+/**
+ * Cómo quedó el pago al volver de la pasarela. `idExterno` es el id que la
+ * pasarela pone en la URL de regreso (Wompi ?id=, ePayco ?ref_payco=).
+ */
+export async function consultarPago(referencia: string, idExterno?: string): Promise<EstadoPagoTienda | null> {
+  const host = (await headers()).get(CABECERA_HOST)
+  if (!host) return null
+  const parametros = new URLSearchParams(idExterno ? { id: idExterno, ref_payco: idExterno } : {})
+  try {
+    const respuesta = await fetch(
+      `${process.env.URL_API ?? 'http://localhost:4000'}/api/pedidos/pagos/${encodeURIComponent(referencia)}?${parametros}`,
+      {
+        headers: {
+          accept: 'application/json',
+          'x-mitienda-host': host,
+          ...(process.env.MITIENDA_TOKEN_INTERNO ? { 'x-mitienda-interno': process.env.MITIENDA_TOKEN_INTERNO } : {}),
+        },
+        cache: 'no-store',
+      },
+    )
+    if (!respuesta.ok) return null
+    return ((await respuesta.json()) as { pago: EstadoPagoTienda }).pago
+  } catch {
+    return null
+  }
 }

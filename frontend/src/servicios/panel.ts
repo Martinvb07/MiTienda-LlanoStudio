@@ -433,3 +433,21 @@ export const probarCupon = (plan: PlanPago, periodo: PeriodoPago, cupon: string)
     method: 'POST',
     body: JSON.stringify({ plan, periodo, cupon }),
   })
+
+// ── Pasarelas de pago de la tienda ──
+
+export type ProveedorPago = 'WOMPI' | 'EPAYCO' | 'BOLD'
+export interface PasarelaTienda {
+  proveedor: ProveedorPago
+  activa: boolean
+  modoPrueba: boolean
+  llavePublica: string
+  secretosPuestos: Record<string, boolean>
+  urlAviso: string
+}
+export const listarPasarelas = () => pedir<{ pasarelas: PasarelaTienda[] }>('/pasarelas').then((r) => r.pasarelas)
+export const guardarPasarela = (
+  proveedor: ProveedorPago,
+  datos: { activa: boolean; modoPrueba: boolean; llavePublica: string; secretos: Record<string, string> },
+) =>
+  pedir<{ pasarelas: PasarelaTienda[] }>(`/pasarelas/${proveedor}`, { method: 'PUT', body: JSON.stringify(datos) }).then((r) => r.pasarelas)

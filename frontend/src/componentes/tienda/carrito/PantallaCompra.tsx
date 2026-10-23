@@ -4,9 +4,10 @@ import { useEffect, useState, type FormEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { CheckCircle2, MessageCircle } from 'lucide-react'
+import { CheckCircle2, CreditCard, MessageCircle } from 'lucide-react'
 import { crearPedido, validarCupon, type CuponAplicado } from '@/app/(tienda)/[subdominio]/carrito/acciones'
-import { ETIQUETAS_PAGO, type MetodoPago, type PedidoCreado } from '@/tipos/pedidos'
+import { ETIQUETAS_PAGO, type CheckoutPago, type MetodoPago, type PedidoCreado } from '@/tipos/pedidos'
+import { abrirCheckout } from './abrirCheckout'
 import { formatearPrecio } from '@/utilidades/formato'
 import { esMedioLocal } from '@/utilidades/medios'
 import { enlaceWhatsapp } from '@/utilidades/whatsapp'
@@ -68,9 +69,24 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
   const [error, setError] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [creado, setCreado] = useState<PedidoCreado | null>(null)
+  const [checkout, setCheckout] = useState<CheckoutPago | null>(null)
+  const [errorPago, setErrorPago] = useState('')
+
+  async function pagar(datos: CheckoutPago) {
+    setErrorPago('')
+    try {
+      await abrirCheckout(datos)
+    } catch (problema) {
+      setErrorPago(problema instanceof Error ? problema.message : 'No pudimos abrir el pago')
+    }
+  }
 
   const ajustes = carrito?.ajustes ?? {}
+  const enLinea = ajustes.pagosEnLinea ?? []
   const metodos: MetodoPago[] = [
+    ...(enLinea.includes('WOMPI') ? (['wompi'] as const) : []),
+    ...(enLinea.includes('EPAYCO') ? (['epayco'] as const) : []),
+    ...(enLinea.includes('BOLD') ? (['bold'] as const) : []),
     ...(ajustes.pagoContraEntrega ? (['contra-entrega'] as const) : []),
     ...(ajustes.pagoTransferencia ? (['transferencia'] as const) : []),
     'acordar',
@@ -145,8 +161,14 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
       return
     }
     setCreado(resultado.pedido)
+    setCheckout(resultado.checkout)
     carrito.vaciar()
     window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Pago en línea: directo a la pasarela; el WhatsApp va después de pagar.
+    if (resultado.checkout) {
+      void pagar(resultado.checkout)
+      return
+    }
     if (porWhatsapp && ajustes.whatsapp) {
       window.open(enlaceWhatsapp(ajustes.whatsapp, mensajeWhatsapp(resultado.pedido, nombreTienda, moneda)), '_blank')
     }
@@ -167,6 +189,23 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
           <strong className="text-tinta">{formatearPrecio(creado.total, moneda)}</strong>. Te escribiremos a {creado.clienteEmail} y por
           teléfono para coordinar la entrega.
         </p>
+        {checkout && (
+          <div className="mt-8 rounded-(--radius-marca) border border-tinta/15 p-5">
+            <p className="font-medium">Falta el pago</p>
+            <p className="mt-1 text-sm text-tinta/70">
+              Si la ventana de pago no se abrió o la cerraste, ábrela otra vez. Tu pedido queda apartado mientras tanto.
+            </p>
+            {errorPago && <p className="mt-2 text-sm text-red-600">{errorPago}</p>}
+            <button
+              type="button"
+              onClick={() => void pagar(checkout)}
+              className="boton-tienda mt-4 inline-flex items-center justify-center gap-2 rounded-(--radius-marca) bg-marca px-6 py-3.5 font-medium text-marca-contraste"
+            >
+              <CreditCard aria-hidden="true" className="h-5 w-5" />
+              Pagar {formatearPrecio(creado.total, moneda)}
+            </button>
+          </div>
+        )}
         {creado.metodoPago === 'transferencia' && ajustes.datosTransferencia && (
           <div className="mt-8 rounded-(--radius-marca) border border-tinta/15 p-5 text-left">
             <p className="font-medium">Datos para transferir</p>

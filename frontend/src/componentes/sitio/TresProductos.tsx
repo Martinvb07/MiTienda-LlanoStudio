@@ -2,8 +2,9 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight, Instagram, MapPin, MessageCircle, ShoppingBag } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 import { moverLuz } from './Caracteristicas'
+import { MaquetaEnlaces, MaquetaPagina } from './Maquetas'
 import { Contenedor } from './Contenedor'
 import { Revelar } from './Revelar'
 import { PRODUCTOS } from './productos'
@@ -132,63 +133,5 @@ function TarjetaProxima({
         </div>
       </Link>
     </Revelar>
-  )
-}
-
-/** Línea de texto de maqueta: sólo forma, sin palabras inventadas. */
-const Linea = ({ ancho, className = '' }: { ancho: string; className?: string }) => (
-  <span className={`block h-2 rounded-full bg-white/12 ${className}`} style={{ width: ancho }} />
-)
-
-/** Maqueta de la página informativa: portada con foto, servicios y contacto. */
-export function MaquetaPagina() {
-  return (
-    <div className="absolute inset-x-7 top-0 -bottom-6 overflow-hidden rounded-t-[8px] bg-black ring-1 ring-white/10 transition-transform duration-[1.2s] ease-salida group-hover:-translate-y-2 md:inset-x-8">
-      <div className="relative h-[46%]">
-        <Image src="/fotos/casa-historia.webp" alt="" fill sizes="(max-width: 768px) 90vw, 40vw" className="object-cover opacity-55" />
-        <div className="absolute bottom-5 left-5 space-y-2.5">
-          <Linea ancho="150px" className="!h-3 !bg-white/80" />
-          <Linea ancho="110px" className="!bg-white/40" />
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-3 p-5">
-        {[0, 1, 2].map((indice) => (
-          <div key={indice} className="space-y-2 rounded-[6px] border border-white/10 p-3">
-            <span className="block h-5 w-5 rounded-[4px] bg-white/10" />
-            <Linea ancho="80%" />
-            <Linea ancho="55%" />
-          </div>
-        ))}
-      </div>
-      <div className="flex items-center gap-3 px-5">
-        <MapPin className="h-3.5 w-3.5 text-white/30" />
-        <Linea ancho="40%" />
-        <span className="ml-auto h-7 w-24 rounded-full bg-white/80" />
-      </div>
-    </div>
-  )
-}
-
-/** Maqueta de la página de enlaces: un celular con botones apilados. */
-export function MaquetaEnlaces() {
-  const botones = [ShoppingBag, MessageCircle, MapPin, Instagram]
-  return (
-    <div className="absolute top-0 left-1/2 w-[210px] -translate-x-1/2 overflow-hidden rounded-t-[26px] border-[6px] border-b-0 border-sitio-elevado bg-black px-5 pt-8 pb-10 transition-transform duration-[1.2s] ease-salida group-hover:-translate-y-2">
-      <div className="relative mx-auto h-14 w-14 overflow-hidden rounded-full ring-1 ring-white/15">
-        <Image src="/fotos/lana-hero.webp" alt="" fill sizes="56px" className="object-cover" />
-      </div>
-      <div className="mt-3.5 flex flex-col items-center gap-2">
-        <Linea ancho="96px" className="!bg-white/70" />
-        <Linea ancho="128px" />
-      </div>
-      <div className="mt-6 space-y-2.5">
-        {botones.map((Icono, indice) => (
-          <div key={indice} className="flex h-10 items-center gap-3 rounded-full border border-white/12 px-4">
-            <Icono className="h-3.5 w-3.5 text-white/50" />
-            <Linea ancho={`${60 - indice * 8}%`} />
-          </div>
-        ))}
-      </div>
-    </div>
   )
 }

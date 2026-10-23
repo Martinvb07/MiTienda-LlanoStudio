@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { ArrowUpRight, Lock } from 'lucide-react'
+import { ArrowUpRight, Banknote, Lock, MessageCircle } from 'lucide-react'
 import { Contenedor } from './Contenedor'
 import { Revelar } from './Revelar'
 import { cn } from '@/utilidades/clases'
@@ -48,12 +48,15 @@ function Baldosa({
   )
 }
 
-const PAGOS = [
-  { nombre: 'Wompi', detalle: 'Tarjeta y PSE' },
-  { nombre: 'ePayco', detalle: 'Tarjeta y PSE' },
-  { nombre: 'Bold', detalle: 'Tarjeta y PSE' },
-  { nombre: 'WhatsApp', detalle: 'Cierras la venta en el chat' },
-  { nombre: 'Contra entrega', detalle: 'Paga al recibir' },
+/**
+ * Pasarelas que cada tienda conecta con su propia cuenta. Con `logo` (archivo
+ * oficial en public/logos) se muestra la marca en blanco; sin él, el nombre.
+ */
+const PASARELAS: { nombre: string; logo?: string }[] = [{ nombre: 'Wompi' }, { nombre: 'ePayco' }, { nombre: 'Bold' }]
+
+const OTROS_PAGOS = [
+  { nombre: 'WhatsApp', detalle: 'Cierras la venta en el chat', icono: MessageCircle },
+  { nombre: 'Contra entrega', detalle: 'Paga al recibir', icono: Banknote },
 ]
 
 /**
@@ -117,13 +120,31 @@ export function Caracteristicas({ rotulo = 'Tienda en línea' }: { rotulo?: stri
           </Baldosa>
 
           <Baldosa retardo={0.12} titulo="Cobra como cobra Colombia" texto="Tu cuenta de pagos, WhatsApp o contra entrega. Sin comisión.">
-            <div className="absolute inset-x-7 top-0 bottom-7 overflow-hidden rounded-[8px] border border-white/10 bg-black/40 md:inset-x-8">
-              <p className="px-4 pt-4 pb-2 text-[11px] tracking-[0.12em] text-white/40 uppercase">¿Cómo quieres pagar?</p>
-              {PAGOS.map((pago, indice) => (
-                <div key={pago.nombre} className="flex items-center gap-3 border-t border-white/8 px-4 py-[11px]">
-                  <span className={cn('grid h-3.5 w-3.5 place-items-center rounded-full border', indice === 0 ? 'border-white' : 'border-white/25')}>
-                    {indice === 0 && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-                  </span>
+            <div className="absolute inset-x-7 top-0 bottom-7 flex flex-col gap-2 md:inset-x-8">
+              <div className="grid flex-1 grid-cols-3 gap-2">
+                {PASARELAS.map((pasarela) => (
+                  <div
+                    key={pasarela.nombre}
+                    className="grid place-items-center rounded-[8px] border border-white/10 bg-black/30 px-3 transition-colors duration-500 group-hover:border-white/15"
+                  >
+                    {pasarela.logo ? (
+                      <Image
+                        src={pasarela.logo}
+                        alt={pasarela.nombre}
+                        width={120}
+                        height={40}
+                        className="h-6 w-auto object-contain opacity-80 brightness-0 invert transition-opacity duration-500 group-hover:opacity-100 [html[data-tema=claro]_&]:invert-0"
+                      />
+                    ) : (
+                      <span className="text-[17px] font-semibold tracking-[-0.03em] text-white/80">{pasarela.nombre}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="py-1 text-center text-[11px] tracking-[0.12em] text-white/40 uppercase">Tarjeta, PSE y más, a tu cuenta</p>
+              {OTROS_PAGOS.map((pago) => (
+                <div key={pago.nombre} className="flex items-center gap-3 rounded-[8px] border border-white/10 bg-black/30 px-4 py-3">
+                  <pago.icono aria-hidden="true" strokeWidth={1.5} className="h-4 w-4 text-white/55" />
                   <span className="text-[13.5px] text-white/85">{pago.nombre}</span>
                   <span className="ml-auto truncate text-[11.5px] text-white/40">{pago.detalle}</span>
                 </div>

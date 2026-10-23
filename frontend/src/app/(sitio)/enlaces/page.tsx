@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { PaginaProxima } from '@/componentes/sitio/PaginaProxima'
 import { PRODUCTOS } from '@/componentes/sitio/productos'
-import { MaquetaEnlaces } from '@/componentes/sitio/TresProductos'
+import { MaquetaEnlaces } from '@/componentes/sitio/Maquetas'
 
 export const metadata: Metadata = {
   title: 'Enlaces para tu bio',
@@ -16,7 +16,7 @@ export default function PaginaEnlaces() {
       producto={PRODUCTOS.find((producto) => producto.clave === 'enlaces')!}
       titulo="Un solo enlace para tu bio"
       descripcion="Tu tienda, tu WhatsApp y tus redes en una página corta. Estamos construyéndola."
-      maqueta={<MaquetaEnlaces />}
+      maqueta={<MaquetaEnlaces grande />}
       para={['Creadores y marcas personales', 'Emprendimientos de Instagram', 'Negocios con varios canales']}
       mientras={[
         { titulo: 'Pon tu tienda en la bio', texto: 'Tu dirección ya sirve como enlace de Instagram.' },

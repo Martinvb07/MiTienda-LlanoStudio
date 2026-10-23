@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { PaginaProxima } from '@/componentes/sitio/PaginaProxima'
 import { PRODUCTOS } from '@/componentes/sitio/productos'
-import { MaquetaPagina } from '@/componentes/sitio/TresProductos'
+import { MaquetaPagina } from '@/componentes/sitio/Maquetas'
 
 export const metadata: Metadata = {
   title: 'Página para tu negocio',
@@ -16,7 +16,7 @@ export default function PaginaParaNegocios() {
       producto={PRODUCTOS.find((producto) => producto.clave === 'pagina')!}
       titulo="La página de tu negocio, sin carrito"
       descripcion="Quiénes son, qué hacen y cómo contactarlos. Estamos construyéndola."
-      maqueta={<MaquetaPagina />}
+      maqueta={<MaquetaPagina grande />}
       para={['Abogados y consultorios', 'Clínicas y odontólogos', 'Restaurantes y cafés', 'Servicios y oficios']}
       mientras={[
         { titulo: 'Reserva tu dirección', texto: 'tunegocio.llanostudio.co queda a tu nombre desde hoy.' },

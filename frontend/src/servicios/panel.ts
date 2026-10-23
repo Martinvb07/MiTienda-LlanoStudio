@@ -1,5 +1,6 @@
 'use client'
 
+import { refrescarTienda } from '@/app/panel/acciones'
 import { normalizarBloques } from '@/tipos/bloques'
 import type { Cupon, DatosCupon, EstadoPedido, Pedido } from '@/tipos/pedidos'
 import type { ProductoPanel, Tienda } from '@/tipos/tienda'
@@ -48,6 +49,24 @@ export function cerrarSesion() {
   }
 }
 
+/** Lo que se guarda aquí no cambia la tienda pública: no hace falta refrescarla. */
+const SIN_TIENDA = /^\/(ingreso|registro|recuperar|cuenta|novedades|soporte)/
+
+let esperaRefresco: ReturnType<typeof setTimeout> | undefined
+
+/**
+ * Después de guardar, la tienda pública se refresca enseguida (si no, tardaba
+ * hasta un minuto). Varios cambios seguidos se juntan en un solo refresco.
+ */
+function refrescarDespues(ruta: string, metodo: string) {
+  if (metodo === 'GET' || SIN_TIENDA.test(ruta)) return
+  clearTimeout(esperaRefresco)
+  esperaRefresco = setTimeout(() => {
+    const token = leerToken()
+    if (token) void refrescarTienda(token).catch(() => undefined)
+  }, 400)
+}
+
 async function pedir<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
   const token = leerToken()
   const cabeceras = new Headers(opciones.headers)
@@ -82,6 +101,7 @@ async function pedir<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
     )
   }
 
+  refrescarDespues(ruta, (opciones.method ?? 'GET').toUpperCase())
   return cuerpo
 }
 

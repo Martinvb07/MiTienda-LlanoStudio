@@ -6,7 +6,8 @@ import { CabeceraPagina } from '@/componentes/sitio/CabeceraPagina'
 import { Contenedor } from '@/componentes/sitio/Contenedor'
 import { LlamadoFinal } from '@/componentes/sitio/LlamadoFinal'
 import { Revelar } from '@/componentes/sitio/Revelar'
-import { ARTICULOS, fechaLarga } from '@/contenido/articulos'
+import { fechaLarga } from '@/contenido/articulos'
+import { obtenerArticulos } from '@/servicios/contenido.servicio'
 
 export const metadata: Metadata = {
   title: 'Recursos',
@@ -14,8 +15,10 @@ export const metadata: Metadata = {
     'Guías para vender en línea en Colombia: fotos de producto, descripciones, pagos, envíos y cómo elegir la plantilla de tu tienda.',
 }
 
-export default function PaginaRecursos() {
-  const [destacado, ...resto] = ARTICULOS
+export const revalidate = 60
+
+export default async function PaginaRecursos() {
+  const [destacado, ...resto] = await obtenerArticulos()
 
   return (
     <>

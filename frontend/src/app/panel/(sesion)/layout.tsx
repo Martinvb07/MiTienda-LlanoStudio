@@ -1,4 +1,5 @@
 import { MarcoSesion } from '@/componentes/panel/MarcoSesion'
+import { CapturaOrigen } from '@/componentes/comunes/CapturaOrigen'
 import { RedirigirConSesion } from '@/componentes/panel/RedirigirConSesion'
 
 /**
@@ -10,6 +11,7 @@ export default function LayoutSesion({ children }: { children: React.ReactNode }
   return (
     <MarcoSesion>
       <RedirigirConSesion />
+      <CapturaOrigen />
       {children}
     </MarcoSesion>
   )

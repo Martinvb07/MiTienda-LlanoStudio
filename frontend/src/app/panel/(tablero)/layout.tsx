@@ -1,9 +1,11 @@
 import { NavegacionPanel } from '@/componentes/panel/NavegacionPanel'
 import { ProveedorSesion } from '@/componentes/panel/SesionPanel'
 import { TransicionPanel } from '@/componentes/panel/TransicionPanel'
-import { ProveedorAvisos } from '@/componentes/panel/Avisos'
+import { BarraAnuncios, ProveedorAvisos } from '@/componentes/panel/Avisos'
+import { FranjaSoporte } from '@/componentes/panel/FranjaSoporte'
 import { ProveedorBuscador } from '@/componentes/panel/BuscadorRapido'
 import { AvisoSuscripcion } from '@/componentes/panel/AvisoSuscripcion'
+import { ChatSoporte } from '@/componentes/comunes/ChatSoporte'
 
 /**
  * Marco del tablero de administración. Siempre se sirve en
@@ -13,6 +15,7 @@ import { AvisoSuscripcion } from '@/componentes/panel/AvisoSuscripcion'
 export default function LayoutTablero({ children }: { children: React.ReactNode }) {
   return (
     <div className="marco-oscuro min-h-screen font-sans">
+      <FranjaSoporte />
       <ProveedorSesion
         cargando={
           <div className="grid min-h-screen place-items-center">
@@ -25,10 +28,12 @@ export default function LayoutTablero({ children }: { children: React.ReactNode 
             <div className="flex min-h-screen flex-col md:flex-row">
               <NavegacionPanel />
               <main className="mx-auto w-full max-w-[1280px] min-w-0 flex-1 px-4 pt-6 pb-28 sm:px-6 md:px-10 md:py-10">
+                <BarraAnuncios />
                 <AvisoSuscripcion />
                 <TransicionPanel>{children}</TransicionPanel>
               </main>
             </div>
+            <ChatSoporte modo="panel" />
           </ProveedorBuscador>
         </ProveedorAvisos>
       </ProveedorSesion>

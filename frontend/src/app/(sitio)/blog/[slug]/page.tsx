@@ -6,18 +6,23 @@ import { ArrowLeft } from 'lucide-react'
 import { Contenedor } from '@/componentes/sitio/Contenedor'
 import { LlamadoFinal } from '@/componentes/sitio/LlamadoFinal'
 import { Revelar } from '@/componentes/sitio/Revelar'
-import { ARTICULOS, articuloPorSlug, fechaLarga } from '@/contenido/articulos'
+import { fechaLarga } from '@/contenido/articulos'
+import { obtenerArticulo, obtenerArticulos } from '@/servicios/contenido.servicio'
 
 interface Props {
   params: Promise<{ slug: string }>
 }
 
-export function generateStaticParams() {
-  return ARTICULOS.map((articulo) => ({ slug: articulo.slug }))
+export async function generateStaticParams() {
+  return (await obtenerArticulos()).map((articulo) => ({ slug: articulo.slug }))
 }
 
+/** Los artículos nuevos del admin también se sirven, aunque no existieran en el build. */
+export const dynamicParams = true
+export const revalidate = 60
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const articulo = articuloPorSlug((await params).slug)
+  const articulo = await obtenerArticulo((await params).slug)
   if (!articulo) return { title: 'Artículo no encontrado' }
   return {
     title: articulo.titulo,
@@ -27,10 +32,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PaginaArticulo({ params }: Props) {
-  const articulo = articuloPorSlug((await params).slug)
+  const articulo = await obtenerArticulo((await params).slug)
   if (!articulo) notFound()
 
-  const otros = ARTICULOS.filter((otro) => otro.slug !== articulo.slug).slice(0, 3)
+  const otros = (await obtenerArticulos()).filter((otro) => otro.slug !== articulo.slug).slice(0, 3)
 
   return (
     <>

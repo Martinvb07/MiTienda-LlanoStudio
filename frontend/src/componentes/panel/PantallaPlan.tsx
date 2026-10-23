@@ -2,12 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowRight, Check, CreditCard, Loader2, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Check, Copy, CreditCard, Gift, Loader2, ShieldCheck, Ticket } from 'lucide-react'
 import {
   ErrorPanel,
   crearCheckout,
+  obtenerReferidos,
   obtenerSuscripcion,
+  probarCupon,
   verificarPago,
+  type Referidos,
   type PagoSuscripcion,
   type PeriodoPago,
   type PlanPago,
@@ -17,7 +20,7 @@ import { formatearPrecio } from '@/utilidades/formato'
 import { cn } from '@/utilidades/clases'
 import { CabeceraPanel } from './CabeceraPanel'
 import { useSesion } from './SesionPanel'
-import { Aviso, Etiqueta, Segmentado } from './ui/basicos'
+import { Aviso, BotonPanel, CLASES_ENTRADA, Etiqueta, Segmentado } from './ui/basicos'
 import { Aparecer } from './ui/movimiento'
 
 const URL_SCRIPT_BOLD = 'https://checkout.bold.co/library/boldPaymentButton.js'
@@ -65,6 +68,17 @@ export function PantallaPlan() {
   const { recargar } = useSesion()
   const [datos, setDatos] = useState<Suscripcion | null>(null)
   const [periodo, setPeriodo] = useState<PeriodoPago>('MENSUAL')
+  const [codigo, setCodigo] = useState('')
+  // Precio con el cupón por plan y periodo ("NEGOCIO:ANUAL"); si no aplica, no está.
+  const [cupon, setCupon] = useState<{ codigo: string; porcentaje: number; precios: Record<string, number> } | null>(null)
+  const [errorCupon, setErrorCupon] = useState('')
+  const [probando, setProbando] = useState(false)
+  const [referidos, setReferidos] = useState<Referidos | null>(null)
+  const [copiado, setCopiado] = useState(false)
+
+  useEffect(() => {
+    obtenerReferidos().then(setReferidos).catch(() => undefined)
+  }, [])
   const [pagando, setPagando] = useState<PlanPago | null>(null)
   const [error, setError] = useState('')
   const [retorno, setRetorno] = useState<Retorno>(null)
@@ -111,7 +125,7 @@ export function PantallaPlan() {
     setError('')
     setPagando(plan)
     try {
-      const [checkout] = await Promise.all([crearCheckout(plan, periodo), cargarBold()])
+      const [checkout] = await Promise.all([crearCheckout(plan, periodo, cupon?.precios[`${plan}:${periodo}`] ? cupon.codigo : undefined), cargarBold()])
       if (!window.BoldCheckout) throw new Error('Bold no cargó')
       new window.BoldCheckout({
         orderId: checkout.referencia,
@@ -128,6 +142,36 @@ export function PantallaPlan() {
     } finally {
       setPagando(null)
     }
+  }
+
+  async function aplicarCupon(evento: React.FormEvent) {
+    evento.preventDefault()
+    const limpio = codigo.trim().toUpperCase()
+    if (!limpio) return
+    setProbando(true)
+    setErrorCupon('')
+    // Se prueba en cada plan y periodo: un cupón puede servir sólo para algunos.
+    const combinaciones = pagables.flatMap((oferta) => (['MENSUAL', 'ANUAL'] as const).map((p) => [oferta.plan as PlanPago, p] as const))
+    const resultados = await Promise.allSettled(combinaciones.map(([plan, p]) => probarCupon(plan, p, limpio)))
+    const precios: Record<string, number> = {}
+    let porcentaje = 0
+    let mensaje = ''
+    resultados.forEach((resultado, indice) => {
+      const [plan, p] = combinaciones[indice]!
+      if (resultado.status === 'fulfilled' && resultado.value.cupon) {
+        precios[`${plan}:${p}`] = resultado.value.monto
+        porcentaje = resultado.value.cupon.porcentaje
+      } else if (resultado.status === 'rejected' && !mensaje) {
+        mensaje = resultado.reason instanceof Error ? resultado.reason.message : 'Ese cupón no sirve'
+      }
+    })
+    setProbando(false)
+    if (Object.keys(precios).length === 0) {
+      setCupon(null)
+      setErrorCupon(mensaje || 'Ese cupón no sirve')
+      return
+    }
+    setCupon({ codigo: limpio, porcentaje, precios })
   }
 
   const pagables = (datos?.planes ?? []).filter((oferta) => oferta.plan !== 'GRATIS')
@@ -221,7 +265,9 @@ export function PantallaPlan() {
           if (!oferta) return <div key={indice} className="brillo h-[340px] rounded-[16px]" />
           const plan = oferta.plan as PlanPago
           const anual = periodo === 'ANUAL'
-          const monto = anual ? oferta.precioAnual : oferta.precio
+          const montoBase = anual ? oferta.precioAnual : oferta.precio
+          const conCupon = cupon?.precios[`${plan}:${periodo}`]
+          const monto = conCupon ?? montoBase
           const ahorro = anual && oferta.precio > 0 ? Math.round((1 - oferta.precioAnual / (oferta.precio * 12)) * 100) : 0
           const esActual = datos!.plan === plan
           const disponible = monto > 0 && datos!.pagosHabilitados
@@ -255,12 +301,19 @@ export function PantallaPlan() {
                       <p className="flex items-baseline gap-1.5">
                         <span className="text-[34px] leading-none tracking-[-0.05em]">{formatearPrecio(monto)}</span>
                         <span className="text-[12px] text-sitio-tenue">{anual ? '/ año' : '/ mes'}</span>
+                        {conCupon !== undefined && (
+                          <span className="text-[12px] text-sitio-tenue line-through">{formatearPrecio(montoBase)}</span>
+                        )}
                       </p>
                     ) : (
                       <p className="text-[13px] text-sitio-tenue">No disponible {anual ? 'anual' : 'mensual'}</p>
                     )}
                     <p className="mt-2 h-4 text-[11.5px] text-sitio-verde">
-                      {ahorro > 0 ? `Ahorras ${ahorro}% frente a pagar mes a mes` : ''}
+                      {conCupon !== undefined
+                        ? `Cupón ${cupon!.codigo}: −${cupon!.porcentaje}%`
+                        : ahorro > 0
+                          ? `Ahorras ${ahorro}% frente a pagar mes a mes`
+                          : ''}
                     </p>
                   </motion.div>
                 </AnimatePresence>
@@ -295,6 +348,70 @@ export function PantallaPlan() {
           )
         })}
       </div>
+
+      {/* ── Cupón ── */}
+      {datos && datos.pagosHabilitados && (
+        <form onSubmit={(evento) => void aplicarCupon(evento)} className="mt-4 flex flex-wrap items-center gap-2">
+          <label className="relative w-full max-w-[260px]">
+            <Ticket aria-hidden="true" className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-sitio-tenue" />
+            <input
+              value={codigo}
+              onChange={(evento) => setCodigo(evento.target.value.toUpperCase())}
+              placeholder="¿Tienes un cupón?"
+              aria-label="Cupón de descuento"
+              className={cn(CLASES_ENTRADA, 'pl-8 font-mono uppercase placeholder:font-sans placeholder:normal-case')}
+            />
+          </label>
+          <BotonPanel type="submit" disabled={probando || !codigo.trim()}>
+            {probando ? 'Revisando…' : 'Aplicar'}
+          </BotonPanel>
+          {cupon && (
+            <span className="text-[12.5px] text-sitio-verde">
+              Cupón {cupon.codigo} aplicado: −{cupon.porcentaje}%
+              <button type="button" onClick={() => { setCupon(null); setCodigo('') }} className="ml-2 text-sitio-tenue underline-offset-4 hover:underline">
+                quitar
+              </button>
+            </span>
+          )}
+          {errorCupon && <span className="text-[12.5px] text-red-300">{errorCupon}</span>}
+        </form>
+      )}
+
+      {/* ── Referidos ── */}
+      {referidos?.activa && referidos.codigo && (
+        <Aparecer orden={4}>
+          <section className="mt-10 flex flex-col gap-5 rounded-[16px] border border-sitio-borde bg-sitio-superficie p-6 md:flex-row md:items-center">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-sitio-borde bg-white/[0.03]">
+              <Gift aria-hidden="true" className="h-5 w-5" strokeWidth={1.6} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-[15px] font-medium">Invita y gana {referidos.dias} días gratis</h2>
+              <p className="mt-1 text-[12.5px] text-sitio-tenue">
+                Cuando una tienda que invitaste pague su primer plan, te regalamos {referidos.dias} días de tu plan (o de Emprende si estás en Gratis).
+                {referidos.invitadas > 0 && ` Ya invitaste a ${referidos.invitadas}.`}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                void navigator.clipboard.writeText(referidos.enlace).then(() => {
+                  setCopiado(true)
+                  setTimeout(() => setCopiado(false), 1800)
+                })
+              }
+              className="direccion max-w-full shrink-0"
+            >
+              <span className="min-w-0 px-3">
+                <span className="truncate">{referidos.enlace.replace(/^https?:\/\//, '')}</span>
+              </span>
+              <span className="direccion-boton">
+                {copiado ? <Check aria-hidden="true" className="h-3 w-3 text-sitio-verde" /> : <Copy aria-hidden="true" className="h-3 w-3" />}
+                {copiado ? 'Copiado' : 'Copiar'}
+              </span>
+            </button>
+          </section>
+        </Aparecer>
+      )}
 
       {/* ── Historial ── */}
       {datos && datos.pagos.length > 0 && (

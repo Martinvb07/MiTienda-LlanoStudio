@@ -1,388 +1,257 @@
 'use client'
 
-/* eslint-disable @next/next/no-img-element -- logos de tiendas en la lista */
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowUpRight, KeyRound, LogOut, MoreHorizontal, Power, Search } from 'lucide-react'
 import {
-  cambiarContrasena,
-  cambiarTienda,
+  BadgeDollarSign,
+  BarChart3,
+  CreditCard,
+  FileText,
+  Gift,
+  LogOut,
+  Megaphone,
+  MessagesSquare,
+  Server,
+  Sparkles,
+  Store,
+  Users,
+} from 'lucide-react'
+import {
   cerrarSesionAdmin,
   leerTokenAdmin,
-  listarTiendas,
+  listarTickets,
   obtenerResumen,
+  quienSoy,
   type ResumenAdmin,
-  type TiendaAdmin,
+  type SesionAdmin,
 } from '@/servicios/admin'
-import { urlTienda } from '@/utilidades/dominios'
-import { ORDEN_PLANES, PLANES, type Plan } from '@/utilidades/planes'
 import { cn } from '@/utilidades/clases'
-import { Aviso, CLASES_ENTRADA, Campo } from '../panel/ui/basicos'
-import { MenuAcciones, ModalPanel, Selector } from '../panel/ui/flotantes'
-import { EditorPlanes } from './EditorPlanes'
-import { confirmar } from '../panel/ui/confirmar'
+import { Selector } from '../panel/ui/flotantes'
 import { LogoMarca } from '@/componentes/comunes/LogoMarca'
 import { BotonTema } from '@/componentes/comunes/BotonTema'
+import { EditorPlanes } from './EditorPlanes'
+import { FichaTienda } from './FichaTienda'
+import { SeccionComunicacion } from './SeccionComunicacion'
+import { SeccionContenido } from './SeccionContenido'
+import { SeccionCrecimiento } from './SeccionCrecimiento'
+import { SeccionDinero } from './SeccionDinero'
+import { SeccionEquipo, ROLES } from './SeccionEquipo'
+import { SeccionPagos } from './SeccionPagos'
+import { SeccionPromos } from './SeccionPromos'
+import { SeccionSistema } from './SeccionSistema'
+import { SeccionSoporte } from './SeccionSoporte'
+import { SeccionTiendas } from './SeccionTiendas'
+import { SALIDA } from './ui'
 
-const SALIDA = [0.16, 1, 0.3, 1] as const
-const OPCIONES_PLAN = ORDEN_PLANES.map((plan) => ({ valor: plan, etiqueta: PLANES[plan].nombre }))
+const SECCIONES = [
+  { clave: 'dinero', etiqueta: 'Dinero', Icono: BadgeDollarSign, grupo: 'Negocio' },
+  { clave: 'tiendas', etiqueta: 'Tiendas', Icono: Store, grupo: 'Negocio' },
+  { clave: 'soporte', etiqueta: 'Soporte', Icono: MessagesSquare, grupo: 'Negocio' },
+  { clave: 'pagos', etiqueta: 'Pagos', Icono: CreditCard, grupo: 'Negocio' },
+  { clave: 'crecimiento', etiqueta: 'Crecimiento', Icono: BarChart3, grupo: 'Negocio' },
+  { clave: 'promos', etiqueta: 'Promociones', Icono: Gift, grupo: 'Crecer' },
+  { clave: 'comunicacion', etiqueta: 'Comunicación', Icono: Megaphone, grupo: 'Crecer' },
+  { clave: 'contenido', etiqueta: 'Contenido', Icono: FileText, grupo: 'Crecer' },
+  { clave: 'planes', etiqueta: 'Planes y precios', Icono: Sparkles, grupo: 'Plataforma' },
+  { clave: 'sistema', etiqueta: 'Sistema', Icono: Server, grupo: 'Plataforma' },
+  { clave: 'equipo', etiqueta: 'Equipo', Icono: Users, grupo: 'Plataforma' },
+] as const
+
+type Clave = (typeof SECCIONES)[number]['clave']
+const GRUPOS = [...new Set(SECCIONES.map((seccion) => seccion.grupo))]
+
+function seccionDeLaUrl(): Clave {
+  const valor = new URLSearchParams(window.location.search).get('s')
+  return SECCIONES.some((seccion) => seccion.clave === valor) ? (valor as Clave) : 'dinero'
+}
 
 /**
- * Panel de la plataforma (sólo Llano Studio): tiendas, planes y precios. Se
- * entra por el login normal del panel con los datos del admin.
+ * Admin de la plataforma (Llano Studio). Se entra por el login normal del
+ * panel con los datos de un admin; cada sección respeta el rol.
  */
 export function PantallaAdmin() {
   const router = useRouter()
-  const [conSesion, setConSesion] = useState(false)
+  const [admin, setAdmin] = useState<SesionAdmin | null>(null)
+
+  const salir = useCallback(() => {
+    cerrarSesionAdmin()
+    router.replace('/panel/ingresar')
+  }, [router])
 
   useEffect(() => {
-    if (leerTokenAdmin()) setConSesion(true)
-    else router.replace('/panel/ingresar')
-  }, [router])
+    if (!leerTokenAdmin()) return router.replace('/panel/ingresar')
+    quienSoy()
+      .then(setAdmin)
+      .catch(() => salir())
+  }, [router, salir])
 
   return (
     <div className="marco-oscuro min-h-screen font-sans">
-      {conSesion && (
-        <Tablero
-          alSalir={() => {
-            cerrarSesionAdmin()
-            router.replace('/panel/ingresar')
-          }}
-        />
+      {admin ? (
+        <Tablero admin={admin} alSalir={salir} />
+      ) : (
+        <div className="grid min-h-screen place-items-center">
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/15 border-t-white" />
+        </div>
       )}
     </div>
   )
 }
 
-type Pestana = 'tiendas' | 'planes'
-
-function Tablero({ alSalir }: { alSalir: () => void }) {
-  const [pestana, setPestana] = useState<Pestana>('tiendas')
+function Tablero({ admin, alSalir }: { admin: SesionAdmin; alSalir: () => void }) {
+  const [seccion, setSeccion] = useState<Clave>('dinero')
   const [resumen, setResumen] = useState<ResumenAdmin | null>(null)
+  const [ficha, setFicha] = useState<string | null>(null)
+  const [sinLeer, setSinLeer] = useState(0)
+
+  useEffect(() => setSeccion(seccionDeLaUrl()), [])
+
+  const ir = (clave: Clave) => {
+    setSeccion(clave)
+    window.history.replaceState(null, '', `?s=${clave}`)
+    window.scrollTo({ top: 0 })
+  }
 
   const recargarResumen = useCallback(() => {
     obtenerResumen()
       .then(setResumen)
       .catch(() => (leerTokenAdmin() ? undefined : alSalir()))
   }, [alSalir])
-
   useEffect(recargarResumen, [recargarResumen])
 
+  // Mensajes sin leer en soporte, para el globo del menú y el título de la pestaña.
+  useEffect(() => {
+    const contar = () =>
+      listarTickets()
+        .then(({ tickets }) => setSinLeer(tickets.reduce((suma, ticket) => suma + ticket.noLeidosAsesor, 0)))
+        .catch(() => undefined)
+    contar()
+    const intervalo = setInterval(contar, 30_000)
+    return () => clearInterval(intervalo)
+  }, [])
+  useEffect(() => {
+    document.title = sinLeer > 0 ? `(${sinLeer}) Admin · Mi Tienda` : 'Admin · Mi Tienda'
+  }, [sinLeer])
+
+  const abrirTienda = useCallback((id: string) => setFicha(id), [])
+
   return (
-    <div className="mx-auto max-w-[1200px] px-5 pb-20 md:px-8">
-      <header className="sticky top-0 z-40 -mx-5 flex h-[72px] items-center justify-between gap-4 border-b border-white/[0.06] bg-black/80 px-5 backdrop-blur-xl md:-mx-8 md:px-8">
-        <div className="flex items-center gap-[11px]">
-          <LogoMarca className="h-7 w-auto" />
-          <span className="flex flex-col">
-            <span className="text-[15px] leading-none font-semibold tracking-[-0.02em]">Mi Tienda</span>
-            <span className="mt-1 text-[9.5px] tracking-[0.24em] text-sitio-tenue uppercase">Plataforma</span>
-          </span>
+    <div className="flex min-h-screen flex-col md:flex-row">
+      {/* Barra lateral */}
+      <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col border-r border-sitio-borde bg-sitio-lateral md:flex">
+        <div className="flex items-center justify-between px-5 pt-5">
+          <div className="flex items-center gap-[11px]">
+            <LogoMarca className="h-7 w-auto" />
+            <span className="flex flex-col">
+              <span className="text-[15px] leading-none font-semibold tracking-[-0.02em]">Mi Tienda</span>
+              <span className="mt-1 text-[9.5px] tracking-[0.24em] text-sitio-tenue uppercase">Plataforma</span>
+            </span>
+          </div>
+          <BotonTema />
         </div>
 
-        <nav className="flex gap-1 rounded-full border border-white/10 p-1">
-          {(['tiendas', 'planes'] as const).map((opcion) => (
-            <button
-              key={opcion}
-              type="button"
-              onClick={() => setPestana(opcion)}
-              className={cn(
-                'relative rounded-full px-4 py-1.5 text-[12.5px] transition-colors',
-                pestana === opcion ? 'text-black' : 'text-white/60 hover:text-white',
-              )}
-            >
-              {pestana === opcion && (
-                <motion.span
-                  layoutId="pestana-admin"
-                  transition={{ duration: 0.5, ease: SALIDA }}
-                  className="absolute inset-0 rounded-full bg-white"
-                />
-              )}
-              <span className="relative">{opcion === 'tiendas' ? 'Tiendas' : 'Planes y precios'}</span>
-            </button>
+        <nav className="mt-7 flex-1 overflow-y-auto px-3">
+          {GRUPOS.map((grupo) => (
+            <div key={grupo} className="mb-5">
+              <p className="px-3 pb-2 text-[9.5px] tracking-[0.16em] text-sitio-tenue uppercase">{grupo}</p>
+              <ul className="flex flex-col gap-0.5">
+                {SECCIONES.filter((item) => item.grupo === grupo).map((item) => {
+                  const activo = seccion === item.clave
+                  return (
+                    <li key={item.clave}>
+                      <button
+                        type="button"
+                        onClick={() => ir(item.clave)}
+                        aria-current={activo ? 'page' : undefined}
+                        className={cn(
+                          'relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] transition-colors duration-300',
+                          activo ? 'text-white' : 'text-sitio-suave hover:text-white',
+                        )}
+                      >
+                        {activo && (
+                          <motion.span
+                            layoutId="admin-activo"
+                            transition={{ duration: 0.5, ease: SALIDA }}
+                            className="absolute inset-0 rounded-lg border border-white/[0.07] bg-white/[0.07]"
+                          />
+                        )}
+                        <item.Icono aria-hidden="true" strokeWidth={1.6} className="relative h-4 w-4 shrink-0" />
+                        <span className="relative">{item.etiqueta}</span>
+                        {item.clave === 'soporte' && sinLeer > 0 && (
+                          <span className="relative ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-sitio-azul px-1.5 text-[10.5px] font-semibold text-[#fff]">
+                            {sinLeer}
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
-          <BotonTema />
-          <button
-            type="button"
-            onClick={alSalir}
-            className="inline-flex items-center gap-2 text-[11px] tracking-[0.1em] text-white/50 uppercase transition-colors hover:text-white"
-          >
-            <LogOut aria-hidden="true" className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Salir</span>
+        <div className="flex items-center gap-3 border-t border-sitio-borde p-4">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[11.5px] font-semibold">
+            {admin.nombre.slice(0, 2).toUpperCase()}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[13px]">{admin.nombre}</span>
+            <span className="block truncate text-[11px] text-sitio-tenue">{ROLES[admin.rol].etiqueta}</span>
+          </span>
+          <button type="button" onClick={alSalir} aria-label="Salir" className="grid h-8 w-8 place-items-center text-sitio-tenue hover:text-white">
+            <LogOut aria-hidden="true" className="h-4 w-4" />
           </button>
         </div>
+      </aside>
+
+      {/* Celular: barra superior con selector de sección */}
+      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-sitio-borde bg-black/85 px-4 py-3 backdrop-blur-xl md:hidden">
+        <LogoMarca className="h-6 w-auto" />
+        <Selector
+          etiqueta="Sección"
+          valor={seccion}
+          opciones={SECCIONES.map((item) => ({
+            valor: item.clave,
+            etiqueta: item.clave === 'soporte' && sinLeer > 0 ? `${item.etiqueta} (${sinLeer})` : item.etiqueta,
+          }))}
+          alCambiar={ir}
+          className="min-w-0 flex-1"
+        />
+        <BotonTema />
+        <button type="button" onClick={alSalir} aria-label="Salir" className="grid h-9 w-9 place-items-center text-sitio-tenue">
+          <LogOut aria-hidden="true" className="h-4 w-4" />
+        </button>
       </header>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={pestana}
-          initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, y: -10, transition: { duration: 0.2 } }}
-          transition={{ duration: 0.7, ease: SALIDA }}
-        >
-          {pestana === 'tiendas' ? (
-            <Tiendas resumen={resumen} alCambio={recargarResumen} alSalir={alSalir} />
-          ) : (
-            <EditorPlanes />
-          )}
-        </motion.div>
-      </AnimatePresence>
+      <main className="mx-auto w-full max-w-[1180px] min-w-0 flex-1 px-4 pt-8 pb-24 sm:px-6 md:px-10 md:pt-12">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={seccion}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8, transition: { duration: 0.15 } }}
+            transition={{ duration: 0.55, ease: SALIDA }}
+          >
+            {seccion === 'dinero' && <SeccionDinero alAbrirTienda={abrirTienda} />}
+            {seccion === 'tiendas' && (
+              <SeccionTiendas admin={admin} resumen={resumen} alCambio={recargarResumen} alSalir={alSalir} alAbrirTienda={abrirTienda} />
+            )}
+            {seccion === 'soporte' && <SeccionSoporte admin={admin} alAbrirTienda={abrirTienda} alPendientes={setSinLeer} />}
+            {seccion === 'pagos' && <SeccionPagos admin={admin} alAbrirTienda={abrirTienda} />}
+            {seccion === 'crecimiento' && <SeccionCrecimiento />}
+            {seccion === 'promos' && <SeccionPromos admin={admin} />}
+            {seccion === 'comunicacion' && <SeccionComunicacion admin={admin} />}
+            {seccion === 'contenido' && <SeccionContenido admin={admin} />}
+            {seccion === 'planes' && <EditorPlanes />}
+            {seccion === 'sistema' && <SeccionSistema admin={admin} />}
+            {seccion === 'equipo' && <SeccionEquipo admin={admin} />}
+          </motion.div>
+        </AnimatePresence>
+      </main>
+
+      <AnimatePresence>{ficha && <FichaTienda key={ficha} id={ficha} admin={admin} alCerrar={() => setFicha(null)} />}</AnimatePresence>
     </div>
-  )
-}
-
-function Tiendas({
-  resumen,
-  alCambio,
-  alSalir,
-}: {
-  resumen: ResumenAdmin | null
-  alCambio: () => void
-  alSalir: () => void
-}) {
-  const [tiendas, setTiendas] = useState<TiendaAdmin[] | null>(null)
-  const [buscar, setBuscar] = useState('')
-  const [error, setError] = useState('')
-  const [cambiando, setCambiando] = useState<string | null>(null)
-  const [contrasenaDe, setContrasenaDe] = useState<TiendaAdmin | null>(null)
-
-  useEffect(() => {
-    const espera = setTimeout(() => {
-      listarTiendas(buscar)
-        .then((lista) => {
-          setTiendas(lista)
-          setError('')
-        })
-        .catch((problema: Error) => (leerTokenAdmin() ? setError(problema.message) : alSalir()))
-    }, 250)
-    return () => clearTimeout(espera)
-  }, [buscar, alSalir])
-
-  async function cambiar(tienda: TiendaAdmin, cambios: { plan?: string; activo?: boolean }) {
-    if (
-      cambios.activo === false &&
-      !(await confirmar({
-        titulo: `¿Suspender "${tienda.nombre}"?`,
-        mensaje: 'Deja de verse y su dueño no podrá entrar.',
-        confirmar: 'Suspender',
-        peligro: true,
-      }))
-    )
-      return
-    setCambiando(tienda.id)
-    try {
-      const actualizado = await cambiarTienda(tienda.id, cambios)
-      setTiendas((lista) => lista?.map((otra) => (otra.id === tienda.id ? { ...otra, ...actualizado } : otra)) ?? null)
-      alCambio()
-    } catch (problema) {
-      setError(problema instanceof Error ? problema.message : 'No se pudo cambiar')
-    } finally {
-      setCambiando(null)
-    }
-  }
-
-  const cifras = [
-    { valor: resumen?.tiendas, etiqueta: 'Tiendas' },
-    { valor: resumen?.publicadas, etiqueta: 'Publicadas' },
-    { valor: resumen?.nuevasEstaSemana, etiqueta: 'Nuevas esta semana' },
-    { valor: resumen?.productos, etiqueta: 'Productos' },
-  ]
-
-  return (
-    <>
-      <div className="mt-12 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-        <h1 className="text-[clamp(34px,4.4vw,60px)] leading-none tracking-[-0.045em]">Tiendas</h1>
-        <p className="text-[13px] text-white/45">
-          {ORDEN_PLANES.map((plan) => `${PLANES[plan].nombre} ${resumen?.porPlan[plan] ?? 0}`).join(' · ')}
-          {resumen?.suspendidas ? ` · ${resumen.suspendidas} suspendidas` : ''}
-        </p>
-      </div>
-
-      <div className="mt-9 grid grid-cols-2 border-y border-white/10 md:grid-cols-4">
-        {cifras.map((cifra, indice) => (
-          <div key={cifra.etiqueta} className={cn('py-6', indice > 0 && 'md:border-l md:border-white/10 md:pl-7', indice % 2 === 1 && 'border-l border-white/10 pl-6')}>
-            <p className="text-[clamp(32px,3.4vw,44px)] leading-none tracking-[-0.045em]">{cifra.valor ?? '—'}</p>
-            <p className="mt-2 text-[12px] text-white/45">{cifra.etiqueta}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="relative mt-10">
-        <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-white/35" />
-        <input
-          value={buscar}
-          onChange={(evento) => setBuscar(evento.target.value)}
-          placeholder="Buscar por nombre, dirección o correo del dueño"
-          className={cn(CLASES_ENTRADA, 'h-11 !pl-10 text-[14px]')}
-        />
-      </div>
-
-      <AnimatePresence>{error && <div className="mt-4"><Aviso>{error}</Aviso></div>}</AnimatePresence>
-
-      <div className="mt-4">
-        {!tiendas ? (
-          <div className="brillo h-48 rounded-[10px]" />
-        ) : tiendas.length === 0 ? (
-          <p className="py-16 text-center text-sm text-white/45">
-            {buscar ? 'Ninguna tienda coincide con la búsqueda.' : 'Todavía no hay tiendas.'}
-          </p>
-        ) : (
-          <ul className="border-b border-white/10">
-            <AnimatePresence initial={false}>
-              {tiendas.map((tienda, indice) => (
-                <motion.li
-                  key={tienda.id}
-                  layout
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: Math.min(indice, 10) * 0.03, ease: SALIDA }}
-                  className={cn(
-                    'grid grid-cols-[1fr_auto] items-center gap-x-5 gap-y-3 border-t border-white/10 py-4 md:grid-cols-[2fr_1.6fr_0.7fr_1fr_140px_40px]',
-                    !tienda.activo && 'opacity-50',
-                  )}
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-[9px] bg-white text-[11px] font-semibold text-black">
-                      {tienda.logoUrl ? <img src={tienda.logoUrl} alt="" className="h-full w-full object-contain" /> : tienda.nombre.slice(0, 2).toUpperCase()}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-[14.5px]">{tienda.nombre}</span>
-                      <a
-                        href={urlTienda(tienda.subdominio)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 truncate font-mono text-[11.5px] text-white/40 transition-colors hover:text-white"
-                      >
-                        {tienda.subdominio}
-                        <ArrowUpRight aria-hidden="true" className="h-3 w-3" />
-                      </a>
-                    </span>
-                  </div>
-                  <div className="hidden min-w-0 md:block">
-                    <span className="block truncate text-[13.5px]">{tienda.propietario?.nombre ?? '—'}</span>
-                    <span className="block truncate text-[12px] text-white/40">{tienda.propietario?.email}</span>
-                  </div>
-                  <span className="hidden text-[13px] text-white/60 md:block">{tienda.productos} prod.</span>
-                  <span className="hidden text-[12px] md:block">
-                    <span
-                      aria-hidden="true"
-                      className="estado-punto mr-2.5 inline-block align-middle"
-                      data-tono={!tienda.activo ? 'ambar' : tienda.publicada ? 'verde' : 'neutro'}
-                    />
-                    <span className="text-white/70">{!tienda.activo ? 'Suspendida' : tienda.publicada ? 'Publicada' : 'Borrador'}</span>
-                    <span className="mt-0.5 block pl-3.5 text-[11px] text-white/35">
-                      Desde {new Date(tienda.creadoEn).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
-                    </span>
-                    {tienda.planVenceEn && (
-                      <span
-                        className={cn(
-                          'mt-0.5 block pl-3.5 text-[11px]',
-                          new Date(tienda.planVenceEn).getTime() < Date.now() ? 'text-sitio-ambar' : 'text-white/35',
-                        )}
-                      >
-                        Pago hasta {new Date(tienda.planVenceEn).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
-                      </span>
-                    )}
-                  </span>
-                  <Selector
-                    etiqueta={`Plan de ${tienda.nombre}`}
-                    valor={tienda.plan as Plan}
-                    opciones={OPCIONES_PLAN}
-                    deshabilitado={cambiando === tienda.id}
-                    alCambiar={(plan) => void cambiar(tienda, { plan })}
-                    className="col-start-1 w-[140px] md:col-start-auto"
-                  />
-                  <div className="col-start-2 row-start-1 md:col-start-auto md:row-start-auto">
-                    <MenuAcciones
-                      disparador={<MoreHorizontal aria-hidden="true" className="h-4 w-4" />}
-                      acciones={[
-                        {
-                          etiqueta: 'Cambiar contraseña',
-                          icono: <KeyRound aria-hidden="true" className="h-3.5 w-3.5" />,
-                          alElegir: () => setContrasenaDe(tienda),
-                        },
-                        {
-                          etiqueta: 'Ver tienda',
-                          icono: <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />,
-                          alElegir: () => window.open(urlTienda(tienda.subdominio), '_blank', 'noopener'),
-                        },
-                        {
-                          etiqueta: tienda.activo ? 'Suspender' : 'Reactivar',
-                          icono: <Power aria-hidden="true" className="h-3.5 w-3.5" />,
-                          peligro: tienda.activo,
-                          alElegir: () => void cambiar(tienda, { activo: !tienda.activo }),
-                        },
-                      ]}
-                    />
-                  </div>
-                </motion.li>
-              ))}
-            </AnimatePresence>
-          </ul>
-        )}
-      </div>
-
-      <AnimatePresence>
-        {contrasenaDe && <ModalContrasena tienda={contrasenaDe} alCerrar={() => setContrasenaDe(null)} />}
-      </AnimatePresence>
-    </>
-  )
-}
-
-function ModalContrasena({ tienda, alCerrar }: { tienda: TiendaAdmin; alCerrar: () => void }) {
-  const [contrasena, setContrasena] = useState('')
-  const [error, setError] = useState('')
-  const [listo, setListo] = useState<string | null>(null)
-  const [enviando, setEnviando] = useState(false)
-
-  async function guardar(evento: React.FormEvent) {
-    evento.preventDefault()
-    if (contrasena.length < 8) return setError('Tiene que tener al menos 8 caracteres.')
-    setEnviando(true)
-    setError('')
-    try {
-      setListo(await cambiarContrasena(tienda.id, contrasena))
-    } catch (problema) {
-      setError(problema instanceof Error ? problema.message : 'No se pudo cambiar')
-    } finally {
-      setEnviando(false)
-    }
-  }
-
-  return (
-    <ModalPanel
-      titulo="Cambiar contraseña"
-      descripcion={
-        <>
-          Dueño de <span className="text-white">{tienda.nombre}</span>
-          {tienda.propietario && <> · {tienda.propietario.email}</>}
-        </>
-      }
-      alCerrar={alCerrar}
-    >
-      {listo ? (
-        <div>
-          <p className="text-[14px] leading-relaxed text-white/75">
-            Listo. <span className="text-white">{listo}</span> ya puede entrar con la contraseña nueva. Compártela por un
-            canal privado y pídele que la cambie cuando exista esa opción.
-          </p>
-          <button type="button" onClick={alCerrar} className="boton boton-primario boton-chico mt-6 w-full">
-            Cerrar
-          </button>
-        </div>
-      ) : (
-        <form onSubmit={guardar} className="flex flex-col gap-4">
-          <Campo etiqueta="Contraseña nueva" tipo="text" valor={contrasena} alCambiar={setContrasena} autoFoco ayuda="Mínimo 8 caracteres." />
-          <AnimatePresence>{error && <Aviso>{error}</Aviso>}</AnimatePresence>
-          <button type="submit" disabled={enviando} className="boton boton-primario boton-chico w-full">
-            {enviando ? 'Guardando…' : 'Guardar contraseña'}
-          </button>
-        </form>
-      )}
-    </ModalPanel>
   )
 }

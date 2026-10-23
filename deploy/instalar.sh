@@ -273,6 +273,16 @@ ubicaciones() {
         add_header Cache-Control "public, immutable";
         try_files \$uri =404;
     }
+    location /api/tiempo-real {
+        proxy_pass http://127.0.0.1:$PUERTO_API;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host \$host;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 3600s;
+    }
     location /api/ {
         proxy_pass http://127.0.0.1:$PUERTO_API;
         include $PROXY;

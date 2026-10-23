@@ -4,6 +4,7 @@ import { ComparativaPlanes } from '@/componentes/sitio/ComparativaPlanes'
 import { LlamadoFinal } from '@/componentes/sitio/LlamadoFinal'
 import { Preguntas } from '@/componentes/sitio/Preguntas'
 import { TablaPrecios } from '@/componentes/sitio/TablaPrecios'
+import { obtenerContenidoSitio } from '@/servicios/contenido.servicio'
 
 export const metadata: Metadata = {
   title: 'Precios',
@@ -44,7 +45,9 @@ const PREGUNTAS = [
   },
 ]
 
-export default function PaginaPrecios() {
+export default async function PaginaPrecios() {
+  // Las del admin reemplazan a estas si hay alguna guardada.
+  const { preguntasPrecios } = await obtenerContenidoSitio()
   return (
     <>
       <CabeceraPagina
@@ -57,7 +60,7 @@ export default function PaginaPrecios() {
 
       <ComparativaPlanes />
 
-      <Preguntas titulo="Lo que más nos preguntan sobre los planes" preguntas={PREGUNTAS} />
+      <Preguntas titulo="Lo que más nos preguntan sobre los planes" preguntas={preguntasPrecios.length ? preguntasPrecios : PREGUNTAS} />
 
       <LlamadoFinal />
     </>

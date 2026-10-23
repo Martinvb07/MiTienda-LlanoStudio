@@ -131,6 +131,8 @@ async function autenticar(socket: Socket): Promise<DatosConexion | null> {
 export function iniciarTiempoReal(servidor: ServidorHttp) {
   io = new Server(servidor, {
     path: RUTA_TIEMPO_REAL,
+    // Sin "/" final: Next la quita con una redirección y el handshake se perdería.
+    addTrailingSlash: false,
     cors: { origin: entorno.origenesPermitidos, credentials: true },
     // Mientras nginx no pase el Upgrade, el polling largo sigue funcionando.
     transports: ['websocket', 'polling'],
@@ -189,7 +191,7 @@ export function iniciarTiempoReal(servidor: ServidorHttp) {
           data: { asignadoA: datos.asesor!.email },
         })
         await prisma.ticketSoporte.updateMany({ where: { id: ticketId, estado: 'ABIERTO' }, data: { estado: 'EN_CURSO' } })
-        await publicarMensaje(ticketId, 'ASESOR', datos.nombre.split(' ')[0]!, carga.texto as string)
+        await publicarMensaje(ticketId, 'ASESOR', datos.nombre, carga.texto as string)
         await anunciarTicket(ticketId)
       })().catch((error: unknown) => registro.warn({ err: error }, 'No se pudo enviar la respuesta de soporte'))
     })

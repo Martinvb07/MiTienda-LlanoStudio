@@ -7,6 +7,7 @@ import { ErrorPanel, registrar } from '@/servicios/panel'
 import { AvisoFormulario, CampoContrasena, CampoTexto } from './CamposFormulario'
 import { configuracionDominios, esSubdominioValido } from '@/utilidades/dominios'
 import { generarSlug } from '@/utilidades/formato'
+import { leerOrigen } from '@/utilidades/origen'
 
 interface Errores {
   nombre?: string
@@ -90,6 +91,7 @@ export function FormularioRegistro() {
         contrasena,
         tienda: tienda.trim(),
         subdominio: subdominioFinal,
+        ...leerOrigen(),
       })
       // Recién creada: directo al editor para que la arme.
       // Si llegó desde "Usar esta plantilla", el editor abre con ella aplicada.

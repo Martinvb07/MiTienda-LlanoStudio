@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
+import { CapturaOrigen } from '@/componentes/comunes/CapturaOrigen'
 import { Encabezado } from '@/componentes/sitio/Encabezado'
 import { PieSitio } from '@/componentes/sitio/PieSitio'
+import { ChatSoporte } from '@/componentes/comunes/ChatSoporte'
 
 export const metadata: Metadata = {
   // `absolute` salta la plantilla del layout raíz: sin esto la pestaña diría
@@ -20,9 +22,11 @@ export const metadata: Metadata = {
 export default function LayoutSitio({ children }: { children: React.ReactNode }) {
   return (
     <div className="marco-oscuro min-h-screen overflow-x-clip font-sans">
+      <CapturaOrigen />
       <Encabezado />
       <main>{children}</main>
       <PieSitio />
+      <ChatSoporte modo="web" />
     </div>
   )
 }

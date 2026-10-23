@@ -107,6 +107,8 @@ export async function registrar(datos: {
   contrasena: string
   tienda: string
   subdominio: string
+  ref?: string
+  origen?: string
 }) {
   const { token } = await pedir<{ token: string }>('/registro', {
     method: 'POST',
@@ -385,8 +387,49 @@ export interface CheckoutBold {
 
 export const obtenerSuscripcion = () => pedir<Suscripcion>('/suscripcion')
 
-export const crearCheckout = (plan: PlanPago, periodo: PeriodoPago) =>
-  pedir<CheckoutBold>('/suscripcion/checkout', { method: 'POST', body: JSON.stringify({ plan, periodo }) })
+export const crearCheckout = (plan: PlanPago, periodo: PeriodoPago, cupon?: string) =>
+  pedir<CheckoutBold>('/suscripcion/checkout', { method: 'POST', body: JSON.stringify({ plan, periodo, ...(cupon ? { cupon } : {}) }) })
 
 export const verificarPago = (referencia: string) =>
   pedir<{ pago: PagoSuscripcion }>(`/suscripcion/pagos/${encodeURIComponent(referencia)}/verificar`, { method: 'POST' })
+
+// ── Comunicados de la plataforma ──
+
+export interface AnuncioPanel {
+  id: string
+  titulo: string
+  cuerpo: string
+  tipo: 'CAMPANA' | 'BARRA'
+  desde: string
+}
+export interface NovedadPanel {
+  id: string
+  titulo: string
+  cuerpo: string
+  etiqueta: string | null
+  publicadaEn: string
+}
+export interface Comunicados {
+  barra: AnuncioPanel[]
+  campana: AnuncioPanel[]
+  novedades: NovedadPanel[]
+  novedadesSinVer: number
+}
+export const obtenerComunicados = () => pedir<Comunicados>('/comunicados')
+export const marcarNovedadesVistas = () => pedir<void>('/novedades/vistas', { method: 'POST' })
+
+// ── Referidos y cupones de suscripción ──
+
+export interface Referidos {
+  activa: boolean
+  dias: number
+  codigo: string | null
+  enlace: string
+  invitadas: number
+}
+export const obtenerReferidos = () => pedir<Referidos>('/referidos')
+export const probarCupon = (plan: PlanPago, periodo: PeriodoPago, cupon: string) =>
+  pedir<{ montoOriginal: number; monto: number; cupon: { codigo: string; porcentaje: number } | null }>('/suscripcion/cupon', {
+    method: 'POST',
+    body: JSON.stringify({ plan, periodo, cupon }),
+  })

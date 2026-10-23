@@ -230,3 +230,26 @@ npx prisma migrate deploy && pm2 reload mitienda-api
 | Salud de la API | `curl -s 127.0.0.1:4201/api/salud/detallada` |
 | Respaldo de la base | `pg_dump -U mitienda -h localhost mitienda > respaldo.sql` |
 | Respaldo de fotos | `tar -czf medios.tgz -C backend .medios` |
+
+## Chat de soporte en vivo (websocket)
+
+El chat usa socket.io bajo `/api/tiempo-real`. Funciona aunque nginx no deje
+pasar el websocket (cae a *polling*), pero va más fluido con este bloque dentro
+del `server` de `mitienda.llanostudio.co`, **antes** de `location /api/`:
+
+```nginx
+location /api/tiempo-real {
+    proxy_pass http://mitienda_api;   # o http://127.0.0.1:<PUERTO_API>
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_read_timeout 3600s;
+}
+```
+
+Luego `nginx -t && systemctl reload nginx`. Si algún día la API corre con más
+de una instancia en PM2, el chat necesita *sticky sessions* (o un adaptador de
+Redis para socket.io).

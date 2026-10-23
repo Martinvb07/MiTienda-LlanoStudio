@@ -3,6 +3,8 @@ import { Hero } from '@/componentes/sitio/Hero'
 import { LlamadoFinal } from '@/componentes/sitio/LlamadoFinal'
 import { Plantillas } from '@/componentes/sitio/Plantillas'
 import { Preguntas } from '@/componentes/sitio/Preguntas'
+import { Testimonios } from '@/componentes/sitio/Testimonios'
+import { obtenerContenidoSitio } from '@/servicios/contenido.servicio'
 
 const PREGUNTAS = [
   {
@@ -27,13 +29,15 @@ const PREGUNTAS = [
 ]
 
 /** Portada de Mi Tienda, con el mismo recorrido y ritmo que llanostudio.co. */
-export default function PaginaInicio() {
+export default async function PaginaInicio() {
+  const { testimonios } = await obtenerContenidoSitio()
   return (
     <>
       <Hero />
       <Caracteristicas />
       <Plantillas />
       <ComoFunciona />
+      <Testimonios testimonios={testimonios} />
       <Preguntas titulo="Lo que más nos preguntan" preguntas={PREGUNTAS} />
       <LlamadoFinal />
     </>

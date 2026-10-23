@@ -26,7 +26,7 @@ export function EditorPlanes() {
 
   return (
     <>
-      <div className="mt-12 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <h1 className="text-[clamp(34px,4.4vw,60px)] leading-none tracking-[-0.045em]">Planes y precios</h1>
         <p className="max-w-[46ch] text-[13px] text-white/45">
           Lo que guardes aquí se ve en la página de precios en menos de un minuto. Los límites de cada plan se

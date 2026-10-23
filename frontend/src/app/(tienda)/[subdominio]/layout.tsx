@@ -63,7 +63,7 @@ export default async function LayoutTienda({ children, params }: Props) {
       className="min-h-screen bg-superficie font-sans text-tinta"
     >
       <FuentesTema tema={tienda.tema} />
-      <ProveedorCarrito clave={subdominio} moneda={tienda.moneda} ajustes={tienda.ajustes}>
+      <ProveedorCarrito clave={subdominio} moneda={tienda.moneda} ajustes={tienda.ajustes} tema={tienda.tema}>
         {children}
       </ProveedorCarrito>
       <ContadorVisitas />

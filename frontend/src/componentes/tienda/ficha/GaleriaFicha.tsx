@@ -23,7 +23,7 @@ export function GaleriaFicha({
   }
 
   const foto = (src: string, indice: number, clases = 'aspect-square') => (
-    <div key={src + indice} className={`relative overflow-hidden rounded-(--radius-marca) bg-tinta/5 ${clases}`}>
+    <div key={src + indice} data-foto-ficha className={`relative overflow-hidden rounded-(--radius-marca) bg-tinta/5 ${clases}`}>
       <Image
         src={src}
         alt={indice === 0 ? nombre : ''}

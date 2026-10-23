@@ -4,8 +4,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import Image from 'next/image'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { Minus, Plus, ShoppingBag, Trash2, X, Truck } from 'lucide-react'
-import type { AjustesTienda } from '@/tipos/tienda'
+import { Check, Minus, Plus, ShoppingBag, Trash2, X, Truck } from 'lucide-react'
+import type { AjustesTienda, TemaTienda } from '@/tipos/tienda'
 import { formatearPrecio } from '@/utilidades/formato'
 import { esMedioLocal } from '@/utilidades/medios'
 
@@ -33,7 +33,12 @@ interface ContextoCarrito {
   abierto: boolean
   abrir: () => void
   cerrar: () => void
-  agregar: (linea: LineaCarrito) => void
+  /** `origen` es la foto desde la que sale volando, si la tienda usa esa animación. */
+  agregar: (linea: LineaCarrito, origen?: Element | null) => void
+  /** Botón Agregar en las tarjetas (según el tema y el plan). */
+  agregarRapido: boolean
+  /** Sube en cada producto agregado: la bolsa del encabezado rebota. */
+  golpe: number
   cambiarCantidad: (productoId: string, variante: string | undefined, cantidad: number) => void
   quitar: (productoId: string, variante: string | undefined) => void
   vaciar: () => void
@@ -41,7 +46,7 @@ interface ContextoCarrito {
 
 const Contexto = createContext<ContextoCarrito | null>(null)
 
-/** null fuera de una tienda (por ejemplo, en la vista previa del editor). */
+/** null fuera de una tienda (la vista previa del editor tiene el suyo, de prueba). */
 export const useCarrito = () => useContext(Contexto)
 
 const misma = (linea: LineaCarrito, productoId: string, variante?: string) =>
@@ -55,17 +60,31 @@ export function ProveedorCarrito({
   clave,
   moneda,
   ajustes,
+  tema,
   children,
 }: {
   clave: string
   moneda: string
   ajustes: AjustesTienda
+  /** Ya recortado al plan (temaAlPlan). */
+  tema?: Pick<TemaTienda, 'alAgregar' | 'agregarRapido'>
   children: ReactNode
 }) {
   const almacen = `mt-carrito:${clave}`
   const [lineas, setLineas] = useState<LineaCarrito[]>([])
   const [cargado, setCargado] = useState(false)
   const [abierto, setAbierto] = useState(false)
+  const [aviso, setAviso] = useState<{ linea: LineaCarrito; id: number } | null>(null)
+  const [vuelo, setVuelo] = useState<{ foto: string; desde: DOMRect; hasta: DOMRect; id: number } | null>(null)
+  const [golpe, setGolpe] = useState(0)
+  const modo = tema?.alAgregar ?? 'carrito'
+
+  // El aviso se va solo; uno nuevo reinicia la cuenta.
+  useEffect(() => {
+    if (!aviso) return
+    const espera = setTimeout(() => setAviso(null), 3600)
+    return () => clearTimeout(espera)
+  }, [aviso])
 
   useEffect(() => {
     try {
@@ -86,16 +105,42 @@ export function ProveedorCarrito({
     }
   }, [almacen, lineas, cargado])
 
-  const agregar = useCallback((nueva: LineaCarrito) => {
-    setLineas((actuales) => {
-      const existente = actuales.find((linea) => misma(linea, nueva.productoId, nueva.variante))
-      if (!existente) return [...actuales, { ...nueva, cantidad: Math.min(nueva.cantidad, nueva.stock) }]
-      return actuales.map((linea) =>
-        linea === existente ? { ...linea, cantidad: Math.min(linea.cantidad + nueva.cantidad, nueva.stock), stock: nueva.stock } : linea,
-      )
-    })
-    setAbierto(true)
-  }, [])
+  const agregar = useCallback(
+    (nueva: LineaCarrito, origen?: Element | null) => {
+      setLineas((actuales) => {
+        const existente = actuales.find((linea) => misma(linea, nueva.productoId, nueva.variante))
+        if (!existente) return [...actuales, { ...nueva, cantidad: Math.min(nueva.cantidad, nueva.stock) }]
+        return actuales.map((linea) =>
+          linea === existente ? { ...linea, cantidad: Math.min(linea.cantidad + nueva.cantidad, nueva.stock), stock: nueva.stock } : linea,
+        )
+      })
+      if (modo === 'carrito') {
+        setAbierto(true)
+        return
+      }
+      const id = Date.now()
+      if (modo === 'volar' && origen && nueva.foto) {
+        // La bolsa visible del encabezado (hay una por diseño de cabecera).
+        const bolsa = Array.from(document.querySelectorAll('[data-boton-carrito]')).find(
+          (nodo) => nodo.getBoundingClientRect().width > 0,
+        )
+        if (bolsa) {
+          // Con la cabecera fuera de la pantalla, vuela a la esquina donde sale el aviso.
+          const caja = bolsa.getBoundingClientRect()
+          const hasta = caja.bottom > 0 ? caja : new DOMRect(window.innerWidth - 72, 28, 28, 28)
+          setVuelo({ foto: nueva.foto, desde: origen.getBoundingClientRect(), hasta, id })
+          setTimeout(() => {
+            setGolpe((valor) => valor + 1)
+            setAviso({ linea: nueva, id })
+          }, 780)
+          return
+        }
+      }
+      setGolpe((valor) => valor + 1)
+      setAviso({ linea: nueva, id })
+    },
+    [modo],
+  )
 
   const cambiarCantidad = useCallback((productoId: string, variante: string | undefined, cantidad: number) => {
     setLineas((actuales) =>
@@ -122,17 +167,29 @@ export function ProveedorCarrito({
       abrir: () => setAbierto(true),
       cerrar: () => setAbierto(false),
       agregar,
+      agregarRapido: Boolean(tema?.agregarRapido),
+      golpe,
       cambiarCantidad,
       quitar,
       vaciar: () => setLineas([]),
     }),
-    [lineas, moneda, ajustes, abierto, agregar, cambiarCantidad, quitar],
+    [lineas, moneda, ajustes, abierto, agregar, tema?.agregarRapido, golpe, cambiarCantidad, quitar],
   )
 
   return (
     <Contexto.Provider value={valor}>
       {children}
       <CajonCarrito />
+      <VueloAlCarrito vuelo={vuelo} alTerminar={() => setVuelo(null)} />
+      <AvisoAgregado
+        aviso={aviso}
+        moneda={moneda}
+        alVer={() => {
+          setAviso(null)
+          setAbierto(true)
+        }}
+        alCerrar={() => setAviso(null)}
+      />
     </Contexto.Provider>
   )
 }
@@ -148,8 +205,23 @@ export function BotonCarrito({ className }: { className?: string }) {
     )
   }
   return (
-    <button type="button" onClick={carrito.abrir} aria-label={`Carrito, ${carrito.unidades} productos`} className={`relative ${className ?? ''}`}>
-      <ShoppingBag aria-hidden="true" className="h-6 w-6" strokeWidth={1.6} />
+    <button
+      type="button"
+      data-boton-carrito
+      onClick={carrito.abrir}
+      aria-label={`Carrito, ${carrito.unidades} productos`}
+      className={`relative ${className ?? ''}`}
+    >
+      {/* Rebota cada vez que entra algo, sin animarse al cargar la página. */}
+      <motion.span
+        key={carrito.golpe}
+        className="block"
+        initial={false}
+        animate={carrito.golpe ? { scale: [1, 1.28, 0.9, 1.06, 1], rotate: [0, -8, 6, 0, 0] } : undefined}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+      >
+        <ShoppingBag aria-hidden="true" className="h-6 w-6" strokeWidth={1.6} />
+      </motion.span>
       <AnimatePresence>
         {carrito.unidades > 0 && (
           <motion.span
@@ -343,5 +415,109 @@ function CajonCarrito() {
         </div>
       )}
     </AnimatePresence>
+  )
+}
+
+/** La foto del producto viaja en arco hasta la bolsa del encabezado. */
+function VueloAlCarrito({
+  vuelo,
+  alTerminar,
+}: {
+  vuelo: { foto: string; desde: DOMRect; hasta: DOMRect; id: number } | null
+  alTerminar: () => void
+}) {
+  if (!vuelo) return null
+  const { desde, hasta } = vuelo
+  const lado = Math.min(desde.width, desde.height, 220)
+  const inicioX = desde.left + desde.width / 2 - lado / 2
+  const inicioY = desde.top + desde.height / 2 - lado / 2
+  const finX = hasta.left + hasta.width / 2 - 14
+  const finY = hasta.top + hasta.height / 2 - 14
+  return (
+    <motion.img
+      key={vuelo.id}
+      src={vuelo.foto}
+      alt=""
+      aria-hidden="true"
+      className="pointer-events-none fixed top-0 left-0 z-[110] object-cover shadow-xl"
+      initial={{ x: inicioX, y: inicioY, width: lado, height: lado, borderRadius: 12, opacity: 1 }}
+      animate={{
+        x: [inicioX, (inicioX + finX) / 2, finX],
+        y: [inicioY, Math.min(inicioY, finY) - 90, finY],
+        width: [lado, lado * 0.55, 28],
+        height: [lado, lado * 0.55, 28],
+        borderRadius: [12, 40, 999],
+        opacity: [1, 1, 0.5],
+      }}
+      transition={{ duration: 0.78, ease: [0.45, 0, 0.2, 1], times: [0, 0.45, 1] }}
+      onAnimationComplete={alTerminar}
+    />
+  )
+}
+
+/** "Agregado al carrito" con la foto: abajo en el celular, arriba a la derecha en pantallas grandes. */
+function AvisoAgregado({
+  aviso,
+  moneda,
+  alVer,
+  alCerrar,
+}: {
+  aviso: { linea: LineaCarrito; id: number } | null
+  moneda: string
+  alVer: () => void
+  alCerrar: () => void
+}) {
+  return (
+    <div className="pointer-events-none fixed inset-x-3 bottom-3 z-[105] flex justify-center sm:inset-x-auto sm:top-24 sm:right-6 sm:bottom-auto">
+      <AnimatePresence mode="popLayout">
+        {aviso && (
+          <motion.div
+            key={aviso.id}
+            role="status"
+            initial={{ opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.97 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            className="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-(--radius-marca) border border-tinta/10 bg-superficie p-3 text-tinta shadow-[0_18px_50px_-12px_rgba(0,0,0,0.35)]"
+          >
+            <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[calc(var(--radio)*0.6)] bg-tinta/5">
+              {aviso.linea.foto && (
+                <Image
+                  src={aviso.linea.foto}
+                  alt=""
+                  fill
+                  sizes="56px"
+                  unoptimized={esMedioLocal(aviso.linea.foto)}
+                  className="object-cover"
+                />
+              )}
+              <span className="absolute right-0.5 bottom-0.5 grid h-5 w-5 place-items-center rounded-full bg-marca text-marca-contraste">
+                <Check aria-hidden="true" className="h-3 w-3" strokeWidth={3} />
+              </span>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-xs text-tinta/55">Agregado al carrito</span>
+              <span className="block truncate text-sm font-medium">
+                {aviso.linea.nombre}
+                {aviso.linea.varianteNombre ? ` · ${aviso.linea.varianteNombre}` : ''}
+              </span>
+              <span className="block text-xs text-tinta/60">
+                {aviso.linea.cantidad} × {formatearPrecio(aviso.linea.precio, moneda)}
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={alVer}
+              className="boton-tienda shrink-0 bg-marca px-3 py-2 text-xs font-medium text-marca-contraste transition hover:opacity-90"
+            >
+              Ver carrito
+            </button>
+            <button type="button" onClick={alCerrar} aria-label="Cerrar aviso" className="shrink-0 text-tinta/40 transition hover:text-tinta">
+              <X aria-hidden="true" className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }

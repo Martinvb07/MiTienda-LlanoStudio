@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type { Producto } from '@/tipos/tienda'
 import { formatearPrecio } from '@/utilidades/formato'
 import { esMedioLocal } from '@/utilidades/medios'
+import { AgregarRapido } from './carrito/AgregarRapido'
 
 /**
  * Un producto en una grilla. 'simple' es foto grande y texto suelto; 'tarjeta'
@@ -62,6 +63,8 @@ export function TarjetaProducto({
         {(producto.presentacion || agotado) && (
           <p className="mt-0.5 text-center text-xs text-tinta/55">{agotado ? 'Agotado' : producto.presentacion}</p>
         )}
+        <span className="mt-auto" />
+        <AgregarRapido producto={producto} forma="boton" />
       </Link>
     )
   }
@@ -75,6 +78,7 @@ export function TarjetaProducto({
           <div className="flex h-full items-center justify-center text-sm text-tinta/30">Sin foto</div>
         )}
         {fotoAlterna}
+        <AgregarRapido producto={producto} forma="flotante" />
       </div>
       <h3 className="mt-4 font-medium">{producto.nombre}</h3>
       <p className="mt-1 text-tinta/70">{formatearPrecio(producto.precio, moneda)}</p>

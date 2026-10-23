@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Check, ChevronDown, Plus, Trash2 } from 'lucide-react'
 import type { EsquemaColor, TemaTienda } from '@/tipos/tienda'
 import { FUENTES, GRUPOS_FUENTES, urlFuentes } from '@/utilidades/fuentes'
-import { nivelIncluye, planMinimo, type LimitesPlan } from '@/utilidades/planes'
+import { experienciaIncluye, nivelIncluye, planMinimo, type LimitesPlan } from '@/utilidades/planes'
 import { esquemasIniciales } from '@/utilidades/tema'
 import { cn } from '@/utilidades/clases'
 import { CURVA, Campo, CampoColor, Candado, Interruptor, Seccion, Segmentado } from '../ui/basicos'
@@ -297,6 +297,51 @@ export function CamposTema({ tema, alCambiar, limites }: Props) {
             <CampoColor etiqueta="Color del precio" valor={tema.colorPrecio} alCambiar={(colorPrecio) => alCambiar({ colorPrecio })} />
           )}
         </fieldset>
+      </Seccion>
+
+      <Seccion titulo="Experiencia de compra">
+        {!experienciaIncluye(limites.experienciaCompra, 'avanzada') ? (
+          <Candado plan={planMinimo((plan) => experienciaIncluye(plan.experienciaCompra, 'avanzada'))}>
+            Botón Agregar en las tarjetas, aviso con foto y animaciones al comprar.
+          </Candado>
+        ) : (
+          <>
+            <Grupo titulo="Al agregar al carrito">
+              <Segmentado
+                opciones={[
+                  { valor: 'carrito', etiqueta: 'Abrir carrito', titulo: 'Se abre el carrito a la derecha' },
+                  { valor: 'aviso', etiqueta: 'Aviso', titulo: 'Sale un aviso con la foto y sigue comprando' },
+                  { valor: 'volar', etiqueta: 'Volar a la bolsa', titulo: 'La foto vuela hasta la bolsa, que rebota' },
+                ]}
+                valor={tema.alAgregar ?? 'carrito'}
+                alCambiar={(alAgregar) => {
+                  if (alAgregar === 'volar' && !experienciaIncluye(limites.experienciaCompra, 'completa')) return
+                  alCambiar({ alAgregar })
+                }}
+                chico
+              />
+              <span className="text-[11px] leading-relaxed text-sitio-tenue">
+                {tema.alAgregar === 'volar'
+                  ? 'La foto del producto viaja hasta la bolsa del encabezado, la bolsa rebota y sale el aviso.'
+                  : tema.alAgregar === 'aviso'
+                    ? 'El cliente sigue mirando la tienda; un aviso con la foto le confirma lo que agregó.'
+                    : 'Cada vez que agregan algo se abre el carrito a la derecha.'}{' '}
+                Pruébalo en la vista previa.
+              </span>
+            </Grupo>
+            {!experienciaIncluye(limites.experienciaCompra, 'completa') && (
+              <Candado plan={planMinimo((plan) => experienciaIncluye(plan.experienciaCompra, 'completa'))}>
+                La foto que vuela hasta la bolsa.
+              </Candado>
+            )}
+            <Interruptor activo={tema.agregarRapido ?? false} alCambiar={(agregarRapido) => alCambiar({ agregarRapido })}>
+              Botón Agregar en las tarjetas
+              <small className="block text-[11.5px] text-sitio-tenue">
+                Compran sin entrar al producto. Si tiene tallas o colores, lleva a elegirlos.
+              </small>
+            </Interruptor>
+          </>
+        )}
       </Seccion>
 
       <Seccion titulo="Diseño y animaciones">

@@ -1,5 +1,5 @@
 import type { Bloque, EstiloSeccion, TipoBloque } from '@/tipos/bloques'
-import type { AjustesTienda } from '@/tipos/tienda'
+import type { AjustesTienda, TemaTienda } from '@/tipos/tienda'
 
 /**
  * Qué puede personalizar cada plan. Es la misma tabla que hace cumplir el
@@ -51,6 +51,19 @@ export interface LimitesPlan {
   usuarios: number
   /** Conectar www.tutienda.com. */
   dominioPropio: boolean
+  /**
+   * Cómo se siente comprar: 'basica' abre el carrito; 'avanzada' suma el aviso
+   * con foto y el botón Agregar en las tarjetas; 'completa' la foto que vuela
+   * hasta la bolsa.
+   */
+  experienciaCompra: ExperienciaCompra
+}
+
+export type ExperienciaCompra = 'basica' | 'avanzada' | 'completa'
+const EXPERIENCIAS: readonly ExperienciaCompra[] = ['basica', 'avanzada', 'completa']
+
+export function experienciaIncluye(actual: ExperienciaCompra, requerida: ExperienciaCompra) {
+  return EXPERIENCIAS.indexOf(actual) >= EXPERIENCIAS.indexOf(requerida)
 }
 
 /**
@@ -116,6 +129,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     metricasAvanzadas: false,
     usuarios: 1,
     dominioPropio: false,
+    experienciaCompra: 'basica',
     exportarPedidos: false,
   },
   EMPRENDE: {
@@ -144,6 +158,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     metricasAvanzadas: false,
     usuarios: 2,
     dominioPropio: false,
+    experienciaCompra: 'avanzada',
     exportarPedidos: true,
   },
   NEGOCIO: {
@@ -172,6 +187,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     metricasAvanzadas: true,
     usuarios: 5,
     dominioPropio: true,
+    experienciaCompra: 'completa',
     exportarPedidos: true,
   },
   PRO: {
@@ -200,6 +216,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     metricasAvanzadas: true,
     usuarios: 15,
     dominioPropio: true,
+    experienciaCompra: 'completa',
     exportarPedidos: true,
   },
 }
@@ -310,4 +327,21 @@ export function estiloDelPlan(estilo: EstiloSeccion | undefined, nivel: NivelEst
     ...(nivelIncluye(nivel, 'avanzado') ? { ancho, animacion, dispositivos, forma } : {}),
     ...(nivelIncluye(nivel, 'completo') ? { imagenFondo, oscurecer } : {}),
   }
+}
+
+/**
+ * El tema tal como se pinta: lo de la experiencia de compra que el plan no
+ * incluye baja al nivel que sí tiene. Igual que ajustarAlPlan, no borra nada.
+ */
+export function temaAlPlan<T extends Pick<TemaTienda, 'alAgregar' | 'agregarRapido'>>(plan: string | undefined, tema: T): T {
+  const nivel = limitesDe(plan).experienciaCompra
+  const alAgregar =
+    tema.alAgregar === 'volar' && !experienciaIncluye(nivel, 'completa')
+      ? experienciaIncluye(nivel, 'avanzada')
+        ? 'aviso'
+        : 'carrito'
+      : tema.alAgregar === 'aviso' && !experienciaIncluye(nivel, 'avanzada')
+        ? 'carrito'
+        : tema.alAgregar
+  return { ...tema, alAgregar, agregarRapido: experienciaIncluye(nivel, 'avanzada') ? tema.agregarRapido : false }
 }

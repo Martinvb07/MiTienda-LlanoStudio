@@ -21,7 +21,17 @@ export interface PlantillaTienda {
   /** Valor que se guarda en Tienda.plantilla: un estilo predefinido o la clave propia. */
   estilo: string
   /** El tema base, y los detalles de tarjetas y títulos si la plantilla los trae. */
-  tema: TemaBase & Pick<TemaTienda, 'colorPrecio' | 'tarjetaProporcion' | 'tarjetaSegundaFoto' | 'titulosMayusculas'>
+  tema: TemaBase &
+    Pick<
+      TemaTienda,
+      | 'colorPrecio'
+      | 'tarjetaProporcion'
+      | 'tarjetaSegundaFoto'
+      | 'titulosMayusculas'
+      | 'animarSecciones'
+      | 'alAgregar'
+      | 'agregarRapido'
+    >
   destacada?: boolean
   /** Columnas de la grilla, para la miniatura. */
   columnas: 2 | 3 | 4
@@ -70,6 +80,9 @@ export const PLANTILLAS_TIENDA: PlantillaTienda[] = [
       colorTexto: '#1a1a1a',
       fuenteTitulos: 'moderna',
       radio: '0.5rem',
+      animarSecciones: true,
+      alAgregar: 'aviso',
+      agregarRapido: true,
       colorPrecio: '#e11d2a',
     },
     destacada: true,
@@ -119,6 +132,9 @@ export const PLANTILLAS_TIENDA: PlantillaTienda[] = [
       colorTexto: '#1d2b20',
       fuenteTitulos: 'redondeada',
       radio: '1rem',
+      animarSecciones: true,
+      alAgregar: 'aviso',
+      agregarRapido: true,
     },
     columnas: 4,
     captura: '/ejemplos/verde-morichal.webp',
@@ -176,6 +192,9 @@ export const PLANTILLAS_TIENDA: PlantillaTienda[] = [
       colorTexto: '#0b1f3a',
       fuenteTitulos: 'moderna',
       radio: '0.25rem',
+      animarSecciones: true,
+      alAgregar: 'volar',
+      agregarRapido: true,
     },
     columnas: 4,
     captura: '/ejemplos/zona-fit.webp',
@@ -226,6 +245,9 @@ export const PLANTILLAS_TIENDA: PlantillaTienda[] = [
       colorTexto: '#111111',
       fuenteTitulos: 'moderna',
       radio: '0rem',
+      animarSecciones: true,
+      alAgregar: 'aviso',
+      agregarRapido: true,
       titulosMayusculas: true,
       tarjetaProporcion: 'vertical',
       tarjetaSegundaFoto: true,

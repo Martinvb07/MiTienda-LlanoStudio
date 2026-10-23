@@ -2,7 +2,7 @@ import 'server-only'
 import { pedirApi, ErrorApi } from './api'
 import { normalizarBloques } from '@/tipos/bloques'
 import type { Producto, Tienda } from '@/tipos/tienda'
-import { ajustarAlPlan } from '@/utilidades/planes'
+import { ajustarAlPlan, temaAlPlan } from '@/utilidades/planes'
 
 interface RespuestaTienda {
   tienda: Omit<Tienda, 'configuracionBloques' | 'tema' | 'ajustes'> & {
@@ -32,7 +32,7 @@ export async function obtenerTienda(host: string): Promise<Tienda | null> {
     )
     return {
       ...tienda,
-      tema: (tienda.tema ?? {}) as Tienda['tema'],
+      tema: temaAlPlan(tienda.plan, (tienda.tema ?? {}) as Tienda['tema']),
       ajustes,
       configuracionBloques: bloques,
     }

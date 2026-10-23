@@ -5,7 +5,8 @@ import { BotonWhatsapp } from '@/componentes/tienda/BotonWhatsapp'
 import { CabeceraTienda } from '@/componentes/tienda/CabeceraTienda'
 import { FichaProducto } from '@/componentes/tienda/FichaProducto'
 import { RenderizadorBloques } from '@/componentes/tienda/RenderizadorBloques'
-import { ajustarAlPlan, limitesDe } from '@/utilidades/planes'
+import { ProveedorCarrito } from '@/componentes/tienda/carrito/Carrito'
+import { ajustarAlPlan, limitesDe, temaAlPlan } from '@/utilidades/planes'
 import { atributosTema, variablesTema } from '@/utilidades/tema'
 import { FuentesTema } from '@/componentes/tienda/FuentesTema'
 import { BarraSeccion } from './BarraSeccion'
@@ -60,28 +61,47 @@ export function LienzoVistaPrevia() {
       className="min-h-screen bg-superficie font-sans text-tinta"
     >
       <FuentesTema tema={tienda.tema} />
-      {enfocar && (
-        <style>{`[data-bloque="${enfocar.replace(/"/g, '')}"]{outline:1.5px dashed color-mix(in srgb,var(--tinta) 45%,transparent);outline-offset:-6px;animation:mt-enfoque .6s cubic-bezier(.22,1,.36,1)}@keyframes mt-enfoque{from{outline-color:transparent;outline-offset:2px}}`}</style>
-      )}
-      {datos.vista === 'producto' && datos.producto ? (
-        <>
-          {cabecera}
-          <FichaProducto producto={datos.producto} nombreTienda={tienda.nombre} moneda={tienda.moneda} ajustes={ajustes} catalogo={datos.productos} />
-        </>
-      ) : (
-        <RenderizadorBloques
-          bloques={bloques}
-          productos={datos.productos}
-          moneda={tienda.moneda}
-          cabecera={cabecera}
-          quitarMarca={limitesDe(tienda.plan).quitarMarca}
-          ajustes={ajustes}
-          nombreTienda={tienda.nombre}
-          tema={tienda.tema}
-        />
-      )}
-      {datos.editable && datos.vista !== 'producto' && <BarraSeccion bloques={bloques.filter((bloque) => bloque.visible !== false)} />}
-      {ajustes.whatsappFlotante && ajustes.whatsapp && <BotonWhatsapp numero={ajustes.whatsapp} tienda={tienda.nombre} />}
+      {/* Carrito de mentira para la vista previa: así el botón Agregar y las
+          animaciones de compra se pueden probar mientras se edita. */}
+      <ProveedorCarrito
+        clave="vista-previa"
+        moneda={tienda.moneda}
+        ajustes={ajustes}
+        tema={temaAlPlan(tienda.plan, tienda.tema)}
+      >
+        {enfocar && (
+          <style>{`[data-bloque="${enfocar.replace(/"/g, '')}"]{outline:1.5px dashed color-mix(in srgb,var(--tinta) 45%,transparent);outline-offset:-6px;animation:mt-enfoque .6s cubic-bezier(.22,1,.36,1)}@keyframes mt-enfoque{from{outline-color:transparent;outline-offset:2px}}`}</style>
+        )}
+        {datos.vista === 'producto' && datos.producto ? (
+          <>
+            {cabecera}
+            <FichaProducto
+              producto={datos.producto}
+              nombreTienda={tienda.nombre}
+              moneda={tienda.moneda}
+              ajustes={ajustes}
+              catalogo={datos.productos}
+            />
+          </>
+        ) : (
+          <RenderizadorBloques
+            bloques={bloques}
+            productos={datos.productos}
+            moneda={tienda.moneda}
+            cabecera={cabecera}
+            quitarMarca={limitesDe(tienda.plan).quitarMarca}
+            ajustes={ajustes}
+            nombreTienda={tienda.nombre}
+            tema={tienda.tema}
+          />
+        )}
+        {datos.editable && datos.vista !== 'producto' && (
+          <BarraSeccion bloques={bloques.filter((bloque) => bloque.visible !== false)} />
+        )}
+        {ajustes.whatsappFlotante && ajustes.whatsapp && (
+          <BotonWhatsapp numero={ajustes.whatsapp} tienda={tienda.nombre} />
+        )}
+      </ProveedorCarrito>
     </div>
   )
 }

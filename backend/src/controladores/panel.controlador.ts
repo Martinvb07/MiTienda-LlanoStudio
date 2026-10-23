@@ -70,6 +70,8 @@ const esquemaTema = z.object({
   /** Color del precio en las tarjetas de producto (el rojo de un supermercado). */
   colorPrecio: colorHex.optional(),
   animarSecciones: z.boolean().optional(),
+  alAgregar: z.enum(['carrito', 'aviso', 'volar']).optional(),
+  agregarRapido: z.boolean().optional(),
   esquemas: z
     .array(
       z.object({

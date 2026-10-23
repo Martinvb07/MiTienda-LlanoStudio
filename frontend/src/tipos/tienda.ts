@@ -39,6 +39,13 @@ export interface TemaTienda {
   colorPrecio?: string
   /** Todas las secciones aparecen con una animación suave al bajar. */
   animarSecciones?: boolean
+  /**
+   * Qué pasa al agregar al carrito: se abre el carrito, sale un aviso con la
+   * foto, o la foto vuela hasta la bolsa del encabezado y luego el aviso.
+   */
+  alAgregar?: 'carrito' | 'aviso' | 'volar'
+  /** Botón "Agregar" en las tarjetas, para comprar sin entrar al producto. */
+  agregarRapido?: boolean
   esquemas?: EsquemaColor[]
 }
 

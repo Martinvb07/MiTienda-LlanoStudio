@@ -36,17 +36,20 @@ export function BotonComprar({ producto, moneda = 'COP' }: { producto: Producto;
 
   function agregar(irAPagar: boolean) {
     if (!carrito || agotado) return
-    carrito.agregar({
-      productoId: producto.id,
-      slug: producto.slug,
-      nombre: producto.nombre,
-      precio,
-      foto: producto.fotos[0],
-      cantidad,
-      stock,
-      variante: variante?.id,
-      varianteNombre: variante?.nombre,
-    })
+    carrito.agregar(
+      {
+        productoId: producto.id,
+        slug: producto.slug,
+        nombre: producto.nombre,
+        precio,
+        foto: producto.fotos[0],
+        cantidad,
+        stock,
+        variante: variante?.id,
+        varianteNombre: variante?.nombre,
+      },
+      irAPagar ? null : document.querySelector('[data-foto-ficha]'),
+    )
     if (irAPagar) {
       carrito.cerrar()
       router.push('/carrito')
@@ -86,7 +89,11 @@ export function BotonComprar({ producto, moneda = 'COP' }: { producto: Producto;
 
       {!agotado && (
         <div className="self-start">
-          <SelectorCantidad valor={cantidad} maximo={Math.min(stock, 99)} alCambiar={(valor) => setCantidad(Math.max(1, valor))} />
+          <SelectorCantidad
+            valor={cantidad}
+            maximo={Math.min(stock, 99)}
+            alCambiar={(valor) => setCantidad(Math.max(1, valor))}
+          />
         </div>
       )}
       <div className="flex flex-col gap-3 sm:flex-row">

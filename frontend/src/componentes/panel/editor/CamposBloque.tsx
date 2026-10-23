@@ -16,6 +16,7 @@ import type {
 import { planMinimo, type LimitesPlan } from '@/utilidades/planes'
 import { CLASES_ENTRADA, Campo, CampoArea, Candado, Interruptor, Segmentado } from '../ui/basicos'
 import { CamposLienzo } from './CamposLienzo'
+import { CamposEquipo, CamposHorario, CamposServicios } from './CamposNegocio'
 import { ZonaImagen } from '../ui/imagenes'
 import { ICONOS_BLOQUE, claveIcono } from '@/componentes/comunes/IconoBloque'
 import { cn } from '@/utilidades/clases'
@@ -37,7 +38,7 @@ const nuevoId = () => Math.random().toString(36).slice(2, 10)
  * Lista editable de elementos (diapositivas, categorías): cada uno en su
  * tarjeta, con subir, bajar y quitar, y un botón para agregar al final.
  */
-function ListaEditable<T extends { id: string }>({
+export function ListaEditable<T extends { id: string }>({
   elementos,
   alCambiar,
   crear,
@@ -845,6 +846,15 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
         </>
       )
 
+    case 'servicios':
+      return <CamposServicios bloque={bloque} alCambiar={alCambiar} limites={limites} {...subida} />
+
+    case 'equipo':
+      return <CamposEquipo bloque={bloque} alCambiar={alCambiar} limites={limites} {...subida} />
+
+    case 'horario':
+      return <CamposHorario bloque={bloque} alCambiar={alCambiar} limites={limites} {...subida} />
+
     case 'lienzo':
       return (
         <CamposLienzo bloqueId={bloque.id} props={bloque.props} alCambiar={alCambiar} alError={alError} alSubiendo={alSubiendo} />
@@ -915,6 +925,12 @@ export function resumenBloque(bloque: Bloque): string {
       return bloque.props.titulo
     case 'mapa':
       return bloque.props.direccion
+    case 'servicios':
+      return bloque.props.titulo || `${bloque.props.items.length} servicios`
+    case 'equipo':
+      return bloque.props.titulo || `${bloque.props.items.length} personas`
+    case 'horario':
+      return bloque.props.dias.map((fila) => fila.dia).filter(Boolean).join(' · ')
     case 'espaciador':
       return bloque.props.linea ? 'Con línea' : 'Espacio'
     case 'lienzo':

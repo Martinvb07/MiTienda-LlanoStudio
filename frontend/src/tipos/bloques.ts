@@ -26,6 +26,9 @@ export type TipoBloque =
   | 'banner-doble'
   | 'llamado'
   | 'mapa'
+  | 'servicios'
+  | 'equipo'
+  | 'horario'
   | 'espaciador'
   | 'lienzo'
 
@@ -248,6 +251,62 @@ export interface PropsMapa {
   alto?: 'bajo' | 'medio' | 'alto'
 }
 
+/** Un servicio de la página de un negocio: una consulta, un plato, un arreglo. */
+export interface ServicioNegocio {
+  id: string
+  nombre: string
+  descripcion?: string
+  /** Texto libre: "$80.000", "Desde $120.000", "Sin costo". */
+  precio?: string
+  /** "45 min", "1 hora". */
+  duracion?: string
+  imagenUrl?: string
+}
+
+export interface PropsServicios {
+  titulo?: string
+  subtitulo?: string
+  /** 'tarjetas' en cuadrícula; 'lista' en filas con el precio a la derecha, como una carta. */
+  disposicion?: 'tarjetas' | 'lista'
+  /** Botón de cada servicio: abre WhatsApp con el nombre del servicio. Vacío = sin botón. */
+  textoBoton?: string
+  items: ServicioNegocio[]
+}
+
+export interface MiembroEquipo {
+  id: string
+  nombre: string
+  /** "Odontóloga", "Socio fundador". */
+  cargo?: string
+  texto?: string
+  fotoUrl?: string
+}
+
+export interface PropsEquipo {
+  titulo?: string
+  subtitulo?: string
+  items: MiembroEquipo[]
+}
+
+export interface DiaHorario {
+  id: string
+  /** "Lunes a viernes". */
+  dia: string
+  /** "8:00 a. m. a 6:00 p. m." o "Cerrado". */
+  horas: string
+}
+
+export interface PropsHorario {
+  titulo?: string
+  dias: DiaHorario[]
+  /** Aviso corto bajo el horario: "Festivos cerrado". */
+  nota?: string
+  /** Vacía = la de Contacto y redes. */
+  direccion?: string
+  /** Para el botón Llamar; vacío = el WhatsApp. */
+  telefono?: string
+}
+
 export interface PropsEspaciador {
   alto?: 'chico' | 'medio' | 'grande'
   linea?: boolean
@@ -324,6 +383,9 @@ export type BloqueLogos = BloqueBase<'logos', PropsLogos>
 export type BloqueBannerDoble = BloqueBase<'banner-doble', PropsBannerDoble>
 export type BloqueLlamado = BloqueBase<'llamado', PropsLlamado>
 export type BloqueMapa = BloqueBase<'mapa', PropsMapa>
+export type BloqueServicios = BloqueBase<'servicios', PropsServicios>
+export type BloqueEquipo = BloqueBase<'equipo', PropsEquipo>
+export type BloqueHorario = BloqueBase<'horario', PropsHorario>
 export type BloqueEspaciador = BloqueBase<'espaciador', PropsEspaciador>
 export type BloqueLienzo = BloqueBase<'lienzo', PropsLienzo>
 
@@ -346,6 +408,9 @@ export type Bloque =
   | BloqueBannerDoble
   | BloqueLlamado
   | BloqueMapa
+  | BloqueServicios
+  | BloqueEquipo
+  | BloqueHorario
   | BloqueEspaciador
   | BloqueLienzo
 
@@ -369,6 +434,9 @@ export const ETIQUETAS_BLOQUE: Record<TipoBloque, string> = {
   'banner-doble': 'Banners de promoción',
   llamado: 'Llamado a la acción',
   mapa: 'Mapa',
+  servicios: 'Servicios',
+  equipo: 'Equipo',
+  horario: 'Horario y contacto',
   espaciador: 'Espacio o línea',
   lienzo: 'Lienzo libre',
 }
@@ -378,6 +446,7 @@ export const GRUPOS_BLOQUE: { titulo: string; tipos: TipoBloque[] }[] = [
   { titulo: 'Diseño libre', tipos: ['lienzo'] },
   { titulo: 'Portada', tipos: ['hero', 'carrusel', 'anuncio', 'banner-doble'] },
   { titulo: 'Catálogo', tipos: ['grilla-productos', 'categorias'] },
+  { titulo: 'Tu negocio', tipos: ['servicios', 'horario', 'equipo'] },
   { titulo: 'Contenido', tipos: ['texto', 'imagen-texto', 'columnas', 'galeria', 'video'] },
   { titulo: 'Confianza', tipos: ['testimonios', 'preguntas', 'logos', 'mapa'] },
   { titulo: 'Ventas', tipos: ['llamado', 'cuenta-regresiva'] },
@@ -403,6 +472,9 @@ export const DESCRIPCIONES_BLOQUE: Record<TipoBloque, string> = {
   'banner-doble': 'Dos o tres banners lado a lado para promociones.',
   llamado: 'Franja de color con un mensaje y un botón, también a WhatsApp.',
   mapa: 'Tu local en Google Maps.',
+  servicios: 'Lo que ofreces, con precio y duración, y un botón para agendar por WhatsApp.',
+  equipo: 'Quiénes atienden, con foto y cargo.',
+  horario: 'Cuándo atiendes, dónde estás y botones para escribir, llamar o llegar.',
   espaciador: 'Aire entre secciones, con o sin línea.',
   lienzo: 'Un espacio en blanco: arrastra títulos, fotos y botones donde quieras y estíralos a tu gusto.',
 }
@@ -506,6 +578,32 @@ export const PROPS_INICIALES: { [T in TipoBloque]: Extract<Bloque, { tipo: T }>[
     aWhatsapp: true,
   },
   mapa: { titulo: 'Visítanos', direccion: 'Plaza de Bolívar, Bogotá', alto: 'medio' },
+  servicios: {
+    titulo: 'Servicios',
+    disposicion: 'tarjetas',
+    textoBoton: 'Agendar',
+    items: [
+      { id: 's1', nombre: 'Consulta', descripcion: 'Qué incluye, en una frase.', precio: '$80.000', duracion: '45 min' },
+      { id: 's2', nombre: 'Valoración', descripcion: 'Revisamos tu caso y te decimos cómo seguir.', precio: 'Sin costo', duracion: '20 min' },
+      { id: 's3', nombre: 'Seguimiento', descripcion: 'Para quienes ya empezaron con nosotros.', precio: '$50.000', duracion: '30 min' },
+    ],
+  },
+  equipo: {
+    titulo: 'Nuestro equipo',
+    items: [
+      { id: 'e1', nombre: 'Laura Gómez', cargo: 'Directora' },
+      { id: 'e2', nombre: 'Andrés Rojas', cargo: 'Especialista' },
+      { id: 'e3', nombre: 'Camila Pérez', cargo: 'Atención al cliente' },
+    ],
+  },
+  horario: {
+    titulo: 'Horario y contacto',
+    dias: [
+      { id: 'h1', dia: 'Lunes a viernes', horas: '8:00 a. m. a 6:00 p. m.' },
+      { id: 'h2', dia: 'Sábados', horas: '9:00 a. m. a 1:00 p. m.' },
+    ],
+    nota: 'Domingos y festivos cerrado.',
+  },
   espaciador: { alto: 'medio', linea: false },
   // Arranca como el banner de dos fotos con el título encima: se ve de una qué se puede hacer.
   lienzo: {

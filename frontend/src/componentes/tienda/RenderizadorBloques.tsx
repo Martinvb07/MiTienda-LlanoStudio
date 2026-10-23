@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Bloque } from '@/tipos/bloques'
-import type { AjustesTienda, Producto, TemaTienda } from '@/tipos/tienda'
+import type { AjustesTienda, Producto, TemaTienda, TipoSitio } from '@/tipos/tienda'
 import { Anuncio } from './bloques/Anuncio'
 import { Hero } from './bloques/Hero'
 import { Carrusel } from './bloques/Carrusel'
@@ -21,9 +21,13 @@ import { Llamado } from './bloques/Llamado'
 import { Mapa } from './bloques/Mapa'
 import { Lienzo } from './bloques/Lienzo'
 import { Espaciador } from './bloques/Espaciador'
+import { Servicios } from './bloques/Servicios'
+import { Equipo } from './bloques/Equipo'
+import { Horario } from './bloques/Horario'
 import { EnvolturaSeccion } from './EnvolturaSeccion'
 import { esquemasIniciales } from '@/utilidades/tema'
 import { categoriasDe } from './ListadoProductos'
+import { bloquesVisiblesPara } from '@/utilidades/sitio'
 
 interface Props {
   bloques: Bloque[]
@@ -37,6 +41,8 @@ interface Props {
   ajustes?: AjustesTienda
   nombreTienda?: string
   tema?: TemaTienda
+  /** Una página informativa no pinta las secciones de catálogo. */
+  tipo?: TipoSitio
 }
 
 interface Contexto {
@@ -86,6 +92,20 @@ function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categ
       return <Llamado {...bloque.props} whatsapp={ajustes.whatsapp} tienda={nombreTienda} />
     case 'mapa':
       return <Mapa {...bloque.props} direccion={bloque.props.direccion || ajustes.direccion || ''} />
+    case 'servicios':
+      return <Servicios {...bloque.props} whatsapp={ajustes.whatsapp} negocio={nombreTienda} />
+    case 'equipo':
+      return <Equipo {...bloque.props} />
+    case 'horario':
+      return (
+        <Horario
+          {...bloque.props}
+          direccion={bloque.props.direccion || ajustes.direccion}
+          whatsapp={ajustes.whatsapp}
+          correo={ajustes.correo}
+          negocio={nombreTienda}
+        />
+      )
     case 'espaciador':
       return <Espaciador {...bloque.props} />
     case 'lienzo':
@@ -93,6 +113,19 @@ function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categ
     default:
       return null
   }
+}
+
+/** Ancla con la que la primera sección de cada tipo se deja enlazar desde el menú o un botón. */
+const ANCLAS: Partial<Record<Bloque['tipo'], string>> = { servicios: 'servicios', equipo: 'equipo', horario: 'contacto' }
+
+function conAnclas(bloques: Bloque[]): Bloque[] {
+  const usadas = new Set(bloques.map((bloque) => bloque.estilo?.ancla).filter(Boolean))
+  return bloques.map((bloque) => {
+    const ancla = ANCLAS[bloque.tipo]
+    if (!ancla || bloque.estilo?.ancla || usadas.has(ancla)) return bloque
+    usadas.add(ancla)
+    return { ...bloque, estilo: { ...bloque.estilo, ancla } } as Bloque
+  })
 }
 
 /**
@@ -115,11 +148,12 @@ export function RenderizadorBloques({
   ajustes = {},
   nombreTienda,
   tema,
+  tipo,
 }: Props) {
   const categorias = categoriasDe(productos)
   const esquemas = tema ? (tema.esquemas ?? esquemasIniciales(tema)) : undefined
   const contexto: Contexto = { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda }
-  const visibles = bloques.filter((bloque) => bloque.visible !== false)
+  const visibles = conAnclas(bloquesVisiblesPara(tipo, bloques).filter((bloque) => bloque.visible !== false))
   const anunciosIniciales = visibles.findIndex((bloque) => bloque.tipo !== 'anuncio')
   const corte = anunciosIniciales === -1 ? visibles.length : anunciosIniciales
 

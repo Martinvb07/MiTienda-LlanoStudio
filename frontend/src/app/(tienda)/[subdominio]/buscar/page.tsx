@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { CabeceraTienda } from '@/componentes/tienda/CabeceraTienda'
 import { categoriasDe, ListadoProductos } from '@/componentes/tienda/ListadoProductos'
 import { listarProductos, obtenerTienda } from '@/servicios/tiendas.servicio'
+import { vendeEnLinea } from '@/utilidades/sitio'
 import { hostDesdeIdentificador } from '@/utilidades/dominios'
 
 export const metadata: Metadata = { title: 'Productos', robots: { index: false } }
@@ -21,7 +22,8 @@ export default async function PaginaBuscar({ params, searchParams }: Props) {
   const [{ subdominio }, { q }] = await Promise.all([params, searchParams])
   const host = hostDesdeIdentificador(subdominio)
   const [tienda, productos] = await Promise.all([obtenerTienda(host), listarProductos(host)])
-  if (!tienda) notFound()
+  // Una página informativa no vende: sin catálogo, carrito ni pagos.
+  if (!tienda || !vendeEnLinea(tienda.tipo)) notFound()
 
   const consulta = (Array.isArray(q) ? q[0] : q)?.trim() ?? ''
   const terminos = normalizar(consulta).split(/\s+/).filter(Boolean)

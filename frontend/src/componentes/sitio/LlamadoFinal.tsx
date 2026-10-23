@@ -5,12 +5,17 @@ import { Revelar } from './Revelar'
 interface Props {
   titulo?: string
   texto?: string
+  /** A dónde lleva "Empezar gratis" y "Ver plantillas", si no son los de la tienda. */
+  hrefEmpezar?: string
+  hrefPlantillas?: string
 }
 
 /** Cierre de página: titular enorme sobre una foto que se funde con el negro. */
 export function LlamadoFinal({
   titulo = 'Tu sitio puede estar listo hoy',
   texto = 'Sin código y sin tarjeta de crédito.',
+  hrefEmpezar = '/panel/crear-cuenta',
+  hrefPlantillas = '/plantillas',
 }: Props) {
   return (
     <section className="relative isolate overflow-hidden py-[140px] text-center md:py-[190px]">
@@ -27,10 +32,10 @@ export function LlamadoFinal({
         <h2 className="titulo-2 mx-auto max-w-[14ch]">{titulo}</h2>
         <p className="bajada mx-auto mt-5 !text-lg">{texto}</p>
         <div className="mt-10 flex flex-wrap justify-center gap-4">
-          <Boton href="/panel/crear-cuenta" flecha>
+          <Boton href={hrefEmpezar} flecha>
             Empezar gratis
           </Boton>
-          <Boton href="/plantillas" variante="secundario">
+          <Boton href={hrefPlantillas} variante="secundario">
             Ver plantillas
           </Boton>
         </div>

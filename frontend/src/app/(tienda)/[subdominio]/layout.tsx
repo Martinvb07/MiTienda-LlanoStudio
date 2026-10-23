@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { obtenerTienda } from '@/servicios/tiendas.servicio'
 import { hostDesdeIdentificador } from '@/utilidades/dominios'
 import { atributosTema, variablesTema } from '@/utilidades/tema'
+import { vendeEnLinea } from '@/utilidades/sitio'
 import { FuentesTema } from '@/componentes/tienda/FuentesTema'
 import { BotonWhatsapp } from '@/componentes/tienda/BotonWhatsapp'
 import { ProveedorCarrito } from '@/componentes/tienda/carrito/Carrito'
@@ -29,7 +30,7 @@ export async function generateMetadata({
 
   return {
     title: { default: tienda.nombre, template: `%s · ${tienda.nombre}` },
-    description: tienda.descripcion ?? `Compra en línea en ${tienda.nombre}`,
+    description: tienda.descripcion ?? (vendeEnLinea(tienda.tipo) ? `Compra en línea en ${tienda.nombre}` : tienda.nombre),
     // Canónica al dominio real de la tienda: evita que la misma tienda indexe
     // por varias rutas internas.
     alternates: { canonical: `https://${host}` },

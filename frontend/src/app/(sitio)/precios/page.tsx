@@ -21,7 +21,8 @@ const PREGUNTAS = [
   },
   {
     pregunta: '¿Los planes incluyen la página y los enlaces?',
-    respuesta: 'Hoy los planes cubren la tienda. La página y los enlaces están en construcción; cuando lleguen te contamos aquí cómo quedan.',
+    respuesta:
+      'La página para tu negocio usa los mismos planes que la tienda: arranca gratis y los planes pagos suman secciones como equipo, opiniones y mapa. Los enlaces para la bio están en construcción; su precio aún no está definido.',
   },
   {
     pregunta: '¿Puedo cambiar de plan más adelante?',
@@ -60,6 +61,10 @@ export default async function PaginaPrecios() {
         titulo="Empieza gratis. Paga cuando tu tienda lo pida."
         descripcion="Sin comisión por venta y sin permanencia. El plan Gratis no vence."
       />
+
+      <p className="mx-auto mt-8 max-w-[60ch] px-5 text-center text-[13.5px] text-white/50">
+        Sirven para tu tienda y para la página de tu negocio. Enlaces para tu bio: próximamente, sin precio definido.
+      </p>
 
       <TablaPrecios />
 

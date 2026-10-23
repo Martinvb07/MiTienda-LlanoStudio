@@ -3,7 +3,7 @@
 import { refrescarTienda } from '@/app/panel/acciones'
 import { normalizarBloques } from '@/tipos/bloques'
 import type { Cupon, DatosCupon, EstadoPedido, Pedido } from '@/tipos/pedidos'
-import type { ProductoPanel, Tienda } from '@/tipos/tienda'
+import type { ProductoPanel, Tienda, TipoSitio } from '@/tipos/tienda'
 
 /**
  * Cliente del panel en el navegador. Habla con la API por el mismo origen:
@@ -110,7 +110,7 @@ async function pedir<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
 export interface SesionPanel {
   usuario: { nombre: string; email: string; rol: string }
   tenant: { subdominio: string; plan: string; suscripcion?: EstadoSuscripcion }
-  tienda: { nombre: string; logoUrl: string | null; publicada: boolean } | null
+  tienda: { nombre: string; logoUrl: string | null; publicada: boolean; tipo?: TipoSitio } | null
 }
 
 /** Cómo va el plan pago. `gracia` = ya venció y cuenta los días antes de volver a Gratis. */
@@ -129,6 +129,8 @@ export async function registrar(datos: {
   subdominio: string
   ref?: string
   origen?: string
+  /** Tienda (por defecto) o página informativa. */
+  tipo?: 'tienda' | 'pagina'
 }) {
   const { token } = await pedir<{ token: string }>('/registro', {
     method: 'POST',

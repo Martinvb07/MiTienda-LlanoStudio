@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { listarProductos, obtenerProducto, obtenerTienda } from '@/servicios/tiendas.servicio'
+import { vendeEnLinea } from '@/utilidades/sitio'
 import { hostDesdeIdentificador } from '@/utilidades/dominios'
 import { FichaProducto } from '@/componentes/tienda/FichaProducto'
 import { CabeceraTienda } from '@/componentes/tienda/CabeceraTienda'
@@ -41,7 +42,7 @@ export default async function PaginaProducto({ params }: Props) {
     listarProductos(host),
   ])
 
-  if (!tienda || !producto) notFound()
+  if (!tienda || !producto || !vendeEnLinea(tienda.tipo)) notFound()
 
   return (
     <>

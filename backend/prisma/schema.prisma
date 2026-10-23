@@ -52,6 +52,18 @@ enum ProveedorPago {
   BOLD
 }
 
+/// Qué es el sitio de una cuenta. Todos usan el mismo modelo Tienda (diseño,
+/// tema, ajustes, productos), así que pasar de uno a otro no borra nada: sólo
+/// cambia qué se muestra en público y qué ofrece el panel.
+enum TipoSitio {
+  /// Tienda en línea con catálogo, carrito y pedidos.
+  tienda
+  /// Página informativa de un negocio: sin carrito ni catálogo.
+  pagina
+  /// Enlaces para la bio (todavía no se puede crear).
+  enlaces
+}
+
 enum EstadoPago {
   PENDIENTE
   APROBADO
@@ -155,6 +167,8 @@ model Tienda {
   id       String @id @default(cuid())
   tenantId String @unique
 
+  /// Tienda en línea, página informativa o enlaces. Ver TipoSitio.
+  tipo        TipoSitio @default(tienda)
   nombre      String
   descripcion String?
   logoUrl     String?

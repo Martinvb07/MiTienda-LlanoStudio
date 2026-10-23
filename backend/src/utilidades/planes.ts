@@ -30,7 +30,15 @@ export interface LimitesPlan {
   dominioPropio: boolean
 }
 
+/**
+ * Lo básico de una página de negocio: qué ofrece, cuándo atiende y cómo
+ * contactarlo. Va desde Gratis, en tienda y en página.
+ */
+const BLOQUES_NEGOCIO_BASICO = ['servicios', 'horario'] as const
+
 const BLOQUES_EMPRENDE = [
+  ...BLOQUES_NEGOCIO_BASICO,
+  'equipo',
   'anuncio',
   'hero',
   'carrusel',
@@ -57,7 +65,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     productos: 10,
     fotosPorProducto: 4,
     secciones: 6,
-    bloques: ['hero', 'grilla-productos', 'texto', 'pie', 'espaciador'],
+    bloques: ['hero', 'grilla-productos', 'texto', 'pie', 'espaciador', ...BLOQUES_NEGOCIO_BASICO],
     temaLibre: false,
     quitarMarca: false,
     cupones: 0,
@@ -144,6 +152,9 @@ export const ETIQUETAS_BLOQUE_PLAN: Record<string, string> = {
   mapa: 'Mapa',
   espaciador: 'Espacio o línea',
   lienzo: 'Lienzo libre',
+  servicios: 'Servicios',
+  equipo: 'Equipo',
+  horario: 'Horario y contacto',
 }
 
 export function limitesDe(plan: string): LimitesPlan {

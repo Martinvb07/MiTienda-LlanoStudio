@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { CabeceraTienda } from '@/componentes/tienda/CabeceraTienda'
 import { categoriasDe, ListadoProductos } from '@/componentes/tienda/ListadoProductos'
 import { listarProductos, obtenerTienda } from '@/servicios/tiendas.servicio'
+import { vendeEnLinea } from '@/utilidades/sitio'
 import { hostDesdeIdentificador } from '@/utilidades/dominios'
 import { generarSlug } from '@/utilidades/formato'
 
@@ -34,7 +35,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 export default async function PaginaCategoria(props: Props) {
   const { tienda, productos, categorias, nombre } = await cargar(props)
-  if (!tienda) notFound()
+  // Una página informativa no vende: sin catálogo, carrito ni pagos.
+  if (!tienda || !vendeEnLinea(tienda.tipo)) notFound()
 
   return (
     <>

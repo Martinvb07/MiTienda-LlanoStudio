@@ -146,8 +146,17 @@ export interface AjustesTienda {
   paginaProducto?: PlantillaProducto
 }
 
+/**
+ * Qué es el sitio: tienda en línea con carrito, página informativa de un
+ * negocio o enlaces para la bio. Todos guardan lo mismo (diseño, tema,
+ * ajustes), así que pasar de uno a otro no pierde nada.
+ */
+export type TipoSitio = 'tienda' | 'pagina' | 'enlaces'
+
 export interface Tienda {
   id: string
+  /** Sin él (respuestas viejas en caché), es una tienda. */
+  tipo?: TipoSitio
   nombre: string
   descripcion: string | null
   logoUrl: string | null

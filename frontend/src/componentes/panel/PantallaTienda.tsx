@@ -8,7 +8,8 @@ import { listarProductos, obtenerTienda } from '@/servicios/panel'
 import { ETIQUETAS_BLOQUE } from '@/tipos/bloques'
 import type { Producto, Tienda } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
-import { PLANTILLAS_TIENDA } from '@/utilidades/plantillas'
+import { plantillasDe } from '@/utilidades/plantillasPagina'
+import { textosSitio, vendeEnLinea } from '@/utilidades/sitio'
 import { ESTILOS_PREDEFINIDOS } from '@/utilidades/tema'
 import { CabeceraPanel } from './CabeceraPanel'
 import { EditorTienda } from './editor/EditorTienda'
@@ -58,9 +59,11 @@ export function PantallaTienda() {
   const { tienda, subdominio } = datos
   const estilo =
     ESTILOS_PREDEFINIDOS.find((opcion) => opcion.clave === tienda.plantilla)?.nombre ??
-    PLANTILLAS_TIENDA.find((opcion) => opcion.clave === tienda.plantilla)?.nombre ??
+    plantillasDe(tienda.tipo).find((opcion) => opcion.clave === tienda.plantilla)?.nombre ??
     'Personalizado'
   const secciones = tienda.configuracionBloques.filter((bloque) => bloque.visible !== false)
+  const vende = vendeEnLinea(tienda.tipo)
+  const textos = textosSitio(tienda.tipo)
 
   return (
     <>
@@ -69,7 +72,7 @@ export function PantallaTienda() {
         descripcion="Diseña tu página con secciones, cambia colores y letras, y mira el resultado en vivo."
         accion={
           <BotonPanel variante="primario" onClick={() => setEditando(true)} className="h-10 px-5">
-            Editar tienda
+            {textos.editar}
           </BotonPanel>
         }
       />
@@ -119,10 +122,12 @@ export function PantallaTienda() {
                 <dt className="text-sitio-tenue">Estilo</dt>
                 <dd>{estilo}</dd>
               </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-sitio-tenue">Productos visibles</dt>
-                <dd>{productos.length}</dd>
-              </div>
+              {vende && (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-sitio-tenue">Productos visibles</dt>
+                  <dd>{productos.length}</dd>
+                </div>
+              )}
             </dl>
             <ol className="mt-4 space-y-1.5 border-t border-sitio-borde pt-4">
               {secciones.map((bloque, indice) => (

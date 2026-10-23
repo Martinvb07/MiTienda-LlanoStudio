@@ -8,6 +8,7 @@ import { obtenerMetricas, type DiaMetricas, type Metricas } from '@/servicios/pa
 import { formatearPrecio } from '@/utilidades/formato'
 import { limitesDe, planMinimo } from '@/utilidades/planes'
 import { cn } from '@/utilidades/clases'
+import { vendeEnLinea } from '@/utilidades/sitio'
 import { CabeceraPanel } from './CabeceraPanel'
 import { useSesion } from './SesionPanel'
 import { Aviso, CURVA, Candado } from './ui/basicos'
@@ -120,11 +121,14 @@ function Grafica({ serie, clave }: { serie: DiaMetricas[]; clave: ClaveSerie }) 
 
 /** Cómo le va a la tienda: ventas, pedidos, visitas y, en planes altos, qué se mira y qué se vende. */
 export function PantallaEstadisticas() {
-  const limites = limitesDe(useSesion().sesion.tenant.plan)
+  const { sesion } = useSesion()
+  const limites = limitesDe(sesion.tenant.plan)
+  // Una página no vende: se miran las visitas y cuánta gente escribe por WhatsApp.
+  const vende = vendeEnLinea(sesion.tienda?.tipo)
   const [dias, setDias] = useState(Math.min(30, limites.diasMetricas))
   const [metricas, setMetricas] = useState<Metricas | null>(null)
   const [error, setError] = useState('')
-  const [serie, setSerie] = useState<ClaveSerie>('ventas')
+  const [serie, setSerie] = useState<ClaveSerie>(vende ? 'ventas' : 'visitas')
 
   useEffect(() => {
     setMetricas(null)
@@ -141,7 +145,11 @@ export function PantallaEstadisticas() {
     <>
       <CabeceraPanel
         titulo="Estadísticas"
-        descripcion="Cuánto vendes, cuánta gente entra a tu tienda y qué es lo que más le gusta."
+        descripcion={
+          vende
+            ? 'Cuánto vendes, cuánta gente entra a tu tienda y qué es lo que más le gusta.'
+            : 'Cuánta gente entra a tu página y cuántos te escriben.'
+        }
         accion={
           <div className="inline-flex rounded-[10px] border border-sitio-borde bg-white/[0.03] p-1">
             {RANGOS.map((rango) => {
@@ -179,7 +187,9 @@ export function PantallaEstadisticas() {
           { etiqueta: 'Pedidos', valor: totales?.pedidos ?? 0, antes: totales?.pedidosAntes ?? 0 },
           { etiqueta: 'Visitas', valor: totales?.visitas ?? 0, antes: totales?.visitasAntes ?? 0 },
           { etiqueta: 'Ticket promedio', valor: ticket, formato: (n: number) => formatearPrecio(Math.round(n)) },
-        ].map((cifra, indice) => (
+        ]
+          .filter((cifra) => vende || cifra.etiqueta === 'Visitas')
+          .map((cifra, indice) => (
           <Aparecer key={cifra.etiqueta} orden={indice}>
             <div className="h-full rounded-[16px] border border-sitio-borde bg-sitio-superficie p-5">
               <p className="text-[11.5px] text-sitio-tenue">{cifra.etiqueta}</p>
@@ -196,7 +206,7 @@ export function PantallaEstadisticas() {
         <section className="rounded-[16px] border border-sitio-borde bg-sitio-superficie p-5 md:p-6">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-[15px] font-medium">Por día</h2>
-            <div className="inline-flex rounded-[9px] border border-sitio-borde bg-white/5 p-[3px]">
+            <div className={cn('inline-flex rounded-[9px] border border-sitio-borde bg-white/5 p-[3px]', !vende && 'hidden')}>
               {SERIES.map((opcion) => (
                 <button
                   key={opcion.clave}
@@ -224,7 +234,7 @@ export function PantallaEstadisticas() {
               <Grafica serie={metricas.serie} clave={serie} />
               {sinDatos && (
                 <p className="mt-4 text-center text-[12.5px] text-sitio-tenue">
-                  Todavía no hay movimiento en este período. Comparte tu tienda para empezar a ver datos.
+                  Todavía no hay movimiento en este período. Comparte tu {vende ? 'tienda' : 'página'} para empezar a ver datos.
                 </p>
               )}
             </>
@@ -237,12 +247,29 @@ export function PantallaEstadisticas() {
       {metricas && !metricas.avanzadas && (
         <div className="mt-5">
           <Candado plan={planMinimo((plan) => plan.metricasAvanzadas)}>
-            Productos más vistos y más vendidos, tasa de conversión y clics a tu WhatsApp.
+            {vende
+              ? 'Productos más vistos y más vendidos, tasa de conversión y clics a tu WhatsApp.'
+              : 'Clics a tu WhatsApp: cuánta gente te escribe desde tu página.'}
           </Candado>
         </div>
       )}
 
-      {metricas?.avanzadas && (
+      {metricas?.avanzadas && !vende && (
+        <Aparecer orden={5} className="mt-4">
+          <section className="rounded-[16px] border border-sitio-borde bg-sitio-superficie p-6">
+            <p className="flex items-center gap-1.5 text-[11.5px] text-sitio-tenue">
+              <MessageCircle aria-hidden="true" className="h-3.5 w-3.5 text-[#4ee28a]" />
+              Clics a tu WhatsApp
+            </p>
+            <p className="mt-2 text-[32px] leading-none tracking-[-0.04em]">
+              <Contador valor={metricas.avanzadas.clicsWhatsapp} />
+            </p>
+            <p className="mt-2 text-[11.5px] text-sitio-tenue">Gente que tocó un botón para escribirte o agendar.</p>
+          </section>
+        </Aparecer>
+      )}
+
+      {metricas?.avanzadas && vende && (
         <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_1fr_0.8fr]">
           <Aparecer orden={5}>
             <section className="h-full rounded-[16px] border border-sitio-borde bg-sitio-superficie p-6">

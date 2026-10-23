@@ -81,7 +81,15 @@ export function nivelIncluye(actual: NivelEstilo, requerido: NivelEstilo) {
   return NIVELES.indexOf(actual) >= NIVELES.indexOf(requerido)
 }
 
+/**
+ * Lo básico de una página de negocio: qué ofrece, cuándo atiende y cómo
+ * contactarlo. Va desde Gratis, en tienda y en página.
+ */
+const BLOQUES_NEGOCIO_BASICO: readonly TipoBloque[] = ['servicios', 'horario']
+
 const BLOQUES_EMPRENDE: readonly TipoBloque[] = [
+  ...BLOQUES_NEGOCIO_BASICO,
+  'equipo',
   'anuncio',
   'hero',
   'carrusel',
@@ -108,7 +116,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     productos: 10,
     fotosPorProducto: 4,
     secciones: 6,
-    bloques: ['hero', 'grilla-productos', 'texto', 'pie', 'espaciador'],
+    bloques: ['hero', 'grilla-productos', 'texto', 'pie', 'espaciador', ...BLOQUES_NEGOCIO_BASICO],
     temaLibre: false,
     quitarMarca: false,
     cabeceraCompleta: false,
@@ -288,6 +296,7 @@ export function ajustarAlPlan(
         case 'testimonios':
         case 'preguntas':
         case 'logos':
+        case 'equipo':
           return { ...bloque, props: { ...bloque.props, items: bloque.props.items.slice(0, items) } } as Bloque
         case 'banner-doble':
           return { ...bloque, props: { ...bloque.props, items: bloque.props.items.slice(0, 3) } }

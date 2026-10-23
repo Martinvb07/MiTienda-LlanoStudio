@@ -11,6 +11,7 @@ import { AvisoFormulario, CampoContrasena, CampoTexto } from './CamposFormulario
 import { configuracionDominios, esSubdominioValido } from '@/utilidades/dominios'
 import { generarSlug } from '@/utilidades/formato'
 import { leerOrigen } from '@/utilidades/origen'
+import { esPlantillaPagina } from '@/utilidades/plantillasPagina'
 
 interface Errores {
   nombre?: string
@@ -35,12 +36,13 @@ const PASO = {
 
 export function FormularioRegistro() {
   // Primero se pregunta qué quiere armar. Quien llega con plantilla o plan ya
-  // eligió tienda; ?producto= lo deja elegido desde la web.
+  // eligió (la plantilla dice si es tienda o página); ?producto= lo deja elegido desde la web.
   const [interes, setInteres] = useState<Interes | null>(null)
   useEffect(() => {
     const parametros = new URLSearchParams(window.location.search)
     const producto = parametros.get('producto')
-    if (parametros.has('plantilla') || parametros.has('plan')) setInteres('tienda')
+    if (esPlantillaPagina(parametros.get('plantilla'))) setInteres('pagina')
+    else if (parametros.has('plantilla') || parametros.has('plan')) setInteres('tienda')
     else if (PRODUCTOS.some((otro) => otro.clave === producto)) setInteres(producto as Interes)
   }, [])
 
@@ -84,9 +86,9 @@ export function FormularioRegistro() {
     if (!contrasena) encontrados.contrasena = 'Elige una contraseña'
     else if (contrasena.length < 8) encontrados.contrasena = 'Tiene que tener al menos 8 caracteres'
 
-    if (!tienda.trim()) encontrados.tienda = 'Escribe el nombre de tu tienda'
+    if (!tienda.trim()) encontrados.tienda = interes === 'tienda' ? 'Escribe el nombre de tu tienda' : 'Escribe el nombre de tu negocio'
 
-    if (!subdominioFinal) encontrados.subdominio = 'Elige una dirección para tu tienda'
+    if (!subdominioFinal) encontrados.subdominio = 'Elige tu dirección'
     else if (!esSubdominioValido(subdominioFinal)) {
       encontrados.subdominio =
         subdominioFinal.length < 3
@@ -114,6 +116,7 @@ export function FormularioRegistro() {
         contrasena,
         tienda: tienda.trim(),
         subdominio: subdominioFinal,
+        tipo: interes === 'pagina' ? 'pagina' : 'tienda',
         ...leerOrigen(),
       })
       // Recién creada: directo al editor para que la arme.
@@ -126,7 +129,7 @@ export function FormularioRegistro() {
       if (error instanceof ErrorPanel && Object.keys(error.campos).length > 0) {
         setErrores(error.campos as Errores)
       } else {
-        setErrorServidor(error instanceof Error ? error.message : 'No pudimos crear tu tienda')
+        setErrorServidor(error instanceof Error ? error.message : 'No pudimos crear tu cuenta')
       }
       setEnviando(false)
     }
@@ -184,6 +187,7 @@ export function FormularioRegistro() {
   }
 
   const esTienda = elegido.clave === 'tienda'
+  const esPagina = elegido.clave === 'pagina'
 
   return (
     <motion.div key="datos" {...PASO}>
@@ -196,15 +200,15 @@ export function FormularioRegistro() {
         {elegido.nombre}
       </button>
       <h1 className="text-[clamp(28px,2.6vw,36px)] leading-[1.02] font-normal tracking-[-0.045em]">
-        {esTienda ? 'Crea tu tienda gratis' : 'Crea tu cuenta gratis'}
+        {esTienda ? 'Crea tu tienda gratis' : esPagina ? 'Crea tu página gratis' : 'Crea tu cuenta gratis'}
       </h1>
       <p className="mt-1.5 text-sm text-sitio-tenue">
-        {esTienda
+        {esTienda || esPagina
           ? 'En un par de minutos la tienes publicada. Sin tarjeta de crédito.'
           : 'Sin tarjeta de crédito. Tu dirección queda reservada desde hoy.'}
       </p>
 
-      {!esTienda && (
+      {!elegido.disponible && (
         <div className="mt-4">
           <AvisoFormulario tono="pendiente">
             {elegido.nombre} está en construcción. Mientras tanto empiezas con la tienda, y cuando esté lista la
@@ -254,7 +258,7 @@ export function FormularioRegistro() {
             nombre="tienda"
             valor={tienda}
             alCambiar={alCambiarTienda}
-            marcador="Ropa Llanera"
+            marcador={esTienda ? 'Ropa Llanera' : 'Consultorio Morichal'}
             error={errores.tienda}
           />
         </div>
@@ -342,7 +346,7 @@ export function FormularioRegistro() {
               className="h-4 w-4 animate-spin rounded-full border-2 border-black/25 border-t-black"
             />
           )}
-          {enviando ? 'Creando tu cuenta…' : esTienda ? 'Crear mi tienda' : 'Crear mi cuenta'}
+          {enviando ? 'Creando tu cuenta…' : esTienda ? 'Crear mi tienda' : esPagina ? 'Crear mi página' : 'Crear mi cuenta'}
         </button>
       </form>
 

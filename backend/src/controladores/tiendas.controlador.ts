@@ -14,6 +14,7 @@ export async function obtenerTiendaPublica(req: Request, res: Response): Promise
     where: { id: contexto.tiendaId },
     select: {
       id: true,
+      tipo: true,
       nombre: true,
       descripcion: true,
       logoUrl: true,

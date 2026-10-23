@@ -4,7 +4,9 @@ import { Plus, Trash2 } from 'lucide-react'
 import type { AjustesTienda, EnlaceMenu } from '@/tipos/tienda'
 import { generarSlug } from '@/utilidades/formato'
 import { planMinimo, type LimitesPlan } from '@/utilidades/planes'
+import { vendeEnLinea } from '@/utilidades/sitio'
 import { Campo, CampoColor, Candado, Interruptor, Segmentado } from '../ui/basicos'
+import { useSesion } from '../SesionPanel'
 
 interface Props {
   ajustes: AjustesTienda
@@ -18,6 +20,8 @@ interface Props {
 export function CamposCabecera({ ajustes, alCambiar, categorias, limites }: Props) {
   const completa = limites.cabeceraCompleta && ajustes.cabecera === 'completa'
   const menu = ajustes.menu ?? []
+  // Una página no tiene buscador ni carrito: su menú lleva a sus propias secciones.
+  const vende = vendeEnLinea(useSesion().sesion.tienda?.tipo)
 
   function cambiarEnlace(indice: number, cambios: Partial<EnlaceMenu>) {
     alCambiar({
@@ -47,14 +51,20 @@ export function CamposCabecera({ ajustes, alCambiar, categorias, limites }: Prop
         )}
         <span className="text-[11px] leading-relaxed text-sitio-tenue">
           {completa
-            ? 'Logo grande, buscador al centro y una barra de color con el menú y tu WhatsApp.'
-            : 'Una línea con el logo y el menú. Ideal para catálogos cortos.'}
+            ? vende
+              ? 'Logo grande, buscador al centro y una barra de color con el menú y tu WhatsApp.'
+              : 'Logo grande y una barra de color con el menú, un botón destacado y tu WhatsApp.'
+            : vende
+              ? 'Una línea con el logo y el menú. Ideal para catálogos cortos.'
+              : 'Una línea con el logo, el menú y un botón para escribirte por WhatsApp.'}
         </span>
       </div>
 
       <Interruptor activo={ajustes.cabeceraFija ?? false} alCambiar={(cabeceraFija) => alCambiar({ cabeceraFija })}>
         Fija arriba al bajar
-        <small className="block text-[11.5px] text-sitio-tenue">El menú y el carrito siempre a mano.</small>
+        <small className="block text-[11.5px] text-sitio-tenue">
+          {vende ? 'El menú y el carrito siempre a mano.' : 'El menú y el botón de WhatsApp siempre a mano.'}
+        </small>
       </Interruptor>
       {!completa && (
         <Interruptor activo={ajustes.logoCentrado ?? false} alCambiar={(logoCentrado) => alCambiar({ logoCentrado })}>
@@ -76,7 +86,7 @@ export function CamposCabecera({ ajustes, alCambiar, categorias, limites }: Prop
         />
       </div>
 
-      {limites.buscador ? (
+      {!vende ? null : limites.buscador ? (
         <Interruptor activo={ajustes.buscador ?? completa} alCambiar={(buscador) => alCambiar({ buscador })}>
           Buscador de productos
         </Interruptor>
@@ -111,7 +121,7 @@ export function CamposCabecera({ ajustes, alCambiar, categorias, limites }: Prop
               etiqueta="Lleva a"
               valor={enlace.enlace}
               alCambiar={(destino) => cambiarEnlace(indice, { enlace: destino })}
-              marcador="/categoria/…"
+              marcador={vende ? '/categoria/…' : '#servicios'}
             />
             <button
               type="button"
@@ -129,7 +139,7 @@ export function CamposCabecera({ ajustes, alCambiar, categorias, limites }: Prop
               type="button"
               onClick={() =>
                 alCambiar({
-                  menu: [...menu, { texto: 'Productos', enlace: '/buscar' }],
+                  menu: [...menu, vende ? { texto: 'Productos', enlace: '/buscar' } : { texto: 'Contacto', enlace: '#contacto' }],
                 })
               }
               className="inline-flex h-7 items-center gap-1 rounded-full border border-dashed border-sitio-borde px-2.5 text-[11.5px] text-sitio-suave transition-colors hover:border-white/30 hover:text-white"
@@ -172,12 +182,12 @@ export function CamposCabecera({ ajustes, alCambiar, categorias, limites }: Prop
                 botonDestacado: texto
                   ? {
                       texto,
-                      enlace: ajustes.botonDestacado?.enlace ?? '/buscar',
+                      enlace: ajustes.botonDestacado?.enlace ?? (vende ? '/buscar' : '#contacto'),
                     }
                   : undefined,
               })
             }
-            marcador="Tienda en línea"
+            marcador={vende ? 'Tienda en línea' : 'Agendar cita'}
             maximo={40}
           />
           <Campo
@@ -189,7 +199,7 @@ export function CamposCabecera({ ajustes, alCambiar, categorias, limites }: Prop
                 botonDestacado: { ...ajustes.botonDestacado, enlace },
               })
             }
-            marcador="/buscar"
+            marcador={vende ? '/buscar' : '#contacto'}
           />
         </div>
       )}
@@ -199,6 +209,7 @@ export function CamposCabecera({ ajustes, alCambiar, categorias, limites }: Prop
 
 /** WhatsApp, dirección, horario y redes: los usan la cabecera, el pie y la ficha. */
 export function CamposContacto({ ajustes, alCambiar, limites }: Omit<Props, 'categorias'>) {
+  const vende = vendeEnLinea(useSesion().sesion.tienda?.tipo)
   return (
     <>
       <Campo
@@ -207,7 +218,11 @@ export function CamposContacto({ ajustes, alCambiar, limites }: Omit<Props, 'cat
         alCambiar={(whatsapp) => alCambiar({ whatsapp })}
         marcador="300 123 4567"
         maximo={20}
-        ayuda="Activa el botón “Pedir por WhatsApp” en cada producto."
+        ayuda={
+          vende
+            ? 'Activa el botón “Pedir por WhatsApp” en cada producto.'
+            : 'Lo usan los botones de agendar, el horario y la cabecera.'
+        }
       />
       {ajustes.whatsapp && !limites.whatsappFlotante && (
         <Candado plan={planMinimo((plan) => plan.whatsappFlotante)}>Botón flotante de WhatsApp.</Candado>
@@ -279,7 +294,7 @@ export function CamposContacto({ ajustes, alCambiar, limites }: Omit<Props, 'cat
       </div>
       {limites.pieColumnas && (
         <p className="text-[11.5px] leading-relaxed text-sitio-tenue">
-          Con dirección, correo u horario, el pie de la tienda pasa a columnas con contacto, categorías y redes.
+          Con dirección, correo u horario, el pie de {vende ? 'la tienda' : 'la página'} pasa a columnas con contacto{vende ? ', categorías' : ''} y redes.
         </p>
       )}
     </>

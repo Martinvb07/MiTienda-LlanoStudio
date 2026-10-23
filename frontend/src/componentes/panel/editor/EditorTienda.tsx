@@ -11,7 +11,9 @@ import { urlTienda } from '@/utilidades/dominios'
 import { ESTILOS_PREDEFINIDOS, RADIOS, esquemasIniciales } from '@/utilidades/tema'
 import { cn } from '@/utilidades/clases'
 import { PLANES, limitesDe, planIncluye, planMinimo } from '@/utilidades/planes'
-import { PLANTILLAS_TIENDA, ajustesConPlantilla, type PlantillaTienda } from '@/utilidades/plantillas'
+import { ajustesConPlantilla, type PlantillaTienda } from '@/utilidades/plantillas'
+import { bloquesDePlantilla, plantillasDe } from '@/utilidades/plantillasPagina'
+import { textosSitio, vendeEnLinea } from '@/utilidades/sitio'
 import { useSesion } from '../SesionPanel'
 import { Aviso, CURVA, Campo, CampoArea, CampoColor, Candado, Interruptor, PlanRequerido, Seccion, Segmentado } from '../ui/basicos'
 import { Selector } from '../ui/flotantes'
@@ -91,20 +93,23 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
   const [subiendo, setSubiendo] = useState(0)
   const plan = useSesion().sesion.tenant.plan
   const limites = limitesDe(plan)
+  // Una página informativa no ve lo de vender: ficha de producto ni ventas y envíos.
+  const vende = vendeEnLinea(tienda.tipo)
+  const textos = textosSitio(tienda.tipo)
 
   // Aplica la plantilla que eligió en el sitio, si su plan la incluye. Queda
   // como cambio sin guardar: decide él si la guarda.
   useEffect(() => {
-    const elegida = PLANTILLAS_TIENDA.find((opcion) => opcion.clave === plantillaInicial)
+    const elegida = plantillasDe(tienda.tipo).find((opcion) => opcion.clave === plantillaInicial)
     if (!elegida || !planIncluye(plan, elegida.plan)) return
     setBorrador((actual) => ({
       ...actual,
       tema: { ...elegida.tema },
       plantilla: elegida.estilo,
-      configuracionBloques: elegida.bloques(actual.nombre || 'Mi negocio'),
+      configuracionBloques: bloquesDePlantilla(elegida, actual.nombre || 'Mi negocio', plan),
       ajustes: ajustesConPlantilla(actual.ajustes, elegida),
     }))
-  }, [plantillaInicial, plan])
+  }, [plantillaInicial, plan, tienda.tipo])
 
   const sucio = JSON.stringify(borrador) !== inicial
 
@@ -274,7 +279,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     cambiar({
       tema: { ...plantilla.tema },
       plantilla: plantilla.estilo,
-      configuracionBloques: plantilla.bloques(borrador.nombre || 'Mi negocio'),
+      configuracionBloques: bloquesDePlantilla(plantilla, borrador.nombre || 'Mi negocio', plan),
       ajustes: ajustesConPlantilla(borrador.ajustes, plantilla),
     })
     setAbierto(null)
@@ -412,6 +417,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
         ajustes: borrador.ajustes,
         moneda: tienda.moneda,
         plan,
+        tipo: tienda.tipo,
       },
       productos,
       vista: plantillaEditada === 'producto' ? ('producto' as const) : ('tienda' as const),
@@ -420,7 +426,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       editable: true,
       lienzoElegido,
     }),
-    [borrador, productos, abierto, tienda.moneda, plan, plantillaEditada, lienzoElegido],
+    [borrador, productos, abierto, tienda.moneda, plan, plantillaEditada, lienzoElegido, tienda.tipo],
   )
 
   const estiloActivo = ESTILOS_PREDEFINIDOS.find(
@@ -472,7 +478,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
           rel="noopener noreferrer"
           className="hidden h-[34px] items-center rounded-lg border border-sitio-borde px-[13px] text-[12.5px] text-sitio-suave transition-colors hover:bg-white/[0.06] hover:text-white sm:inline-flex"
         >
-          Ver tienda <ArrowUpRight aria-hidden="true" className="inline h-3 w-3 align-[-1px]" />
+          {textos.ver} <ArrowUpRight aria-hidden="true" className="inline h-3 w-3 align-[-1px]" />
         </a>
         </>
       }
@@ -508,7 +514,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
                 </button>
               ))}
             </div>
-            {pestana === 'pagina' && (
+            {pestana === 'pagina' && vende && (
               <div className="mt-2.5">
                 <Selector
                   etiqueta="Plantilla que estás editando"
@@ -605,7 +611,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
                   Un diseño completo de un clic: estilo y secciones con textos de ejemplo para que solo cambies lo tuyo.
                 </p>
                 <div className="grid grid-cols-2 gap-2">
-                  {PLANTILLAS_TIENDA.map((plantilla) => {
+                  {plantillasDe(tienda.tipo).map((plantilla) => {
                     const incluida = planIncluye(plan, plantilla.plan)
                     return (
                       <button
@@ -716,13 +722,15 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
                 <CamposContacto ajustes={borrador.ajustes} alCambiar={cambiarAjustes} limites={limites} />
               </Seccion>
 
-              <Seccion titulo="Ventas y envíos" abierta>
-                <CamposVentas ajustes={borrador.ajustes} alCambiar={cambiarAjustes} />
-              </Seccion>
+              {vende && (
+                <Seccion titulo="Ventas y envíos" abierta>
+                  <CamposVentas ajustes={borrador.ajustes} alCambiar={cambiarAjustes} />
+                </Seccion>
+              )}
 
               <Seccion titulo="Identidad">
                 <Campo
-                  etiqueta="Nombre de la tienda"
+                  etiqueta={textos.campoNombre}
                   valor={borrador.nombre}
                   alCambiar={(nombre) => cambiar({ nombre })}
                   maximo={80}
@@ -749,7 +757,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
 
               <Seccion titulo="Publicación" abierta>
                 <Interruptor activo={borrador.publicada} alCambiar={(publicada) => cambiar({ publicada })}>
-                  {borrador.publicada ? 'Tienda publicada' : 'Tienda en borrador'}
+                  {borrador.publicada ? textos.publicada : textos.borrador}
                   <small className="block text-[11.5px] text-sitio-tenue">
                     {borrador.publicada
                       ? 'Cualquiera puede verla en tu dirección.'

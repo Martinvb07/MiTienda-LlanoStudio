@@ -24,6 +24,7 @@ import { cerrarSesion } from '@/servicios/panel'
 import { urlTienda } from '@/utilidades/dominios'
 import { limitesDe } from '@/utilidades/planes'
 import { cn } from '@/utilidades/clases'
+import { RUTAS_SOLO_TIENDA, textosSitio, vendeEnLinea } from '@/utilidades/sitio'
 import { useSesion } from './SesionPanel'
 import { SALIDA } from './ui/movimiento'
 import { CampanaAvisos, useAvisos } from './Avisos'
@@ -68,7 +69,17 @@ const GRUPOS: { titulo: string; enlaces: Enlace[] }[] = [
   },
 ]
 
-const TODOS = GRUPOS.flatMap((grupo) => grupo.enlaces).filter((enlace) => enlace.movil !== false)
+/**
+ * Los grupos según el sitio: una página no vende, así que no ve productos,
+ * pedidos ni descuentos, y lo que queda se reparte en las pestañas del celular.
+ */
+function gruposPara(vende: boolean) {
+  if (vende) return GRUPOS
+  return GRUPOS.map((grupo) => ({
+    titulo: grupo.titulo === 'Tienda' ? 'Página' : grupo.titulo === 'Ventas' ? 'Datos' : grupo.titulo,
+    enlaces: grupo.enlaces.filter((enlace) => !RUTAS_SOLO_TIENDA.has(enlace.href)).map((enlace) => ({ ...enlace, movil: true })),
+  })).filter((grupo) => grupo.enlaces.length > 0)
+}
 
 /** Secciones de dinero y personas: un editor no las ve (la API tampoco se las da). */
 const SOLO_GESTION = new Set(['/panel/descuentos', '/panel/estadisticas'])
@@ -121,6 +132,15 @@ export function NavegacionPanel() {
   const publicada = sesion.tienda?.publicada ?? false
   const plan = limitesDe(sesion.tenant.plan)
   const esPro = sesion.tenant.plan === 'PRO'
+  const vende = vendeEnLinea(sesion.tienda?.tipo)
+  const grupos = gruposPara(vende)
+  const enlaces = grupos.flatMap((grupo) => grupo.enlaces)
+  // Cinco lugares abajo: cuatro secciones y "Más" con el resto.
+  const pestanas = enlaces
+    .filter((enlace) => enlace.movil !== false && enlace.href !== '/panel/configuracion')
+    .filter((enlace) => sesion.usuario.rol !== 'EDITOR' || !SOLO_GESTION.has(enlace.href))
+    .slice(0, 4)
+  const enMas = enlaces.filter((enlace) => !pestanas.includes(enlace))
   const { avisos } = useAvisos()
   const abrirBuscador = useAbrirBuscador()
   const [mas, setMas] = useState(false)
@@ -186,7 +206,7 @@ export function NavegacionPanel() {
         </button>
 
         <nav className="mt-5 flex flex-col gap-5 overflow-y-auto px-3">
-          {GRUPOS.map((grupo) => (
+          {grupos.map((grupo) => (
             <div key={grupo.titulo}>
               <p className="px-3 pb-2 text-[10px] tracking-[0.18em] text-sitio-tenue uppercase">{grupo.titulo}</p>
               <ul className="flex flex-col gap-0.5">
@@ -307,7 +327,7 @@ export function NavegacionPanel() {
             href={urlTienda(sesion.tenant.subdominio)}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Ver mi tienda"
+            aria-label={textosSitio(sesion.tienda?.tipo).ver}
             className="grid h-9 w-9 place-items-center rounded-lg border border-sitio-borde text-sitio-suave"
           >
             <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
@@ -321,7 +341,7 @@ export function NavegacionPanel() {
         className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-2xl border border-white/10 bg-sitio-modal/90 p-1.5 shadow-[0_20px_60px_-10px_rgba(0,0,0,1)] backdrop-blur-xl md:hidden"
         style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {TODOS.filter((enlace) => enlace.href !== '/panel/configuracion').map((enlace) => {
+        {pestanas.map((enlace) => {
           const activo = esActivo(enlace.href, ruta)
           return (
             <Link
@@ -353,7 +373,7 @@ export function NavegacionPanel() {
           onClick={() => setMas(true)}
           className={cn(
             'relative flex flex-col items-center gap-1 rounded-xl py-2 text-[10.5px] transition-colors duration-300',
-            ['/panel/configuracion', '/panel/descuentos', '/panel/estadisticas', '/panel/plan'].some((href) => esActivo(href, ruta))
+            enMas.some((enlace) => esActivo(enlace.href, ruta))
               ? 'text-white'
               : 'text-sitio-tenue',
           )}
@@ -387,8 +407,7 @@ export function NavegacionPanel() {
             >
               <span className="mx-auto mb-4 block h-1 w-10 rounded-full bg-white/20" />
               <ul className="flex flex-col gap-1">
-                {GRUPOS.flatMap((grupo) => grupo.enlaces)
-                  .filter((enlace) => enlace.movil === false || enlace.href === '/panel/configuracion')
+                {enMas
                   .filter((enlace) => sesion.usuario.rol !== 'EDITOR' || !SOLO_GESTION.has(enlace.href))
                   .map((enlace) => (
                     <li key={enlace.href}>

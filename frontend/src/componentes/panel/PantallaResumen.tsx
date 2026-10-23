@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import {
   ArrowRight,
   ArrowUpRight,
+  BarChart3,
   Check,
   Copy,
   EyeOff,
@@ -21,13 +22,15 @@ import {
   Sparkles,
   Ticket,
 } from 'lucide-react'
-import { listarPedidos, listarProductos } from '@/servicios/panel'
+import { listarPedidos, listarProductos, obtenerTienda } from '@/servicios/panel'
 import type { Pedido } from '@/tipos/pedidos'
 import type { ProductoPanel } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
 import { formatearPrecio } from '@/utilidades/formato'
 import { limitesDe } from '@/utilidades/planes'
 import { cn } from '@/utilidades/clases'
+import { PLANTILLAS_PAGINA } from '@/utilidades/plantillasPagina'
+import { textosSitio, vendeEnLinea } from '@/utilidades/sitio'
 import { useSesion } from './SesionPanel'
 import { Aparecer, Contador, SALIDA } from './ui/movimiento'
 import { ModalCodigoQr } from './CodigoQr'
@@ -60,15 +63,26 @@ export function PantallaResumen() {
   const [copiado, setCopiado] = useState(false)
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [qr, setQr] = useState(false)
+  // Una página no vende: en vez de productos y pedidos, mira si ya tiene a dónde escribirle.
+  const vende = vendeEnLinea(sesion.tienda?.tipo)
+  const textos = textosSitio(sesion.tienda?.tipo)
+  const [conWhatsapp, setConWhatsapp] = useState(false)
 
   useEffect(() => {
+    if (!vende) {
+      setProductos([])
+      obtenerTienda()
+        .then(({ tienda }) => setConWhatsapp(Boolean(tienda.ajustes.whatsapp)))
+        .catch(() => setConWhatsapp(false))
+      return
+    }
     listarProductos()
       .then(setProductos)
       .catch(() => setProductos([]))
     listarPedidos()
       .then(setPedidos)
       .catch(() => setPedidos([]))
-  }, [])
+  }, [vende])
 
   const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime()
   const ventasMes = pedidos
@@ -93,9 +107,10 @@ export function PantallaResumen() {
   const corte = direccionCorta.indexOf('.')
   const subdominio = corte > 0 ? direccionCorta.slice(0, corte) : direccionCorta
   const dominioBase = corte > 0 ? direccionCorta.slice(corte) : ''
-  const nombreTienda = sesion.tienda?.nombre ?? 'Tu tienda'
+  const nombreTienda = sesion.tienda?.nombre ?? textos.tu
 
-  const pasos = [
+  const pasos = vende
+    ? [
     {
       hecho: Boolean(sesion.tienda?.logoUrl),
       titulo: 'Dale tu identidad',
@@ -118,6 +133,29 @@ export function PantallaResumen() {
       accion: 'Publicar',
     },
   ]
+    : [
+        {
+          hecho: Boolean(sesion.tienda?.logoUrl),
+          titulo: 'Dale tu identidad',
+          texto: 'Elige una plantilla, sube tu logo y cambia los textos.',
+          href: '/panel/plantillas?editar=1',
+          accion: 'Abrir editor',
+        },
+        {
+          hecho: conWhatsapp,
+          titulo: 'Pon tu WhatsApp',
+          texto: 'Para que te escriban y agenden. Editor, Ajustes, Contacto y redes.',
+          href: '/panel/plantillas?editar=1',
+          accion: 'Agregar',
+        },
+        {
+          hecho: publicada,
+          titulo: 'Publica tu página',
+          texto: 'Actívala en el editor, sección Publicación, y comparte tu dirección.',
+          href: '/panel/plantillas?editar=1',
+          accion: 'Publicar',
+        },
+      ]
   const hechos = pasos.filter((paso) => paso.hecho).length
 
   const atencion = [
@@ -136,7 +174,7 @@ export function PantallaResumen() {
     }
   }
 
-  const mensaje = encodeURIComponent(`¡Mira mi tienda ${nombreTienda}! ${direccion}`)
+  const mensaje = encodeURIComponent(`¡Mira mi ${textos.nombre} ${nombreTienda}! ${direccion}`)
 
   return (
     <div className="flex flex-col gap-4 md:gap-5">
@@ -210,12 +248,14 @@ export function PantallaResumen() {
                 className="h-3.5 w-3.5 transition-transform duration-500 ease-salida group-hover:translate-x-1"
               />
             </Link>
-            <Link href="/panel/productos?nuevo=1" className="boton boton-contorno boton-chico">
-              <Plus aria-hidden="true" className="h-3.5 w-3.5" />
-              Nuevo producto
-            </Link>
+            {vende && (
+              <Link href="/panel/productos?nuevo=1" className="boton boton-contorno boton-chico">
+                <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+                Nuevo producto
+              </Link>
+            )}
             <a href={direccion} target="_blank" rel="noopener noreferrer" className="boton boton-contorno boton-chico">
-              Ver tienda
+              {textos.ver}
               <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
             </a>
           </div>
@@ -223,6 +263,7 @@ export function PantallaResumen() {
       </Aparecer>
 
       {/* ── Cifras ── */}
+      {vende && (
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 md:gap-4">
         {[
           {
@@ -271,6 +312,7 @@ export function PantallaResumen() {
           </Aparecer>
         ))}
       </div>
+      )}
 
       <div className="grid gap-4 md:gap-5 lg:grid-cols-[1.35fr_1fr]">
         {/* ── Pasos o tienda lista ── */}
@@ -279,7 +321,7 @@ export function PantallaResumen() {
             {hechos < pasos.length ? (
               <>
                 <div className="flex items-baseline justify-between gap-4">
-                  <h2 className="text-[15px] font-medium">Para empezar a vender</h2>
+                  <h2 className="text-[15px] font-medium">{vende ? 'Para empezar a vender' : 'Para dejar tu página lista'}</h2>
                   <span className="text-xs text-sitio-tenue">
                     {hechos} de {pasos.length}
                   </span>
@@ -339,11 +381,11 @@ export function PantallaResumen() {
                     </svg>
                   </span>
                   <div>
-                    <h2 className="text-[15px] font-medium">Tu tienda está lista para vender</h2>
+                    <h2 className="text-[15px] font-medium">{vende ? 'Tu tienda está lista para vender' : 'Tu página está lista'}</h2>
                     <p className="text-[12.5px] text-sitio-tenue">Ahora lo importante es que la gente la conozca.</p>
                   </div>
                 </div>
-                <h3 className="mt-7 text-[11px] tracking-[0.14em] text-sitio-tenue uppercase">Editados hace poco</h3>
+                {vende && <h3 className="mt-7 text-[11px] tracking-[0.14em] text-sitio-tenue uppercase">Editados hace poco</h3>}
                 <ul className="mt-2">
                   {recientes.map((producto) => (
                     <li key={producto.id} className="border-b border-sitio-borde last:border-0">
@@ -376,7 +418,7 @@ export function PantallaResumen() {
             <section className={cn(TARJETA, 'p-6')}>
               <div className="flex items-center gap-2">
                 <Share2 aria-hidden="true" className="h-4 w-4 text-sitio-tenue" />
-                <h2 className="text-[15px] font-medium">Comparte tu tienda</h2>
+                <h2 className="text-[15px] font-medium">Comparte tu {textos.nombre}</h2>
               </div>
               <p className="mt-1.5 text-[12.5px] text-sitio-tenue">
                 {publicada ? 'Mándala a tus clientes o ponla en tu bio.' : 'Publícala primero para que los demás la vean.'}
@@ -427,6 +469,7 @@ export function PantallaResumen() {
           </Aparecer>
 
           {/* ── Atención ── */}
+          {vende && (
           <Aparecer orden={7}>
             <section className={cn(TARJETA, 'p-6')}>
               <h2 className="text-[15px] font-medium">Revisa tu catálogo</h2>
@@ -461,6 +504,7 @@ export function PantallaResumen() {
               )}
             </section>
           </Aparecer>
+          )}
         </div>
       </div>
 
@@ -508,9 +552,16 @@ export function PantallaResumen() {
       {/* ── Accesos rápidos ── */}
       <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
         {[
-          { href: '/panel/plantillas', titulo: 'Cambiar plantilla', texto: 'Seis diseños listos', Icono: LayoutTemplate },
-          { href: '/panel/plantillas?editar=1', titulo: 'Logo y colores', texto: 'Tu marca en la tienda', Icono: Palette },
-          { href: '/panel/descuentos', titulo: 'Descuentos', texto: 'Cupones para tus clientes', Icono: Ticket },
+          {
+            href: '/panel/plantillas',
+            titulo: 'Cambiar plantilla',
+            texto: vende ? 'Seis diseños listos' : `${PLANTILLAS_PAGINA.length} diseños por tipo de negocio`,
+            Icono: LayoutTemplate,
+          },
+          { href: '/panel/plantillas?editar=1', titulo: 'Logo y colores', texto: `Tu marca en la ${textos.nombre}`, Icono: Palette },
+          vende
+            ? { href: '/panel/descuentos', titulo: 'Descuentos', texto: 'Cupones para tus clientes', Icono: Ticket }
+            : { href: '/panel/estadisticas', titulo: 'Estadísticas', texto: 'Quién visita tu página', Icono: BarChart3 },
           { href: '/panel/plan', titulo: 'Plan y pagos', texto: `Estás en ${plan.nombre}`, Icono: Sparkles },
         ].map((acceso, indice) => (
           <Aparecer key={acceso.titulo} orden={8 + indice}>

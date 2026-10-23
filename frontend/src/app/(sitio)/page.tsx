@@ -11,10 +11,10 @@ const PREGUNTAS = [
   {
     pregunta: '¿Qué puedo hacer con Mi Sitio?',
     respuesta:
-      'Hoy, una tienda en línea completa. Pronto, también una página para tu negocio y una de enlaces para tu bio, en la misma cuenta.',
+      'Una tienda en línea o una página para tu negocio, sin carrito. Pronto, también una de enlaces para tu bio.',
   },
   {
-    pregunta: '¿Cuándo llegan la página y los enlaces?',
+    pregunta: '¿Cuándo llegan los enlaces para la bio?',
     respuesta: 'Están en construcción, todavía sin fecha. Lo anunciaremos aquí y en tu panel.',
   },
   {

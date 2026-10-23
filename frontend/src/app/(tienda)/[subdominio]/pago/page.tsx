@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { CabeceraTienda } from '@/componentes/tienda/CabeceraTienda'
 import { ResultadoPago } from '@/componentes/tienda/carrito/ResultadoPago'
 import { obtenerTienda } from '@/servicios/tiendas.servicio'
+import { vendeEnLinea } from '@/utilidades/sitio'
 import { hostDesdeIdentificador } from '@/utilidades/dominios'
 
 export const metadata: Metadata = { title: 'Tu pago', robots: { index: false } }
@@ -18,7 +19,8 @@ const uno = (valor: string | string[] | undefined) => (Array.isArray(valor) ? va
 export default async function PaginaPago({ params, searchParams }: Props) {
   const [{ subdominio }, consulta] = await Promise.all([params, searchParams])
   const tienda = await obtenerTienda(hostDesdeIdentificador(subdominio))
-  if (!tienda) notFound()
+  // Una página informativa no vende: sin catálogo, carrito ni pagos.
+  if (!tienda || !vendeEnLinea(tienda.tipo)) notFound()
   const referencia = uno(consulta.ref)
   if (!referencia) notFound()
 

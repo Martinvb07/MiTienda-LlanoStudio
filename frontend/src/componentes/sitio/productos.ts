@@ -29,7 +29,7 @@ export const PRODUCTOS: readonly ProductoSitio[] = [
     resumen: 'Para abogados, clínicas, restaurantes y servicios.',
     href: '/para-negocios',
     icono: LayoutTemplate,
-    disponible: false,
+    disponible: true,
   },
   {
     clave: 'enlaces',

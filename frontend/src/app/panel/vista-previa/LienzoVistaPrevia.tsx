@@ -53,7 +53,7 @@ export function LienzoVistaPrevia() {
   const { tienda } = datos
   // Igual que la tienda pública: lo que el plan no incluye no se pinta.
   const { ajustes, bloques } = ajustarAlPlan(tienda.plan, tienda.ajustes ?? {}, tienda.configuracionBloques)
-  const cabecera = <CabeceraTienda nombre={tienda.nombre || 'Mi negocio'} logoUrl={tienda.logoUrl} ajustes={ajustes} />
+  const cabecera = <CabeceraTienda nombre={tienda.nombre || 'Mi negocio'} logoUrl={tienda.logoUrl} ajustes={ajustes} tipo={tienda.tipo} />
 
   return (
     <div
@@ -94,6 +94,7 @@ export function LienzoVistaPrevia() {
             ajustes={ajustes}
             nombreTienda={tienda.nombre}
             tema={tienda.tema}
+            tipo={tienda.tipo}
           />
         )}
         {datos.editable && datos.vista !== 'producto' && (

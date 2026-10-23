@@ -30,6 +30,8 @@ export const esquemaRegistro = z.object({
   ref: z.string().trim().toUpperCase().max(20).optional(),
   /** De dónde llegó (utm_source u otro), para el embudo del admin. */
   origen: z.string().trim().toLowerCase().max(60).optional(),
+  /** Qué arma: tienda (por defecto) o página informativa. Enlaces todavía no. */
+  tipo: z.enum(['tienda', 'pagina']).default('tienda'),
 })
 
 export const esquemaIngreso = z.object({
@@ -231,7 +233,55 @@ export function firmarSesion(sesion: SesionPanel, duracion: jwt.SignOptions['exp
   return jwt.sign(sesion, entorno.JWT_SECRETO, { expiresIn: duracion })
 }
 
-function bloquesIniciales(nombreTienda: string) {
+/**
+ * Lo que trae un sitio recién creado. La página informativa arranca con
+ * portada, servicios y contacto, todo dentro del plan Gratis; el panel le
+ * ofrece después las plantillas por tipo de negocio.
+ */
+export function bloquesIniciales(nombreTienda: string, tipo: 'tienda' | 'pagina' = 'tienda') {
+  if (tipo === 'pagina') {
+    return [
+      {
+        id: 'hero-inicial',
+        tipo: 'hero',
+        props: {
+          titulo: nombreTienda,
+          subtitulo: 'Cuenta en una línea qué haces y para quién.',
+          textoBoton: 'Contáctanos',
+          enlaceBoton: '#contacto',
+          alineacion: 'izquierda',
+        },
+      },
+      {
+        id: 'servicios-inicial',
+        tipo: 'servicios',
+        props: {
+          titulo: 'Servicios',
+          textoBoton: 'Agendar',
+          items: [
+            { id: 's1', nombre: 'Tu primer servicio', descripcion: 'Qué incluye, en una frase.', precio: 'Desde $50.000', duracion: '30 min' },
+            { id: 's2', nombre: 'Tu segundo servicio', descripcion: 'Qué incluye, en una frase.', precio: 'Desde $80.000', duracion: '1 hora' },
+          ],
+        },
+      },
+      {
+        id: 'horario-inicial',
+        tipo: 'horario',
+        props: {
+          titulo: 'Horario y contacto',
+          dias: [
+            { id: 'd1', dia: 'Lunes a viernes', horas: '8:00 a. m. a 6:00 p. m.' },
+            { id: 'd2', dia: 'Sábados', horas: '9:00 a. m. a 1:00 p. m.' },
+          ],
+        },
+      },
+      {
+        id: 'pie-inicial',
+        tipo: 'pie',
+        props: { texto: `© ${new Date().getFullYear()} ${nombreTienda}`, mostrarRedes: true },
+      },
+    ]
+  }
   return [
     {
       id: 'hero-inicial',
@@ -299,7 +349,11 @@ export async function registrar(req: Request, res: Response): Promise<void> {
       referidoPorId: padrino?.id ?? null,
       usuarios: { create: { email: datos.email, nombre: datos.nombre, contrasenaHash } },
       tienda: {
-        create: { nombre: datos.tienda, configuracionBloques: bloquesIniciales(datos.tienda) },
+        create: {
+          nombre: datos.tienda,
+          tipo: datos.tipo,
+          configuracionBloques: bloquesIniciales(datos.tienda, datos.tipo),
+        },
       },
     },
     select: { id: true, usuarios: { select: { id: true, rol: true } } },
@@ -368,7 +422,7 @@ export async function obtenerSesion(req: Request, res: Response): Promise<void> 
       nombre: true,
       email: true,
       rol: true,
-      tenant: { select: { subdominio: true, plan: true, planVenceEn: true, tienda: { select: { nombre: true, logoUrl: true, publicada: true } } } },
+      tenant: { select: { subdominio: true, plan: true, planVenceEn: true, tienda: { select: { nombre: true, logoUrl: true, publicada: true, tipo: true } } } },
     },
   })
   if (!usuario) throw noAutorizado('La sesión ya no es válida')
@@ -434,6 +488,7 @@ export async function cambiarContrasena(req: Request, res: Response): Promise<vo
 
 const camposTienda = {
   id: true,
+  tipo: true,
   nombre: true,
   descripcion: true,
   logoUrl: true,

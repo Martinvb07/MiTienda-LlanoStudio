@@ -169,9 +169,10 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
 
   const tienda = await prisma.tienda.findUnique({
     where: { id: tiendaId },
-    select: { publicada: true, ajustes: true },
+    select: { publicada: true, ajustes: true, tipo: true },
   })
-  if (!tienda?.publicada) throw noEncontrado('Esta tienda no está recibiendo pedidos')
+  // Una página informativa no vende: no tiene carrito ni recibe pedidos.
+  if (!tienda?.publicada || tienda.tipo !== 'tienda') throw noEncontrado('Esta tienda no está recibiendo pedidos')
   const ajustes = (tienda.ajustes ?? {}) as AjustesVenta
 
   if (datos.metodoPago === 'contra-entrega' && !ajustes.pagoContraEntrega) {

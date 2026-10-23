@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { moverLuz } from './Caracteristicas'
-import { MaquetaEnlaces, MaquetaPagina } from './Maquetas'
+import { MaquetaEnlaces } from './Maquetas'
 import { Contenedor } from './Contenedor'
 import { Revelar } from './Revelar'
 import { PRODUCTOS } from './productos'
@@ -20,10 +20,25 @@ function Estado({ disponible }: { disponible: boolean }) {
   )
 }
 
+/** Captura real de una página armada con la plantilla de consultorio. */
+function CapturaPagina() {
+  return (
+    <div className="absolute inset-x-7 top-0 -bottom-6 overflow-hidden rounded-t-[8px] bg-black shadow-[0_40px_100px_-30px_rgba(0,0,0,0.9)] ring-1 ring-white/10 transition-transform duration-[1.2s] ease-salida group-hover:-translate-y-2 md:inset-x-8">
+      <div className="flex h-7 items-center gap-1.5 border-b border-white/10 bg-sitio-elevado px-3">
+        <span className="h-2 w-2 rounded-full bg-white/20" />
+        <span className="h-2 w-2 rounded-full bg-white/20" />
+        <span className="h-2 w-2 rounded-full bg-white/20" />
+        <span className="ml-3 truncate font-mono text-[10px] text-white/40">morichal-abogados.llanostudio.co</span>
+      </div>
+      <Image src="/ejemplos/morichal-abogados-completa.webp" alt="" width={1100} height={2456} sizes="(max-width: 768px) 90vw, 45vw" className="h-auto w-full" />
+    </div>
+  )
+}
+
 /**
- * Las tres formas de usar Mi Sitio. La tienda ocupa todo el ancho porque es lo
- * que ya funciona; la página y los enlaces se muestran como lo que viene, con
- * maquetas que no fingen ser capturas.
+ * Las tres formas de usar Mi Sitio. La tienda ocupa todo el ancho; la página
+ * se muestra con una captura real y los enlaces, que vienen, con una maqueta
+ * que no finge ser captura.
  */
 export function TresProductos() {
   return (
@@ -91,7 +106,7 @@ export function TresProductos() {
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <TarjetaProxima producto={PAGINA} retardo={0}>
-            <MaquetaPagina />
+            <CapturaPagina />
           </TarjetaProxima>
           <TarjetaProxima producto={ENLACES} retardo={0.08}>
             <MaquetaEnlaces />

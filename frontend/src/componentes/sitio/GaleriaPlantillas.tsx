@@ -8,6 +8,7 @@ import { ArrowRight, Check, X } from 'lucide-react'
 import { ETIQUETAS_BLOQUE } from '@/tipos/bloques'
 import { PLANES } from '@/utilidades/planes'
 import { PLANTILLAS_TIENDA, type PlantillaTienda } from '@/utilidades/plantillas'
+import { esPlantillaPagina, PLANTILLAS_PAGINA, planCompleto } from '@/utilidades/plantillasPagina'
 import { FUENTES_TITULOS } from '@/utilidades/tema'
 
 const SALIDA = [0.16, 1, 0.3, 1] as const
@@ -19,14 +20,28 @@ const textoPlan = (plantilla: PlantillaTienda) =>
   plantilla.plan === 'GRATIS' ? 'Gratis' : `Desde ${PLANES[plantilla.plan].nombre}`
 
 /**
+ * Las de página se usan desde Gratis con las secciones del plan; esto dice
+ * desde qué plan sale con todas, sin inventar nada.
+ */
+function notaCompleta(plantilla: PlantillaTienda) {
+  if (!esPlantillaPagina(plantilla.clave)) return null
+  const plan = planCompleto(plantilla)
+  return plan === 'GRATIS' ? null : `Completa desde ${PLANES[plan].nombre}`
+}
+
+/**
  * Plantillas con capturas reales de tiendas armadas con ellas. Al hacer clic,
  * la captura crece hasta el modal con todo lo que trae (layoutId de Motion)
  * y al cerrar vuelve a su sitio.
  */
-export function GaleriaPlantillas({ limite, pro }: { limite?: number; pro?: boolean }) {
+export function GaleriaPlantillas({ limite, pro, tipo = 'tienda' }: { limite?: number; pro?: boolean; tipo?: 'tienda' | 'pagina' }) {
   const [abierta, setAbierta] = useState<PlantillaTienda | null>(null)
   const filtradas =
-    pro === undefined ? PLANTILLAS_TIENDA : PLANTILLAS_TIENDA.filter((plantilla) => PLANTILLAS_PRO.has(plantilla.clave) === pro)
+    tipo === 'pagina'
+      ? PLANTILLAS_PAGINA
+      : pro === undefined
+        ? PLANTILLAS_TIENDA
+        : PLANTILLAS_TIENDA.filter((plantilla) => PLANTILLAS_PRO.has(plantilla.clave) === pro)
   const plantillas = limite ? filtradas.slice(0, limite) : filtradas
 
   return (
@@ -50,7 +65,7 @@ export function GaleriaPlantillas({ limite, pro }: { limite?: number; pro?: bool
             >
               <Image
                 src={plantilla.captura}
-                alt={`Tienda de ejemplo ${plantilla.ejemplo}, plantilla ${plantilla.nombre}`}
+                alt={`Ejemplo ${plantilla.ejemplo}, plantilla ${plantilla.nombre}`}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="object-cover object-top transition-transform duration-[1.4s] ease-salida group-hover:scale-[1.04]"
@@ -217,7 +232,9 @@ function ModalPlantilla({ plantilla, alCerrar }: { plantilla: PlantillaTienda; a
                 <ArrowRight aria-hidden="true" className="h-[15px] w-[15px] transition-transform duration-500 ease-salida group-hover:translate-x-1" />
               </Link>
               <p className="mt-3 text-center text-[12px] text-white/40">
-                La cambias cuando quieras sin perder productos ni textos.
+                {esPlantillaPagina(plantilla.clave)
+                  ? [notaCompleta(plantilla), 'La cambias cuando quieras.'].filter(Boolean).join('. ')
+                  : 'La cambias cuando quieras sin perder productos ni textos.'}
               </p>
             </div>
           </motion.div>

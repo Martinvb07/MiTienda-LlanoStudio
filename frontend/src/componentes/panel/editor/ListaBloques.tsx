@@ -31,7 +31,6 @@ import { ChevronDown, Copy, Eye, EyeOff, GripVertical, Lock, Move, Plus, Trash2,
 import {
   DESCRIPCIONES_BLOQUE,
   ETIQUETAS_BLOQUE,
-  GRUPOS_BLOQUE,
   crearBloque,
   duplicarBloque,
   type Bloque,
@@ -46,6 +45,8 @@ import { CamposBloque, resumenBloque } from './CamposBloque'
 import { CamposEstilo } from './CamposEstilo'
 import { confirmar } from '../ui/confirmar'
 import { motivoNoLibre } from '@/utilidades/editarLibre'
+import { gruposBloquePara } from '@/utilidades/sitio'
+import { useSesion } from '../SesionPanel'
 
 interface Props {
   bloques: Bloque[]
@@ -105,6 +106,8 @@ export function ListaBloques({
   alEditarLibre,
 }: Props) {
   const [paleta, setPaleta] = useState(false)
+  // Una página no ofrece las secciones de catálogo.
+  const grupos = gruposBloquePara(useSesion().sesion.tienda?.tipo)
   const [arrastrando, setArrastrando] = useState<string | null>(null)
   const [encima, setEncima] = useState<string | null>(null)
   const lleno = bloques.length >= limites.secciones
@@ -249,7 +252,7 @@ export function ListaBloques({
                 {abierto ? ' debajo de la que tienes abierta' : ''}.
               </p>
               <div className="flex flex-col gap-3.5">
-                {GRUPOS_BLOQUE.map((grupo) => (
+                {grupos.map((grupo) => (
                   <div key={grupo.titulo}>
                     <p className="mb-1.5 text-[10px] tracking-[0.16em] text-sitio-tenue uppercase">{grupo.titulo}</p>
                     <div className="grid grid-cols-2 gap-1.5">

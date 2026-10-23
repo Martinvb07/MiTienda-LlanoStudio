@@ -44,6 +44,7 @@ import { planMinimo, type LimitesPlan } from '@/utilidades/planes'
 import { CURVA, Candado, PlanRequerido, Segmentado } from '../ui/basicos'
 import { CamposBloque, resumenBloque } from './CamposBloque'
 import { CamposEstilo } from './CamposEstilo'
+import { confirmar } from '../ui/confirmar'
 
 interface Props {
   bloques: Bloque[]
@@ -184,10 +185,18 @@ export function ListaBloques({
                 alAbrir={() => alAbrir(abierto === bloque.id ? null : bloque.id)}
                 alAlternar={() => actualizar(bloque.id, { visible: bloque.visible === false })}
                 alDuplicar={lleno ? undefined : () => duplicar(bloque)}
-                alQuitar={() => {
-                  alCambiar(bloques.filter((otro) => otro.id !== bloque.id))
-                  if (abierto === bloque.id) alAbrir(null)
-                }}
+                alQuitar={() =>
+                  void confirmar({
+                    titulo: `¿Eliminar la sección "${ETIQUETAS_BLOQUE[bloque.tipo]}"?`,
+                    mensaje: 'Se quita de tu tienda con todo lo que tiene adentro. Puedes recuperarla con Ctrl+Z mientras no cierres el editor.',
+                    confirmar: 'Sí, eliminar',
+                    peligro: true,
+                  }).then((si) => {
+                    if (!si) return
+                    alCambiar(bloques.filter((otro) => otro.id !== bloque.id))
+                    if (abierto === bloque.id) alAbrir(null)
+                  })
+                }
                 alCambiarProps={(cambios) =>
                   actualizar(bloque.id, { props: { ...bloque.props, ...cambios } } as Partial<Bloque>)
                 }

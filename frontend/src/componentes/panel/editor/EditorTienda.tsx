@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { AccionSeccion } from '@/app/panel/vista-previa/mensajes'
 import { guardarTienda, listarProductos, type DatosTienda } from '@/servicios/panel'
-import { duplicarBloque } from '@/tipos/bloques'
+import { ETIQUETAS_BLOQUE, duplicarBloque } from '@/tipos/bloques'
 import type { AjustesTienda, Producto, TemaTienda, Tienda } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
 import { ESTILOS_PREDEFINIDOS, RADIOS, esquemasIniciales } from '@/utilidades/tema'
@@ -204,9 +204,9 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
           break
         case 'eliminar':
           void confirmar({
-            titulo: '¿Eliminar esta sección?',
-            mensaje: 'Puedes recuperarla con Ctrl+Z mientras no cierres el editor.',
-            confirmar: 'Eliminar',
+            titulo: `¿Eliminar la sección "${ETIQUETAS_BLOQUE[bloque.tipo]}"?`,
+            mensaje: 'Se quita de tu tienda con todo lo que tiene adentro. Puedes recuperarla con Ctrl+Z mientras no cierres el editor.',
+            confirmar: 'Sí, eliminar',
             peligro: true,
           }).then((si) => si && cambiar({ configuracionBloques: bloques.filter((otro) => otro.id !== id) }))
           return

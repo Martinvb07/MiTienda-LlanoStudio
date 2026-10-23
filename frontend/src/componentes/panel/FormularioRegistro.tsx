@@ -1,8 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { motion } from 'motion/react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { PRODUCTOS, type ProductoSitio } from '@/componentes/sitio/productos'
 import { ErrorPanel, registrar } from '@/servicios/panel'
 import { AvisoFormulario, CampoContrasena, CampoTexto } from './CamposFormulario'
 import { configuracionDominios, esSubdominioValido } from '@/utilidades/dominios'
@@ -20,7 +23,27 @@ interface Errores {
 
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
+type Interes = ProductoSitio['clave']
+
+const SALIDA = [0.16, 1, 0.3, 1] as const
+const PASO = {
+  initial: { opacity: 0, y: 18, filter: 'blur(6px)' },
+  animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
+  exit: { opacity: 0, y: -10, filter: 'blur(4px)', transition: { duration: 0.2 } },
+  transition: { duration: 0.6, ease: SALIDA },
+}
+
 export function FormularioRegistro() {
+  // Primero se pregunta qué quiere armar. Quien llega con plantilla o plan ya
+  // eligió tienda; ?producto= lo deja elegido desde la web.
+  const [interes, setInteres] = useState<Interes | null>(null)
+  useEffect(() => {
+    const parametros = new URLSearchParams(window.location.search)
+    const producto = parametros.get('producto')
+    if (parametros.has('plantilla') || parametros.has('plan')) setInteres('tienda')
+    else if (PRODUCTOS.some((otro) => otro.clave === producto)) setInteres(producto as Interes)
+  }, [])
+
   const [nombre, setNombre] = useState('')
   const [email, setEmail] = useState('')
   const [contrasena, setContrasena] = useState('')
@@ -109,14 +132,86 @@ export function FormularioRegistro() {
     }
   }
 
+  const elegido = PRODUCTOS.find((producto) => producto.clave === interes)
+
+  if (!elegido) {
+    return (
+      <motion.div key="elegir" {...PASO}>
+        <h1 className="text-[clamp(28px,2.6vw,36px)] leading-[1.02] font-normal tracking-[-0.045em]">
+          ¿Qué quieres armar?
+        </h1>
+        <p className="mt-1.5 text-sm text-sitio-tenue">Puedes sumar los otros después, con la misma cuenta.</p>
+
+        <div className="mt-6 space-y-2.5">
+          {PRODUCTOS.map((producto, indice) => (
+            <motion.button
+              key={producto.clave}
+              type="button"
+              onClick={() => setInteres(producto.clave)}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.08 + indice * 0.06, ease: SALIDA }}
+              className="group flex w-full items-center gap-4 rounded-lg border border-sitio-borde bg-sitio-campo p-4 text-left transition-colors duration-300 hover:border-white/30"
+            >
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-sitio-borde text-white/70 transition-colors group-hover:text-white">
+                <producto.icono aria-hidden="true" strokeWidth={1.5} className="h-[18px] w-[18px]" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-baseline gap-2.5">
+                  <span className="text-[15px] tracking-[-0.01em] text-white">{producto.nombre}</span>
+                  {!producto.disponible && (
+                    <span className="text-[10px] tracking-[0.14em] text-sitio-tenue uppercase">Próximamente</span>
+                  )}
+                </span>
+                <span className="mt-0.5 block text-[12.5px] text-sitio-tenue">{producto.resumen}</span>
+              </span>
+              <ArrowRight
+                aria-hidden="true"
+                className="h-4 w-4 shrink-0 text-white/30 transition-[transform,color] duration-500 ease-salida group-hover:translate-x-1 group-hover:text-white"
+              />
+            </motion.button>
+          ))}
+        </div>
+
+        <p className="mt-5 text-center text-sm text-sitio-tenue">
+          ¿Ya tienes cuenta?{' '}
+          <Link href="/panel/ingresar" className="font-medium text-white underline-offset-4 transition-colors hover:underline">
+            Ingresa
+          </Link>
+        </p>
+      </motion.div>
+    )
+  }
+
+  const esTienda = elegido.clave === 'tienda'
+
   return (
-    <>
+    <motion.div key="datos" {...PASO}>
+      <button
+        type="button"
+        onClick={() => setInteres(null)}
+        className="mb-4 inline-flex items-center gap-1.5 text-[12.5px] text-sitio-tenue transition-colors hover:text-white"
+      >
+        <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
+        {elegido.nombre}
+      </button>
       <h1 className="text-[clamp(28px,2.6vw,36px)] leading-[1.02] font-normal tracking-[-0.045em]">
-        Crea tu tienda gratis
+        {esTienda ? 'Crea tu tienda gratis' : 'Crea tu cuenta gratis'}
       </h1>
       <p className="mt-1.5 text-sm text-sitio-tenue">
-        En un par de minutos la tienes publicada. Sin tarjeta de crédito.
+        {esTienda
+          ? 'En un par de minutos la tienes publicada. Sin tarjeta de crédito.'
+          : 'Sin tarjeta de crédito. Tu dirección queda reservada desde hoy.'}
       </p>
+
+      {!esTienda && (
+        <div className="mt-4">
+          <AvisoFormulario tono="pendiente">
+            {elegido.nombre} está en construcción. Mientras tanto empiezas con la tienda, y cuando esté lista la
+            activas desde la misma cuenta.
+          </AvisoFormulario>
+        </div>
+      )}
 
       <form onSubmit={alEnviar} noValidate className="mt-5 grid grid-cols-2 gap-x-3 gap-y-3.5 sm:gap-x-4">
         <CampoTexto
@@ -155,7 +250,7 @@ export function FormularioRegistro() {
 
         <div className="col-span-2 sm:col-span-1">
           <CampoTexto
-            etiqueta="Nombre de tu tienda"
+            etiqueta={esTienda ? 'Nombre de tu tienda' : 'Nombre de tu negocio'}
             nombre="tienda"
             valor={tienda}
             alCambiar={alCambiarTienda}
@@ -166,7 +261,7 @@ export function FormularioRegistro() {
 
         <div className="col-span-2 sm:col-span-1">
           <label htmlFor="subdominio" className="text-[12px] text-sitio-suave">
-            La dirección de tu tienda
+            {esTienda ? 'La dirección de tu tienda' : 'Tu dirección'}
           </label>
 
           {/* El dominio va pegado al campo, no debajo: así se lee de corrido
@@ -247,7 +342,7 @@ export function FormularioRegistro() {
               className="h-4 w-4 animate-spin rounded-full border-2 border-black/25 border-t-black"
             />
           )}
-          {enviando ? 'Creando tu tienda…' : 'Crear mi tienda'}
+          {enviando ? 'Creando tu cuenta…' : esTienda ? 'Crear mi tienda' : 'Crear mi cuenta'}
         </button>
       </form>
 
@@ -260,6 +355,6 @@ export function FormularioRegistro() {
           Ingresa
         </Link>
       </p>
-    </>
+    </motion.div>
   )
 }

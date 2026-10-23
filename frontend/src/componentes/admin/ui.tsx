@@ -150,11 +150,10 @@ export function Desplegable({
       <AnimatePresence initial={false}>
         {abierto && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+                        initial={{ height: 0, opacity: 0, overflow: 'hidden' }}
+            animate={{ height: 'auto', opacity: 1, transitionEnd: { overflow: 'visible' } }}
+            exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
             transition={{ duration: 0.45, ease: SALIDA }}
-            className="overflow-hidden"
           >
             <div className="border-t border-sitio-borde px-5 pt-5 pb-6">{children}</div>
           </motion.div>

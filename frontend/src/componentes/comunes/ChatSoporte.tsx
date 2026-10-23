@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { ArrowLeft, ArrowUpRight, ChevronRight, MessageCircle, Send, Star, X } from 'lucide-react'
 import type { Socket } from 'socket.io-client'
 import { leerToken } from '@/servicios/panel'
@@ -212,257 +212,499 @@ export function ChatSoporte({ modo }: { modo: 'web' | 'panel' }) {
   const lista = mensajes
 
   return (
-    <div className={cn('fixed right-4 z-[200] flex flex-col items-end gap-3 sm:right-6', modo === 'panel' ? 'bottom-24 md:bottom-6' : 'bottom-5 sm:bottom-6')}>
-      <AnimatePresence>
-        {abierto && (
-          <motion.section
-            role="dialog"
-            aria-label="Ayuda de Mi Tienda"
-            initial={{ opacity: 0, y: 16, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.98 }}
-            transition={{ duration: 0.4, ease: SALIDA }}
-            className="flex h-[min(600px,calc(100dvh-140px))] w-[min(380px,calc(100vw-32px))] origin-bottom-right flex-col overflow-hidden rounded-[18px] border border-sitio-borde-fuerte bg-sitio-modal text-white shadow-2xl"
-          >
-            <header className="flex items-center gap-3 border-b border-sitio-borde px-4 py-3.5">
-              {vista !== 'inicio' && !(vista === 'chat' && token) && (
-                <button type="button" aria-label="Volver" onClick={() => setVista('inicio')} className="grid h-7 w-7 place-items-center text-sitio-suave hover:text-white">
-                  <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-                </button>
-              )}
-              <span className="min-w-0 flex-1">
-                <span className="block text-[14.5px] font-medium tracking-[-0.01em]">Ayuda de Mi Tienda</span>
-                <span className="flex items-center gap-1.5 text-[11.5px] text-sitio-tenue">
-                  <span aria-hidden="true" className="estado-punto" data-tono={enLinea ? 'verde' : 'neutro'} />
-                  {token ? (enLinea ? 'Hay asesores en línea' : 'Te respondemos apenas podamos') : 'Respuestas al instante'}
+    <MotionConfig reducedMotion="user">
+      <div className={cn('fixed right-4 z-[200] flex flex-col items-end gap-3 sm:right-6', modo === 'panel' ? 'bottom-24 md:bottom-6' : 'bottom-5 sm:bottom-6')}>
+        <AnimatePresence>
+          {abierto && (
+            <motion.section
+              role="dialog"
+              aria-label="Ayuda de Mi Tienda"
+              initial={{ opacity: 0, y: 28, scale: 0.94, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transition: { duration: 0.7, ease: SALIDA } }}
+              exit={{ opacity: 0, y: 18, scale: 0.96, filter: 'blur(6px)', transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
+              className="flex h-[min(600px,calc(100dvh-140px))] w-[min(380px,calc(100vw-32px))] origin-bottom-right flex-col overflow-hidden rounded-[20px] border border-sitio-borde-fuerte bg-sitio-modal text-white shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]"
+            >
+              <header className="flex items-center gap-3 border-b border-sitio-borde px-4 py-3.5">
+                <AnimatePresence initial={false}>
+                  {vista !== 'inicio' && !(vista === 'chat' && token) && (
+                    <motion.button
+                      type="button"
+                      aria-label="Volver"
+                      onClick={() => setVista('inicio')}
+                      initial={{ opacity: 0, width: 0, x: -6 }}
+                      animate={{ opacity: 1, width: 28, x: 0 }}
+                      exit={{ opacity: 0, width: 0, x: -6 }}
+                      transition={{ duration: 0.45, ease: SALIDA }}
+                      className="grid h-7 shrink-0 place-items-center overflow-hidden text-sitio-suave transition-colors duration-300 hover:text-white"
+                    >
+                      <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14.5px] font-medium tracking-[-0.01em]">Ayuda de Mi Tienda</span>
+                  <span className="flex items-center gap-1.5 text-[11.5px] text-sitio-tenue">
+                    <span aria-hidden="true" className="estado-punto" data-tono={enLinea ? 'verde' : 'neutro'} data-vivo={(token && enLinea) || undefined} />
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.span
+                        key={token ? (enLinea ? 'linea' : 'espera') : 'rapidas'}
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.35, ease: SALIDA }}
+                      >
+                        {token ? (enLinea ? 'Hay asesores en línea' : 'Te respondemos apenas podamos') : 'Respuestas al instante'}
+                      </motion.span>
+                    </AnimatePresence>
+                  </span>
                 </span>
-              </span>
-              <button type="button" aria-label="Cerrar" onClick={() => setAbierto(false)} className="grid h-7 w-7 place-items-center text-sitio-suave hover:text-white">
-                <X aria-hidden="true" className="h-4 w-4" />
-              </button>
-            </header>
+                <button
+                  type="button"
+                  aria-label="Cerrar"
+                  onClick={() => setAbierto(false)}
+                  className="grid h-7 w-7 place-items-center rounded-lg text-sitio-suave transition-[color,background,transform] duration-500 ease-salida hover:rotate-90 hover:bg-white/[0.06] hover:text-white"
+                >
+                  <X aria-hidden="true" className="h-4 w-4" />
+                </button>
+              </header>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-              {vista === 'inicio' && (
-                <div>
-                  <p className="text-[15px] leading-snug">Hola 👋 ¿En qué te ayudamos?</p>
-                  <p className="mt-1 text-[12.5px] text-sitio-tenue">Elige una pregunta o habla con una persona.</p>
-                  <ul className="mt-4 flex flex-col gap-1.5">
-                    {opciones.map((opcion) => (
-                      <li key={opcion.pregunta}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setElegida(opcion)
-                            setVista('respuesta')
-                          }}
-                          className="flex w-full items-center gap-3 rounded-xl border border-sitio-borde px-3.5 py-3 text-left text-[13px] transition-colors hover:border-sitio-borde-fuerte hover:bg-white/[0.03]"
-                        >
-                          <span className="flex-1">{opcion.pregunta}</span>
-                          <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0 text-sitio-tenue" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    type="button"
-                    onClick={() => (token ? setVista('chat') : setVista('formulario'))}
-                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-[13px] font-medium text-black transition-opacity hover:opacity-90"
-                  >
-                    <MessageCircle aria-hidden="true" className="h-4 w-4" />
-                    {token ? 'Volver a mi conversación' : 'Hablar con un asesor'}
-                  </button>
-                </div>
-              )}
-
-              {vista === 'respuesta' && elegida && (
-                <div>
-                  <p className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-white px-3.5 py-2.5 text-[13.5px] text-black">{elegida.pregunta}</p>
+              <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-4">
+                <AnimatePresence mode="wait" initial={false}>
                   <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.25, ease: SALIDA }}
-                    className="mt-3 max-w-[90%] rounded-2xl rounded-bl-md bg-white/[0.07] px-3.5 py-2.5 text-[13.5px] leading-relaxed"
+                    key={vista}
+                    initial={{ opacity: 0, y: 14, filter: 'blur(6px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.55, ease: SALIDA } }}
+                    exit={{ opacity: 0, y: -8, filter: 'blur(4px)', transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } }}
                   >
-                    {elegida.respuesta}
-                    {elegida.enlace && (
-                      <Link href={elegida.enlace} className="mt-2 flex items-center gap-1 text-[12.5px] text-sitio-azul-claro hover:underline">
-                        Ir ahí
-                        <ArrowUpRight aria-hidden="true" className="h-3 w-3" />
-                      </Link>
+                    {vista === 'inicio' && (
+                      <div>
+                        <p className="text-[15px] leading-snug">Hola, ¿en qué te ayudamos?</p>
+                        <p className="mt-1 text-[12.5px] text-sitio-tenue">Elige una pregunta o habla con una persona.</p>
+                        <ul className="mt-4 flex flex-col gap-1.5">
+                          {opciones.map((opcion, indice) => (
+                            <motion.li
+                              key={opcion.pregunta}
+                              initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                              transition={{ duration: 0.6, delay: 0.08 + indice * 0.05, ease: SALIDA }}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setElegida(opcion)
+                                  setVista('respuesta')
+                                }}
+                                className="group flex w-full items-center gap-3 rounded-xl border border-sitio-borde px-3.5 py-3 text-left text-[13px] transition-[border-color,background] duration-500 ease-salida hover:border-sitio-borde-fuerte hover:bg-white/[0.03]"
+                              >
+                                <span className="flex-1">{opcion.pregunta}</span>
+                                <ChevronRight
+                                  aria-hidden="true"
+                                  className="h-4 w-4 shrink-0 text-sitio-tenue transition-[transform,color] duration-500 ease-salida group-hover:translate-x-0.5 group-hover:text-white"
+                                />
+                              </button>
+                            </motion.li>
+                          ))}
+                        </ul>
+                        <motion.button
+                          type="button"
+                          onClick={() => (token ? setVista('chat') : setVista('formulario'))}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.1 + opciones.length * 0.05, ease: SALIDA }}
+                          whileTap={{ scale: 0.98 }}
+                          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-[13px] font-medium text-black transition-opacity duration-300 hover:opacity-90"
+                        >
+                          <MessageCircle aria-hidden="true" className="h-4 w-4" />
+                          {token ? 'Volver a mi conversación' : 'Hablar con un asesor'}
+                        </motion.button>
+                      </div>
+                    )}
+
+                    {vista === 'respuesta' && elegida && (
+                      <RespuestaRapida
+                        opcion={elegida}
+                        alSirvio={() => setVista('inicio')}
+                        alAsesor={() => {
+                          setTexto(`Sobre "${elegida.pregunta}": `)
+                          setVista(token ? 'chat' : 'formulario')
+                        }}
+                      />
+                    )}
+
+                    {vista === 'formulario' && (
+                      <form onSubmit={(evento) => void empezar(evento)} className="flex flex-col gap-3">
+                        <p className="text-[13.5px]">Cuéntanos qué necesitas y te conectamos con una persona.</p>
+                        {modo === 'web' && (
+                          <>
+                            <input
+                              value={nombre}
+                              onChange={(evento) => setNombre(evento.target.value)}
+                              placeholder="Tu nombre"
+                              aria-label="Tu nombre"
+                              autoComplete="name"
+                              className={CLASES_CAMPO}
+                            />
+                            <input
+                              value={email}
+                              onChange={(evento) => setEmail(evento.target.value)}
+                              type="email"
+                              placeholder="Tu correo (por si te vas)"
+                              aria-label="Tu correo"
+                              autoComplete="email"
+                              className={CLASES_CAMPO}
+                            />
+                          </>
+                        )}
+                        <textarea
+                          value={texto}
+                          onChange={(evento) => setTexto(evento.target.value)}
+                          rows={4}
+                          placeholder="Escribe tu pregunta…"
+                          aria-label="Tu mensaje"
+                          className={cn(CLASES_CAMPO, 'resize-none')}
+                        />
+                        <AnimatePresence>
+                          {error && (
+                            <motion.p
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.4, ease: SALIDA }}
+                              className="overflow-hidden text-[12.5px] text-red-300"
+                            >
+                              {error}
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                        <motion.button
+                          type="submit"
+                          disabled={enviando}
+                          whileTap={{ scale: 0.98 }}
+                          className="flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-[13px] font-medium text-black transition-opacity duration-300 disabled:opacity-50"
+                        >
+                          {enviando ? <Puntos /> : 'Empezar chat'}
+                        </motion.button>
+                      </form>
+                    )}
+
+                    {vista === 'chat' && (
+                      <div className="flex flex-col gap-2.5">
+                        <AnimatePresence initial={false}>
+                          {lista.map((mensaje) =>
+                            mensaje.autor === 'SISTEMA' ? (
+                              <motion.p
+                                key={mensaje.id}
+                                layout="position"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.6, ease: SALIDA }}
+                                className="py-1 text-center text-[11.5px] text-sitio-tenue"
+                              >
+                                {mensaje.texto}
+                              </motion.p>
+                            ) : (
+                              <motion.div
+                                key={mensaje.id}
+                                layout="position"
+                                initial={{ opacity: 0, y: 12, scale: 0.96, filter: 'blur(4px)' }}
+                                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                                transition={{ duration: 0.55, ease: SALIDA }}
+                                className={cn(
+                                  'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-relaxed whitespace-pre-wrap',
+                                  mensaje.autor === 'CLIENTE'
+                                    ? 'ml-auto origin-bottom-right rounded-br-md bg-white text-black'
+                                    : 'origin-bottom-left rounded-bl-md bg-white/[0.07]',
+                                )}
+                              >
+                                {mensaje.autor === 'ASESOR' && <span className="mb-0.5 block text-[11px] text-sitio-tenue">{mensaje.nombreAutor}</span>}
+                                {mensaje.texto}
+                              </motion.div>
+                            ),
+                          )}
+                        </AnimatePresence>
+                        {lista.length === 1 && lista[0]?.autor === 'CLIENTE' && (
+                          <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.8, delay: 0.4, ease: SALIDA }}
+                            className="text-center text-[11.5px] text-sitio-tenue"
+                          >
+                            {enLinea ? 'Un asesor te responde en un momento.' : 'Ahora no hay asesores en línea: te respondemos aquí y por correo apenas podamos.'}
+                          </motion.p>
+                        )}
+                        <AnimatePresence>
+                          {escribiendo && (
+                            <motion.div
+                              layout="position"
+                              initial={{ opacity: 0, y: 8, scale: 0.9 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                              transition={{ duration: 0.45, ease: SALIDA }}
+                              aria-label={escribiendo}
+                              className="w-fit origin-bottom-left rounded-2xl rounded-bl-md bg-white/[0.07] px-3.5 py-3"
+                            >
+                              <Puntos />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        <AnimatePresence>
+                          {estado === 'RESUELTO' && (
+                            <motion.div
+                              layout="position"
+                              initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
+                              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.6, ease: SALIDA }}
+                              className="mt-2 rounded-xl border border-sitio-borde p-3 text-center"
+                            >
+                              <AnimatePresence mode="wait" initial={false}>
+                                <motion.p
+                                  key={calificacion ? 'gracias' : 'pregunta'}
+                                  initial={{ opacity: 0, y: 4 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -4 }}
+                                  transition={{ duration: 0.3, ease: SALIDA }}
+                                  className="text-[12.5px]"
+                                >
+                                  {calificacion ? '¡Gracias por calificarnos!' : '¿Cómo te atendimos?'}
+                                </motion.p>
+                              </AnimatePresence>
+                              <div className="mt-2 flex justify-center gap-1">
+                                {[1, 2, 3, 4, 5].map((estrella) => {
+                                  const llena = Boolean(calificacion && estrella <= calificacion)
+                                  return (
+                                    <motion.button
+                                      key={estrella}
+                                      type="button"
+                                      aria-label={`${estrella} de 5`}
+                                      onClick={() => void calificar(estrella)}
+                                      whileHover={{ scale: 1.15, y: -1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      animate={llena ? { scale: [1, 1.25, 1] } : { scale: 1 }}
+                                      transition={{ duration: 0.45, delay: llena ? estrella * 0.04 : 0, ease: SALIDA }}
+                                      className="p-0.5"
+                                    >
+                                      <Star
+                                        aria-hidden="true"
+                                        className={cn(
+                                          'h-5 w-5 transition-colors duration-500',
+                                          llena ? 'fill-sitio-ambar text-sitio-ambar' : 'text-sitio-tenue',
+                                        )}
+                                      />
+                                    </motion.button>
+                                  )
+                                })}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={nuevaConversacion}
+                                className="mt-2 text-[12px] text-sitio-suave underline-offset-4 transition-colors duration-300 hover:text-white hover:underline"
+                              >
+                                Empezar otra conversación
+                              </button>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        <div ref={final} />
+                      </div>
                     )}
                   </motion.div>
-                  <p className="mt-5 text-[12.5px] text-sitio-tenue">¿Te sirvió?</p>
-                  <div className="mt-2 flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setVista('inicio')}
-                      className="flex-1 rounded-xl border border-sitio-borde px-3 py-2.5 text-[12.5px] hover:border-sitio-borde-fuerte"
-                    >
-                      Sí, gracias
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setTexto(`Sobre "${elegida.pregunta}": `)
-                        setVista(token ? 'chat' : 'formulario')
-                      }}
-                      className="flex-1 rounded-xl bg-white px-3 py-2.5 text-[12.5px] font-medium text-black"
-                    >
-                      Hablar con un asesor
-                    </button>
-                  </div>
-                </div>
-              )}
+                </AnimatePresence>
+              </div>
 
-              {vista === 'formulario' && (
-                <form onSubmit={(evento) => void empezar(evento)} className="flex flex-col gap-3">
-                  <p className="text-[13.5px]">Cuéntanos qué necesitas y te conectamos con una persona.</p>
-                  {modo === 'web' && (
-                    <>
-                      <input
-                        value={nombre}
-                        onChange={(evento) => setNombre(evento.target.value)}
-                        placeholder="Tu nombre"
-                        aria-label="Tu nombre"
-                        autoComplete="name"
-                        className="w-full rounded-xl border border-sitio-borde bg-sitio-campo px-3.5 py-2.5 text-[13.5px] outline-none focus:border-white/40"
-                      />
-                      <input
-                        value={email}
-                        onChange={(evento) => setEmail(evento.target.value)}
-                        type="email"
-                        placeholder="Tu correo (por si te vas)"
-                        aria-label="Tu correo"
-                        autoComplete="email"
-                        className="w-full rounded-xl border border-sitio-borde bg-sitio-campo px-3.5 py-2.5 text-[13.5px] outline-none focus:border-white/40"
-                      />
-                    </>
-                  )}
-                  <textarea
-                    value={texto}
-                    onChange={(evento) => setTexto(evento.target.value)}
-                    rows={4}
-                    placeholder="Escribe tu pregunta…"
-                    aria-label="Tu mensaje"
-                    className="w-full resize-none rounded-xl border border-sitio-borde bg-sitio-campo px-3.5 py-2.5 text-[13.5px] outline-none focus:border-white/40"
-                  />
-                  {error && <p className="text-[12.5px] text-red-300">{error}</p>}
-                  <button
-                    type="submit"
-                    disabled={enviando}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-[13px] font-medium text-black disabled:opacity-50"
+              <AnimatePresence initial={false}>
+                {vista === 'chat' && token && (
+                  <motion.form
+                    onSubmit={enviar}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 12 }}
+                    transition={{ duration: 0.5, ease: SALIDA }}
+                    className="flex items-end gap-2 border-t border-sitio-borde p-3"
                   >
-                    {enviando ? 'Conectando…' : 'Empezar chat'}
-                  </button>
-                </form>
-              )}
+                    <textarea
+                      value={texto}
+                      onChange={(evento) => {
+                        setTexto(evento.target.value)
+                        socket.current?.emit('escribiendo')
+                      }}
+                      onKeyDown={(evento) => {
+                        if (evento.key === 'Enter' && !evento.shiftKey) {
+                          evento.preventDefault()
+                          enviar(evento)
+                        }
+                      }}
+                      rows={1}
+                      placeholder="Escribe un mensaje…"
+                      aria-label="Mensaje"
+                      className={cn(CLASES_CAMPO, 'max-h-28 min-h-[42px] resize-none')}
+                    />
+                    <motion.button
+                      type="submit"
+                      aria-label="Enviar"
+                      disabled={!texto.trim()}
+                      whileTap={{ scale: 0.9 }}
+                      className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl bg-white text-black transition-opacity duration-300 disabled:opacity-35"
+                    >
+                      <Send aria-hidden="true" className="h-4 w-4" />
+                    </motion.button>
+                  </motion.form>
+                )}
+              </AnimatePresence>
+            </motion.section>
+          )}
+        </AnimatePresence>
 
-              {vista === 'chat' && (
-                <div className="flex flex-col gap-2.5">
-                  {lista.map((mensaje) =>
-                    mensaje.autor === 'SISTEMA' ? (
-                      <p key={mensaje.id} className="py-1 text-center text-[11.5px] text-sitio-tenue">
-                        {mensaje.texto}
-                      </p>
-                    ) : (
-                      <motion.div
-                        key={mensaje.id}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, ease: SALIDA }}
-                        className={cn(
-                          'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-relaxed whitespace-pre-wrap',
-                          mensaje.autor === 'CLIENTE' ? 'ml-auto rounded-br-md bg-white text-black' : 'rounded-bl-md bg-white/[0.07]',
-                        )}
-                      >
-                        {mensaje.autor === 'ASESOR' && <span className="mb-0.5 block text-[11px] text-sitio-tenue">{mensaje.nombreAutor}</span>}
-                        {mensaje.texto}
-                      </motion.div>
-                    ),
-                  )}
-                  {lista.length === 1 && lista[0]?.autor === 'CLIENTE' && (
-                    <p className="text-center text-[11.5px] text-sitio-tenue">
-                      {enLinea ? 'Un asesor te responde en un momento.' : 'Ahora no hay asesores en línea: te respondemos aquí y por correo apenas podamos.'}
-                    </p>
-                  )}
-                  {escribiendo && <p className="text-[11.5px] text-sitio-tenue italic">{escribiendo}</p>}
-                  {estado === 'RESUELTO' && (
-                    <div className="mt-2 rounded-xl border border-sitio-borde p-3 text-center">
-                      <p className="text-[12.5px]">{calificacion ? '¡Gracias por calificarnos!' : '¿Cómo te atendimos?'}</p>
-                      <div className="mt-2 flex justify-center gap-1">
-                        {[1, 2, 3, 4, 5].map((estrella) => (
-                          <button key={estrella} type="button" aria-label={`${estrella} de 5`} onClick={() => void calificar(estrella)} className="p-0.5">
-                            <Star
-                              aria-hidden="true"
-                              className={cn('h-5 w-5', calificacion && estrella <= calificacion ? 'fill-sitio-ambar text-sitio-ambar' : 'text-sitio-tenue')}
-                            />
-                          </button>
-                        ))}
-                      </div>
-                      <button type="button" onClick={nuevaConversacion} className="mt-2 text-[12px] text-sitio-suave underline-offset-4 hover:underline">
-                        Empezar otra conversación
-                      </button>
-                    </div>
-                  )}
-                  <div ref={final} />
-                </div>
-              )}
-            </div>
-
-            {vista === 'chat' && token && (
-              <form onSubmit={enviar} className="flex items-end gap-2 border-t border-sitio-borde p-3">
-                <textarea
-                  value={texto}
-                  onChange={(evento) => {
-                    setTexto(evento.target.value)
-                    socket.current?.emit('escribiendo')
-                  }}
-                  onKeyDown={(evento) => {
-                    if (evento.key === 'Enter' && !evento.shiftKey) {
-                      evento.preventDefault()
-                      enviar(evento)
-                    }
-                  }}
-                  rows={1}
-                  placeholder="Escribe un mensaje…"
-                  aria-label="Mensaje"
-                  className="max-h-28 min-h-[42px] w-full resize-none rounded-xl border border-sitio-borde bg-sitio-campo px-3.5 py-2.5 text-[13.5px] outline-none focus:border-white/40"
-                />
-                <button type="submit" aria-label="Enviar" className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl bg-white text-black">
-                  <Send aria-hidden="true" className="h-4 w-4" />
-                </button>
-              </form>
+        <motion.button
+          type="button"
+          onClick={() => (abierto ? setAbierto(false) : abrir())}
+          aria-label={abierto ? 'Cerrar la ayuda' : 'Abrir la ayuda'}
+          initial={{ opacity: 0, scale: 0.6, y: 12 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          whileHover={{ scale: 1.06 }}
+          whileTap={{ scale: 0.94 }}
+          transition={{ duration: 0.6, ease: SALIDA }}
+          className="relative grid h-14 w-14 place-items-center rounded-full bg-white text-black shadow-[0_14px_36px_-10px_rgba(0,0,0,0.55)]"
+        >
+          {/* Con mensajes nuevos, una onda suave alrededor del botón. */}
+          {nuevos > 0 && !abierto && (
+            <motion.span
+              aria-hidden="true"
+              className="absolute inset-0 rounded-full border border-white"
+              animate={{ scale: [1, 1.45], opacity: [0.5, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: SALIDA }}
+            />
+          )}
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={abierto ? 'x' : 'chat'}
+              initial={{ opacity: 0, rotate: -90, scale: 0.5, filter: 'blur(4px)' }}
+              animate={{ opacity: 1, rotate: 0, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, rotate: 90, scale: 0.5, filter: 'blur(4px)' }}
+              transition={{ duration: 0.45, ease: SALIDA }}
+              className="grid place-items-center"
+            >
+              {abierto ? <X aria-hidden="true" className="h-5 w-5" /> : <MessageCircle aria-hidden="true" className="h-5 w-5" />}
+            </motion.span>
+          </AnimatePresence>
+          <AnimatePresence>
+            {nuevos > 0 && !abierto && (
+              <motion.span
+                key="globo"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                transition={{ duration: 0.45, ease: SALIDA }}
+                className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-sitio-azul px-1.5 text-[10.5px] font-semibold text-[#fff]"
+              >
+                {nuevos}
+              </motion.span>
             )}
-          </motion.section>
+          </AnimatePresence>
+        </motion.button>
+      </div>
+    </MotionConfig>
+  )
+}
+
+const CLASES_CAMPO =
+  'w-full rounded-xl border border-sitio-borde bg-sitio-campo px-3.5 py-2.5 text-[13.5px] outline-none transition-[border-color,box-shadow] duration-300 placeholder:text-sitio-tenue focus:border-white/40 focus:shadow-[0_0_0_3px_rgba(255,255,255,0.06)]'
+
+/** Tres puntos que suben y bajan: "escribiendo…" y "conectando…". */
+function Puntos() {
+  return (
+    <span aria-hidden="true" className="inline-flex items-center gap-1">
+      {[0, 1, 2].map((punto) => (
+        <motion.span
+          key={punto}
+          className="h-1.5 w-1.5 rounded-full bg-current opacity-70"
+          animate={{ y: [0, -3, 0], opacity: [0.35, 1, 0.35] }}
+          transition={{ duration: 1, repeat: Infinity, delay: punto * 0.15, ease: 'easeInOut' }}
+        />
+      ))}
+    </span>
+  )
+}
+
+/**
+ * Respuesta rápida como una conversación: la pregunta sale del lado del
+ * cliente, unos puntos de "escribiendo" y luego la respuesta.
+ */
+function RespuestaRapida({ opcion, alSirvio, alAsesor }: { opcion: Opcion; alSirvio: () => void; alAsesor: () => void }) {
+  const [lista, setLista] = useState(false)
+  useEffect(() => {
+    const espera = setTimeout(() => setLista(true), 750)
+    return () => clearTimeout(espera)
+  }, [])
+
+  return (
+    <div className="flex flex-col">
+      <motion.p
+        initial={{ opacity: 0, y: 10, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: SALIDA }}
+        className="ml-auto w-fit max-w-[85%] origin-bottom-right rounded-2xl rounded-br-md bg-white px-3.5 py-2.5 text-[13.5px] text-black"
+      >
+        {opcion.pregunta}
+      </motion.p>
+      <AnimatePresence mode="wait">
+        {!lista ? (
+          <motion.div
+            key="puntos"
+            initial={{ opacity: 0, y: 8, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, delay: 0.2, ease: SALIDA } }}
+            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
+            className="mt-3 w-fit origin-bottom-left rounded-2xl rounded-bl-md bg-white/[0.07] px-3.5 py-3 text-sitio-suave"
+          >
+            <Puntos />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="respuesta"
+            initial={{ opacity: 0, y: 10, scale: 0.97, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+            transition={{ duration: 0.55, ease: SALIDA }}
+            className="mt-3 max-w-[90%] origin-bottom-left rounded-2xl rounded-bl-md bg-white/[0.07] px-3.5 py-2.5 text-[13.5px] leading-relaxed"
+          >
+            {opcion.respuesta}
+            {opcion.enlace && (
+              <Link href={opcion.enlace} className="group mt-2 flex items-center gap-1 text-[12.5px] text-sitio-azul-claro">
+                Ir ahí
+                <ArrowUpRight aria-hidden="true" className="h-3 w-3 transition-transform duration-500 ease-salida group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            )}
+          </motion.div>
         )}
       </AnimatePresence>
-
-      <motion.button
-        type="button"
-        onClick={() => (abierto ? setAbierto(false) : abrir())}
-        aria-label={abierto ? 'Cerrar la ayuda' : 'Abrir la ayuda'}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="relative grid h-14 w-14 place-items-center rounded-full bg-white text-black shadow-[0_10px_30px_-8px_rgba(0,0,0,0.5)]"
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.span
-            key={abierto ? 'x' : 'chat'}
-            initial={{ opacity: 0, rotate: -45, scale: 0.6 }}
-            animate={{ opacity: 1, rotate: 0, scale: 1 }}
-            exit={{ opacity: 0, rotate: 45, scale: 0.6 }}
-            transition={{ duration: 0.25 }}
+      <AnimatePresence>
+        {lista && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.25, ease: SALIDA }}
           >
-            {abierto ? <X aria-hidden="true" className="h-5 w-5" /> : <MessageCircle aria-hidden="true" className="h-5 w-5" />}
-          </motion.span>
-        </AnimatePresence>
-        {nuevos > 0 && !abierto && (
-          <span className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-sitio-azul px-1.5 text-[10.5px] font-semibold text-[#fff]">
-            {nuevos}
-          </span>
+            <p className="mt-5 text-[12.5px] text-sitio-tenue">¿Te sirvió?</p>
+            <div className="mt-2 flex gap-2">
+              <motion.button
+                type="button"
+                onClick={alSirvio}
+                whileTap={{ scale: 0.97 }}
+                className="flex-1 rounded-xl border border-sitio-borde px-3 py-2.5 text-[12.5px] transition-colors duration-500 ease-salida hover:border-sitio-borde-fuerte hover:bg-white/[0.03]"
+              >
+                Sí, gracias
+              </motion.button>
+              <motion.button
+                type="button"
+                onClick={alAsesor}
+                whileTap={{ scale: 0.97 }}
+                className="flex-1 rounded-xl bg-white px-3 py-2.5 text-[12.5px] font-medium text-black transition-opacity duration-300 hover:opacity-90"
+              >
+                Hablar con un asesor
+              </motion.button>
+            </div>
+          </motion.div>
         )}
-      </motion.button>
+      </AnimatePresence>
     </div>
   )
 }

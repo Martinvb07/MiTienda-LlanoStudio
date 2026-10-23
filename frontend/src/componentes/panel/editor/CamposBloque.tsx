@@ -16,6 +16,8 @@ import type {
 import { planMinimo, type LimitesPlan } from '@/utilidades/planes'
 import { CLASES_ENTRADA, Campo, CampoArea, Candado, Interruptor, Segmentado } from '../ui/basicos'
 import { ZonaImagen } from '../ui/imagenes'
+import { ICONOS_BLOQUE, claveIcono } from '@/componentes/comunes/IconoBloque'
+import { cn } from '@/utilidades/clases'
 
 interface Props {
   bloque: Bloque
@@ -535,17 +537,15 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
           <ListaEditable
             elementos={bloque.props.items}
             alCambiar={(items) => alCambiar({ items })}
-            crear={(): ItemColumna => ({ id: nuevoId(), icono: '✨', titulo: 'Nuevo beneficio' })}
+            crear={(): ItemColumna => ({ id: nuevoId(), icono: 'brillo', titulo: 'Nuevo beneficio' })}
             maximo={limites.itemsLista}
             textoAgregar={`Agregar columna (hasta ${limites.itemsLista})`}
             titulo={(item, indice) => item.titulo || `Columna ${indice + 1}`}
           >
             {(item, cambiar) => (
               <>
-                <div className="grid grid-cols-[64px_1fr] gap-2.5">
-                  <Campo etiqueta="Ícono" valor={item.icono ?? ''} alCambiar={(icono) => cambiar({ icono })} maximo={4} marcador="🚚" />
-                  <Campo etiqueta="Título" valor={item.titulo} alCambiar={(titulo) => cambiar({ titulo })} maximo={60} />
-                </div>
+                <Campo etiqueta="Título" valor={item.titulo} alCambiar={(titulo) => cambiar({ titulo })} maximo={60} />
+                <SelectorIcono valor={item.icono} alCambiar={(icono) => cambiar({ icono })} />
                 <CampoArea etiqueta="Texto" valor={item.texto ?? ''} alCambiar={(texto) => cambiar({ texto })} filas={2} maximo={240} />
                 <ZonaImagen
                   url={item.imagenUrl}
@@ -914,4 +914,33 @@ export function resumenBloque(bloque: Bloque): string {
     default:
       return ''
   }
+}
+
+/** Cuadrícula de íconos para las columnas; el ícono elegido se guarda por su clave. */
+function SelectorIcono({ valor, alCambiar }: { valor?: string; alCambiar: (icono: string) => void }) {
+  const actual = claveIcono(valor)
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-[11.5px] text-sitio-suave">Ícono</span>
+      <div role="radiogroup" aria-label="Ícono" className="grid grid-cols-8 gap-1">
+        {Object.entries(ICONOS_BLOQUE).map(([clave, { Icono, nombre }]) => (
+          <button
+            key={clave}
+            type="button"
+            role="radio"
+            aria-checked={actual === clave}
+            aria-label={nombre}
+            title={nombre}
+            onClick={() => alCambiar(clave)}
+            className={cn(
+              'grid aspect-square place-items-center rounded-md border transition-colors',
+              actual === clave ? 'border-sitio-tinta bg-sitio-tinta text-sitio-fondo' : 'border-sitio-borde text-sitio-suave hover:border-sitio-tinta/40 hover:text-sitio-tinta',
+            )}
+          >
+            <Icono aria-hidden="true" className="h-4 w-4" />
+          </button>
+        ))}
+      </div>
+    </div>
+  )
 }

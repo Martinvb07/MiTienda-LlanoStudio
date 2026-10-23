@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { Star } from 'lucide-react'
 import type { PropsTestimonios } from '@/tipos/bloques'
 import { esMedioLocal } from '@/utilidades/medios'
 import { TituloSeccion } from './TituloSeccion'
@@ -15,9 +16,7 @@ export function Testimonios({ titulo, items }: PropsTestimonios) {
             {item.estrellas ? (
               <div className="mb-4 flex gap-0.5 text-lg text-amber-400" aria-label={`${item.estrellas} de 5 estrellas`}>
                 {Array.from({ length: 5 }, (_, indice) => (
-                  <span key={indice} className={indice < item.estrellas! ? '' : 'opacity-25'}>
-                    ★
-                  </span>
+                  <Star key={indice} aria-hidden="true" className={`h-4 w-4 fill-current ${indice < item.estrellas! ? '' : 'opacity-25'}`} />
                 ))}
               </div>
             ) : null}

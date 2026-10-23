@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { IconoBloque, claveIcono } from '@/componentes/comunes/IconoBloque'
 import type { PropsColumnas } from '@/tipos/bloques'
 import { esMedioLocal } from '@/utilidades/medios'
 import { TituloSeccion } from './TituloSeccion'
@@ -28,9 +29,9 @@ export function Columnas({ titulo, subtitulo, columnas = 3, alineacion = 'centro
                 />
               </div>
             ) : (
-              item.icono && (
-                <span className="mb-4 grid h-14 w-14 place-items-center rounded-(--radius-marca) bg-marca/10 text-2xl">
-                  {item.icono}
+              claveIcono(item.icono) && (
+                <span className="mb-4 grid h-14 w-14 place-items-center rounded-(--radius-marca) bg-marca/10 text-marca">
+                  <IconoBloque valor={item.icono} className="h-6 w-6" />
                 </span>
               )
             )}

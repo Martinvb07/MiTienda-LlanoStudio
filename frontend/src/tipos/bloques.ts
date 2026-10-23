@@ -396,9 +396,9 @@ export const PROPS_INICIALES: { [T in TipoBloque]: Extract<Bloque, { tipo: T }>[
     columnas: 3,
     alineacion: 'centro',
     items: [
-      { id: 'k1', icono: '🚚', titulo: 'Envíos a todo el país', texto: 'Recibe en 2 a 5 días hábiles.' },
-      { id: 'k2', icono: '🔒', titulo: 'Pago seguro', texto: 'Paga con tarjeta, PSE o contra entrega.' },
-      { id: 'k3', icono: '💬', titulo: 'Te asesoramos', texto: 'Escríbenos por WhatsApp cuando quieras.' },
+      { id: 'k1', icono: 'camion', titulo: 'Envíos a todo el país', texto: 'Recibe en 2 a 5 días hábiles.' },
+      { id: 'k2', icono: 'candado', titulo: 'Pago seguro', texto: 'Paga con tarjeta, PSE o contra entrega.' },
+      { id: 'k3', icono: 'mensaje', titulo: 'Te asesoramos', texto: 'Escríbenos por WhatsApp cuando quieras.' },
     ],
   },
   galeria: {

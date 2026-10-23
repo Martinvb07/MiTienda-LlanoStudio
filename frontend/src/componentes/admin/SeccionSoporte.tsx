@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowLeft, Check, Globe, LayoutDashboard, RotateCcw, Search, Send, Star } from 'lucide-react'
+import { ArrowLeft, Check, CheckCheck, Globe, Inbox, LayoutDashboard, RotateCcw, Search, Send, Star } from 'lucide-react'
 import type { Socket } from 'socket.io-client'
 import {
   cambiarTicket,
@@ -169,7 +169,10 @@ export function SeccionSoporte({ admin, alAbrirTienda, alPendientes }: { admin: 
             {!tickets ? (
               <li className="brillo m-3 h-20 rounded-lg" />
             ) : visibles.length === 0 ? (
-              <li className="p-6 text-center text-[13px] text-sitio-tenue">{filtro === 'pendientes' ? 'Nadie esperando. 🎉' : 'Nada por aquí.'}</li>
+              <li className="flex flex-col items-center gap-2 p-6 text-center text-[13px] text-sitio-tenue">
+                {filtro === 'pendientes' ? <CheckCheck aria-hidden="true" className="h-5 w-5" /> : <Inbox aria-hidden="true" className="h-5 w-5" />}
+                {filtro === 'pendientes' ? 'Nadie esperando.' : 'Nada por aquí.'}
+              </li>
             ) : (
               visibles.map((ticket) => (
                 <li key={ticket.id}>

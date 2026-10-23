@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import Image from 'next/image'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react'
+import { Minus, Plus, ShoppingBag, Trash2, X, Truck } from 'lucide-react'
 import type { AjustesTienda } from '@/tipos/tienda'
 import { formatearPrecio } from '@/utilidades/formato'
 import { esMedioLocal } from '@/utilidades/medios'
@@ -181,7 +181,10 @@ export function MetaEnvioGratis({ subtotal, ajustes, moneda }: { subtotal: numbe
             Te faltan <strong className="text-tinta">{formatearPrecio(falta, moneda)}</strong> para el envío gratis
           </>
         ) : (
-          <strong className="text-tinta">¡Tienes envío gratis! 🎉</strong>
+          <strong className="inline-flex items-center gap-1.5 text-tinta">
+            <Truck aria-hidden="true" className="h-4 w-4" />
+            ¡Tienes envío gratis!
+          </strong>
         )}
       </p>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-tinta/10">

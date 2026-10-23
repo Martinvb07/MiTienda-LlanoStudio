@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import { AnimatePresence } from 'motion/react'
-import { Database, RefreshCw, Trash2 } from 'lucide-react'
+import { Database, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react'
 import {
   bloquearSubdominio,
   descargar,
@@ -125,7 +125,12 @@ export function SeccionSistema({ admin }: { admin: SesionAdmin }) {
           {!errores ? (
             <Cargando alto="h-16" />
           ) : errores.length === 0 ? (
-            <Vacio>Ningún error desde que la API encendió. 🎉</Vacio>
+            <Vacio>
+              <span className="inline-flex items-center gap-1.5">
+                <ShieldCheck aria-hidden="true" className="h-4 w-4" />
+                Ningún error desde que la API encendió.
+              </span>
+            </Vacio>
           ) : (
             <ul className="flex flex-col gap-2">
               {errores.map((fila, indice) => (

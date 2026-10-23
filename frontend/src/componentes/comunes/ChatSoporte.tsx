@@ -213,7 +213,7 @@ export function ChatSoporte({ modo }: { modo: 'web' | 'panel' }) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className={cn('fixed right-4 z-[200] flex flex-col items-end gap-3 sm:right-6', modo === 'panel' ? 'bottom-24 md:bottom-6' : 'bottom-5 sm:bottom-6')}>
+      <div className={cn('chat-soporte fixed right-4 z-[200] flex flex-col items-end gap-3 sm:right-6', modo === 'panel' ? 'bottom-24 md:bottom-6' : 'bottom-5 sm:bottom-6')}>
         <AnimatePresence>
           {abierto && (
             <motion.section

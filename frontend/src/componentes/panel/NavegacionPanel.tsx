@@ -29,6 +29,7 @@ import { CampanaAvisos, useAvisos } from './Avisos'
 import { useAbrirBuscador } from './BuscadorRapido'
 import { LogoMarca } from '@/componentes/comunes/LogoMarca'
 import { BotonTema } from '@/componentes/comunes/BotonTema'
+import { useHojaAbierta } from '@/componentes/comunes/hojaAbierta'
 
 interface Enlace {
   href: string
@@ -125,6 +126,7 @@ export function NavegacionPanel() {
   const pedidosNuevos = avisos?.pedidosNuevos ?? 0
 
   useEffect(() => setMas(false), [ruta])
+  useHojaAbierta(mas, () => setMas(false))
 
   return (
     <>
@@ -368,7 +370,11 @@ export function NavegacionPanel() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ duration: 0.45, ease: SALIDA }}
-              className="absolute inset-x-0 bottom-0 rounded-t-[22px] border-t border-white/10 bg-sitio-modal px-4 pt-3 pb-8"
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.6 }}
+              onDragEnd={(_, info) => (info.offset.y > 90 || info.velocity.y > 500) && setMas(false)}
+              className="absolute inset-x-0 bottom-0 touch-none rounded-t-[22px] border-t border-white/10 bg-sitio-modal px-4 pt-3 pb-8"
             >
               <span className="mx-auto mb-4 block h-1 w-10 rounded-full bg-white/20" />
               <ul className="flex flex-col gap-1">

@@ -31,6 +31,7 @@ import {
 import { cn } from '@/utilidades/clases'
 import { LogoMarca } from '@/componentes/comunes/LogoMarca'
 import { BotonTema } from '@/componentes/comunes/BotonTema'
+import { useHojaAbierta } from '@/componentes/comunes/hojaAbierta'
 import { EditorPlanes } from './EditorPlanes'
 import { FichaTienda } from './FichaTienda'
 import { SeccionComunicacion } from './SeccionComunicacion'
@@ -280,12 +281,7 @@ function NavegacionMovil({
     if (mas) setGrupo(grupoActual)
   }, [mas, grupoActual])
 
-  useEffect(() => {
-    if (!mas) return
-    const cerrar = (evento: KeyboardEvent) => evento.key === 'Escape' && alMas(false)
-    window.addEventListener('keydown', cerrar)
-    return () => window.removeEventListener('keydown', cerrar)
-  }, [mas, alMas])
+  useHojaAbierta(mas, () => alMas(false))
 
   return (
     <>

@@ -10,6 +10,7 @@ import {
   BarChart3,
   CreditCard,
   LayoutGrid,
+  House,
   LogOut,
   Menu,
   Package,
@@ -250,6 +251,14 @@ export function NavegacionPanel() {
             </Link>
           )}
 
+          <Link
+            href="/"
+            className="mb-3 flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-sitio-suave transition-colors hover:bg-white/[0.05] hover:text-white"
+          >
+            <House aria-hidden="true" className="h-4 w-4" strokeWidth={1.7} />
+            Ir al inicio de Mi Tienda
+          </Link>
+
           <div className="flex items-center gap-3 border-t border-sitio-borde pt-4">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[11.5px] font-semibold">
               {iniciales(sesion.usuario.nombre)}
@@ -396,6 +405,12 @@ export function NavegacionPanel() {
                     </li>
                   ))}
                 <li className="mt-2 border-t border-sitio-borde pt-2">
+                  <Link href="/" className="flex items-center gap-3 rounded-xl px-3 py-3.5 text-[15px] text-sitio-suave">
+                    <House aria-hidden="true" className="h-5 w-5" strokeWidth={1.6} />
+                    Ir al inicio de Mi Tienda
+                  </Link>
+                </li>
+                <li>
                   <button type="button" onClick={salir} className="flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-[15px] text-sitio-suave">
                     <LogOut aria-hidden="true" className="h-5 w-5" strokeWidth={1.6} />
                     Cerrar sesión

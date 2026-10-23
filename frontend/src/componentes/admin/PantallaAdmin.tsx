@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'motion/react'
@@ -10,6 +11,7 @@ import {
   CreditCard,
   FileText,
   Gift,
+  House,
   LogOut,
   Megaphone,
   Menu,
@@ -198,6 +200,13 @@ function Tablero({ admin, alSalir }: { admin: SesionAdmin; alSalir: () => void }
           ))}
         </nav>
 
+        <Link
+          href="/"
+          className="mx-4 mb-2 flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-sitio-suave transition-colors hover:bg-white/[0.05] hover:text-white"
+        >
+          <House aria-hidden="true" className="h-4 w-4" strokeWidth={1.7} />
+          Ir al inicio de Mi Tienda
+        </Link>
         <div className="flex items-center gap-3 border-t border-sitio-borde p-4">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[11.5px] font-semibold">
             {admin.nombre.slice(0, 2).toUpperCase()}
@@ -418,6 +427,10 @@ function NavegacionMovil({
                   )
                 })}
               </div>
+              <Link href="/" className="mt-3 flex items-center gap-3 rounded-xl px-3 py-3 text-[14.5px] text-sitio-suave">
+                <House aria-hidden="true" className="h-5 w-5" strokeWidth={1.6} />
+                Ir al inicio de Mi Tienda
+              </Link>
               <div className="mt-3 flex items-center gap-3 border-t border-sitio-borde px-3 pt-4">
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[11.5px] font-semibold">
                   {admin.nombre.slice(0, 2).toUpperCase()}

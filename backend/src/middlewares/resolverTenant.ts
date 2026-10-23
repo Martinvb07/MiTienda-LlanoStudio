@@ -20,7 +20,7 @@ declare module 'express-serve-static-core' {
 /**
  * Resuelve a qué tenant pertenece cada petición leyendo el header Host.
  *
- *   mitienda.llanostudio.co   -> panel de administración (sin tenant fijo)
+ *   misitio.llanostudio.co   -> panel de administración (sin tenant fijo)
  *   <tienda>.llanostudio.co   -> se busca la Tienda por subdominio
  *   cualquier otro dominio    -> se busca en la tabla de dominios propios
  *

@@ -262,7 +262,7 @@ export function PantallaConfiguracion() {
     { texto: `${plan.secciones} secciones en la portada`, si: true },
     { texto: 'Colores y letra a tu gusto', si: plan.temaLibre },
     { texto: 'Cabecera completa y buscador', si: plan.cabeceraCompleta },
-    { texto: 'Quitar "Hecho con Mi Tienda"', si: plan.quitarMarca },
+    { texto: 'Quitar "Hecho con Mi Sitio"', si: plan.quitarMarca },
   ]
   const uso = plan.productos && productos !== null ? Math.min(productos / plan.productos, 1) : null
 

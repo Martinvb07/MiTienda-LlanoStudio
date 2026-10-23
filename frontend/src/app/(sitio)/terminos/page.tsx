@@ -5,7 +5,7 @@ import { Articulo, ProsaLegal } from '@/componentes/sitio/ProsaLegal'
 
 export const metadata: Metadata = {
   title: 'Términos y condiciones',
-  description: 'Condiciones de uso de la plataforma Mi Tienda, de Llano Studio.',
+  description: 'Condiciones de uso de la plataforma Mi Sitio, de Llano Studio.',
   robots: { index: false, follow: true },
 }
 
@@ -15,13 +15,13 @@ export default function PaginaTerminos() {
       <CabeceraPagina
         rotulo="Legal"
         titulo="Términos y condiciones"
-        descripcion="Las reglas de uso de Mi Tienda. Escritas para que se entiendan sin ser abogado."
+        descripcion="Las reglas de uso de Mi Sitio. Escritas para que se entiendan sin ser abogado."
       />
 
       <ProsaLegal actualizado="26 de julio de 2026">
         <Articulo numero="1." titulo="Quiénes somos">
           <p>
-            Mi Tienda es una plataforma operada por Llano Studio, con domicilio en Colombia. Al
+            Mi Sitio es una plataforma operada por Llano Studio, con domicilio en Colombia. Al
             crear una cuenta aceptas estas condiciones.
           </p>
         </Articulo>

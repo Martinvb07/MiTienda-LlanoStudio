@@ -38,7 +38,7 @@ export const OFERTAS_POR_DEFECTO: Record<Plan, Oferta> = {
       'Colores, letra y esquinas a tu medida',
       'Carrusel de banners, categorías con foto y buscador',
       'Cabecera completa, WhatsApp flotante y pie con contacto',
-      'Sin marca de Mi Tienda en el pie',
+      'Sin marca de Mi Sitio en el pie',
     ],
     destacado: false,
   },

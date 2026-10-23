@@ -503,10 +503,10 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
               activo={bloque.props.ocultarMarca ?? false}
               alCambiar={(ocultarMarca) => alCambiar({ ocultarMarca })}
             >
-              Quitar “Hecho con Mi Tienda”
+              Quitar “Hecho con Mi Sitio”
             </Interruptor>
           ) : (
-            <Candado plan={planMinimo((plan) => plan.quitarMarca)}>Quitar “Hecho con Mi Tienda” del pie.</Candado>
+            <Candado plan={planMinimo((plan) => plan.quitarMarca)}>Quitar “Hecho con Mi Sitio” del pie.</Candado>
           )}
         </>
       )

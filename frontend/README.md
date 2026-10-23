@@ -1,6 +1,6 @@
 <div align="center">
 
-# Mi Tienda — Frontend
+# Mi Sitio — Frontend
 
 **Todo lo que se ve: el panel del dueño y la tienda que visita el comprador**
 
@@ -30,7 +30,7 @@ Al llegar una visita, lo primero que ocurre es reconocer por dónde entró:
 
 | Entra por | Ve |
 | --- | --- |
-| `mitienda.llanostudio.co` | El panel de administración |
+| `misitio.llanostudio.co` | El panel de administración |
 | `tunegocio.llanostudio.co` | La tienda de ese cliente |
 | `www.tudominio.com` | La misma tienda, en su dominio propio |
 

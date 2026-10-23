@@ -99,7 +99,7 @@ export function SeccionDinero({ alAbrirTienda }: { alAbrirTienda: (id: string) =
                   key={tienda.id}
                   tienda={tienda}
                   alAbrir={alAbrirTienda}
-                  asunto="Tu plan de Mi Tienda vence pronto"
+                  asunto="Tu plan de Mi Sitio vence pronto"
                   detalle={`${nombrePlan(tienda.plan)} · vence el ${fecha(tienda.planVenceEn!)}`}
                 />
               ))}
@@ -121,7 +121,7 @@ export function SeccionDinero({ alAbrirTienda }: { alAbrirTienda: (id: string) =
                   key={tienda.id}
                   tienda={tienda}
                   alAbrir={alAbrirTienda}
-                  asunto="Tu plan de Mi Tienda venció"
+                  asunto="Tu plan de Mi Sitio venció"
                   detalle={`${nombrePlan(tienda.plan)} · baja a Gratis el ${fecha(tienda.bajaEn)}`}
                 />
               ))}
@@ -160,7 +160,7 @@ export function SeccionDinero({ alAbrirTienda }: { alAbrirTienda: (id: string) =
                   key={`${baja.tenant.id}-${baja.creadoEn}`}
                   tienda={baja.tenant}
                   alAbrir={alAbrirTienda}
-                  asunto="Te extrañamos en Mi Tienda"
+                  asunto="Te extrañamos en Mi Sitio"
                   detalle={`Tenía ${nombrePlan(baja.planAnterior)} · ${fecha(baja.creadoEn)}`}
                 />
               ))}

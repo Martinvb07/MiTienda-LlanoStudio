@@ -9,7 +9,7 @@ export const CABECERA_HOST = 'x-mitienda-host'
  *
  *   llanostudio.co           -> web comercial (en producción la sirve el sitio
  *                               de Llano Studio; nginx no la manda aquí)
- *   mitienda.llanostudio.co  -> web de Mi Tienda en /, panel en /panel
+ *   misitio.llanostudio.co  -> web de Mi Sitio en /, panel en /panel
  *   ropa.llanostudio.co      -> tienda       (/x se reescribe a /ropa/x)
  *   www.miropa.com           -> dominio propio (/x se reescribe a /www.miropa.com/x)
  *
@@ -44,7 +44,7 @@ export function middleware(peticion: NextRequest) {
       return NextResponse.next({ request: { headers: cabeceras } })
 
     case 'panel':
-      // llanostudio.co es la web del estudio, así que la de Mi Tienda vive
+      // llanostudio.co es la web del estudio, así que la de Mi Sitio vive
       // aquí: la portada en / y el panel en /panel.
       return NextResponse.next({ request: { headers: cabeceras } })
 

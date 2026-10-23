@@ -31,7 +31,7 @@ interface Props {
   moneda: string
   /** Cabecera de la tienda: va después de las barras de anuncio iniciales. */
   cabecera?: ReactNode
-  /** Si el plan permite quitar "Hecho con Mi Tienda" del pie. */
+  /** Si el plan permite quitar "Hecho con Mi Sitio" del pie. */
   quitarMarca?: boolean
   /** Contacto y redes: el pie los usa para armar sus columnas. */
   ajustes?: AjustesTienda

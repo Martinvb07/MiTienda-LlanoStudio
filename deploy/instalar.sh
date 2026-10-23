@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Instalador de Mi Tienda en un VPS Ubuntu (sin Docker).
+# Instalador de Mi Sitio en un VPS Ubuntu (sin Docker).
 #
 #   cd /var/www/llanostudio/sitios
 #   git clone https://github.com/Martinvb07/MiTienda-LlanoStudio.git mitienda
@@ -13,11 +13,11 @@
 # No toca lo que ya tengas en el VPS:
 #   - Busca puertos libres (desde el 4200) en vez de asumir unos fijos.
 #   - Si el Node global es menor a 22, baja un Node 22 aparte en
-#     /opt/mitienda-node sólo para Mi Tienda; el global sigue igual.
+#     /opt/mitienda-node sólo para Mi Sitio; el global sigue igual.
 #   - Crea su propio archivo de nginx; no edita los de tus otros sitios.
 #
 # Variables opcionales para no responder preguntas:
-#   DOMINIO=llanostudio.co PANEL=mitienda CORREO=tu@correo.com \
+#   DOMINIO=llanostudio.co PANEL=misitio CORREO=tu@correo.com \
 #   ADMIN_CONTRASENA='...' SUBDOMINIOS_PRUEBA="prueba" sudo -E bash deploy/instalar.sh
 
 set -euo pipefail
@@ -59,7 +59,7 @@ if [ -f "$LOCAL" ]; then
   CORREO="${CORREO:-$(leer_env "$LOCAL" CORREO)}"
 fi
 preguntar DOMINIO "Dominio base de las tiendas" "llanostudio.co"
-preguntar PANEL "Subdominio de la web y el panel" "mitienda"
+preguntar PANEL "Subdominio de la web y el panel" "misitio"
 preguntar CORREO "Tu correo (admin de la plataforma y avisos de certificados)" ""
 [ -n "$CORREO" ] || falla "Hace falta un correo."
 HOST_PANEL="$PANEL.$DOMINIO"
@@ -98,13 +98,13 @@ if [ "$MAYOR_GLOBAL" -ge 22 ]; then
   verde "Node global $(node -v): se usa ese."
 else
   if [ ! -x "$NODE_PROPIO/bin/node" ]; then
-    ambar "Node global es v${MAYOR_GLOBAL}: se baja Node $VERSION_NODE sólo para Mi Tienda (el global no cambia)."
+    ambar "Node global es v${MAYOR_GLOBAL}: se baja Node $VERSION_NODE sólo para Mi Sitio (el global no cambia)."
     ARQ=$(uname -m); case "$ARQ" in x86_64) ARQ=x64 ;; aarch64) ARQ=arm64 ;; esac
     curl -fsSL "https://nodejs.org/dist/v$VERSION_NODE/node-v$VERSION_NODE-linux-$ARQ.tar.xz" -o /tmp/node.tar.xz
     mkdir -p "$NODE_PROPIO" && tar -xJf /tmp/node.tar.xz -C "$NODE_PROPIO" --strip-components=1 && rm /tmp/node.tar.xz
   fi
   DIR_NODE="$NODE_PROPIO/bin"
-  verde "Mi Tienda usará $("$DIR_NODE/node" -v) desde $NODE_PROPIO."
+  verde "Mi Sitio usará $("$DIR_NODE/node" -v) desde $NODE_PROPIO."
 fi
 export PATH="$DIR_NODE:$PATH"
 
@@ -126,7 +126,7 @@ libre_desde() {
 
 PUERTO_WEB="$(leer_env "$LOCAL" PUERTO_WEB)"
 PUERTO_API="$(leer_env "$LOCAL" PUERTO_API)"
-# Si ya estaban asignados y los usa PM2 (Mi Tienda corriendo), se respetan.
+# Si ya estaban asignados y los usa PM2 (Mi Sitio corriendo), se respetan.
 if [ -z "$PUERTO_WEB" ] || { ocupado "$PUERTO_WEB" && ! pm2 describe mitienda-web >/dev/null 2>&1; }; then
   PUERTO_WEB="$(libre_desde 4200)"
 fi
@@ -321,7 +321,7 @@ if [ -f "$CERT_COMODIN" ]; then
 else
   {
     echo "# Generado por deploy/instalar.sh — se reescribe al volver a correrlo."
-    echo "# Web y panel de Mi Tienda (certbot le agrega el HTTPS)."
+    echo "# Web y panel de Mi Sitio (certbot le agrega el HTTPS)."
     echo "server {"
     echo "    listen 80;"
     echo "    listen [::]:80;"
@@ -379,7 +379,7 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 echo
 verde "════════════════════════════════════════════════════════"
-verde " Mi Tienda instalada"
+verde " Mi Sitio instalado"
 verde "   Web y panel:  https://$HOST_PANEL"
 verde "   Tu admin:     https://$HOST_PANEL/panel/admin  ($CORREO)"
 verde "   Tiendas:      <subdominio>.$DOMINIO"

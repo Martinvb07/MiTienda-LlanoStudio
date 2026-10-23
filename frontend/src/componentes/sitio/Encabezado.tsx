@@ -49,7 +49,7 @@ export function Encabezado() {
           <Link href="/" className="flex items-center gap-[11px] justify-self-start">
             <LogoMarca prioridad className="h-7 w-auto" />
             <span className="flex flex-col justify-center">
-              <span className="text-base leading-none font-semibold tracking-[-0.02em]">Mi Tienda</span>
+              <span className="text-base leading-none font-semibold tracking-[-0.02em]">Mi Sitio</span>
               <span className="mt-1 text-[9.5px] tracking-[0.24em] text-sitio-tenue uppercase">
                 por Llano Studio
               </span>

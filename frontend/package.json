@@ -2,7 +2,7 @@
   "name": "mitienda-frontend",
   "version": "0.1.0",
   "private": true,
-  "description": "Panel y tiendas públicas de Mi Tienda (Llano Studio)",
+  "description": "Panel y tiendas públicas de Mi Sitio (Llano Studio)",
   "engines": {
     "node": ">=22"
   },

@@ -35,7 +35,7 @@ export function plantillaCorreo(titulo: string, parrafos: string[], boton?: { te
 <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 16px">
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#fff;border:1px solid #e6e6e3;border-radius:14px">
 <tr><td style="padding:36px 32px">
-<p style="margin:0 0 24px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8a8e">Mi Tienda</p>
+<p style="margin:0 0 24px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8a8e">Mi Sitio</p>
 <h1 style="margin:0 0 16px;font-size:26px;font-weight:400;letter-spacing:-.03em">${escapar(titulo)}</h1>
 ${parrafos.map((p) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#4f4f52">${escapar(p)}</p>`).join('')}
 ${boton ? `<a href="${boton.url}" style="display:inline-block;margin-top:12px;background:#0b0b0c;color:#fff;text-decoration:none;font-size:12px;letter-spacing:.09em;text-transform:uppercase;padding:14px 22px;border-radius:3px">${escapar(boton.texto)}</a>` : ''}
@@ -83,7 +83,7 @@ export async function enviarCorreo(tipo: TipoCorreo, tenantId: string, clave = '
   const plan = PLANES[tenant.plan as keyof typeof PLANES]?.nombre ?? tenant.plan
   const contenido = {
     bienvenida: {
-      asunto: `Bienvenido a Mi Tienda, ${nombre}`,
+      asunto: `Bienvenido a Mi Sitio, ${nombre}`,
       html: plantillaCorreo(
         `Tu tienda ${tenant.nombre} ya existe`,
         [

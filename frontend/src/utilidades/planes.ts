@@ -18,7 +18,7 @@ export interface LimitesPlan {
   bloques: readonly TipoBloque[]
   /** Colores, letra y esquinas a mano; si no, sólo los estilos predefinidos. */
   temaLibre: boolean
-  /** Puede quitar "Hecho con Mi Tienda" del pie. */
+  /** Puede quitar "Hecho con Mi Sitio" del pie. */
   quitarMarca: boolean
   /** Cabecera con barra de color, botón destacado y WhatsApp a la vista. */
   cabeceraCompleta: boolean

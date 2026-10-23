@@ -129,7 +129,7 @@ export interface PropsPie {
   mostrarRedes?: boolean
   instagram?: string
   whatsapp?: string
-  /** Quita "Hecho con Mi Tienda"; sólo surte efecto en planes pagos. */
+  /** Quita "Hecho con Mi Sitio"; sólo surte efecto en planes pagos. */
   ocultarMarca?: boolean
 }
 

@@ -15,7 +15,7 @@ const esquema = z.object({
   REDIS_URL: z.string().min(1).default('redis://localhost:6379'),
 
   DOMINIO_BASE: z.string().min(1).default('llanostudio.co'),
-  SUBDOMINIO_PANEL: z.string().min(1).default('mitienda'),
+  SUBDOMINIO_PANEL: z.string().min(1).default('misitio'),
 
   JWT_SECRETO: z.string().min(16, 'JWT_SECRETO debe tener al menos 16 caracteres'),
   ORIGENES_PERMITIDOS: z.string().default('http://localhost:3000'),
@@ -53,7 +53,7 @@ const esquema = z.object({
   SMTP_PUERTO: z.coerce.number().int().positive().default(465),
   SMTP_USUARIO: z.string().default(''),
   SMTP_CLAVE: z.string().default(''),
-  CORREO_REMITENTE: z.string().default('Mi Tienda <hola@llanostudio.co>'),
+  CORREO_REMITENTE: z.string().default('Mi Sitio <hola@llanostudio.co>'),
 
   // Cloudflare R2 — opcionales mientras la subida de archivos no esté implementada.
   R2_ACCOUNT_ID: z.string().default(''),

@@ -8,7 +8,7 @@ import { Revelar } from '@/componentes/sitio/Revelar'
 export const metadata: Metadata = {
   title: 'Sobre nosotros',
   description:
-    'Mi Tienda es un producto de Llano Studio, un estudio de desarrollo colombiano. Construimos herramientas para que vender en línea no dependa de saber programar.',
+    'Mi Sitio es un producto de Llano Studio, un estudio de desarrollo colombiano. Construimos herramientas para que vender en línea no dependa de saber programar.',
 }
 
 const PRINCIPIOS = [
@@ -35,7 +35,7 @@ export default function PaginaSobreNosotros() {
       <CabeceraPagina
         rotulo="Sobre nosotros"
         titulo="Un estudio colombiano haciendo herramientas para vender"
-        descripcion="Mi Tienda es un producto de Llano Studio. Nos dedicamos a construir software que resuelve problemas concretos de negocios reales."
+        descripcion="Mi Sitio es un producto de Llano Studio. Nos dedicamos a construir software que resuelve problemas concretos de negocios reales."
       />
 
       <section className="py-16 lg:py-20">
@@ -54,7 +54,7 @@ export default function PaginaSobreNosotros() {
                   cambiar un precio. Ese costo deja fuera a la mayoría.
                 </p>
                 <p className="font-medium text-sitio-tinta">
-                  Mi Tienda existe para quitar ese intermediario. Armas tu tienda tú, la
+                  Mi Sitio existe para quitar ese intermediario. Armas tu tienda tú, la
                   publicas el mismo día y la cambias cuando quieras sin pedirle permiso a nadie.
                 </p>
               </div>
@@ -73,7 +73,7 @@ export default function PaginaSobreNosotros() {
                   Llano Studio
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed text-sitio-suave">
-                  Estudio de desarrollo y diseño web. Además de Mi Tienda construimos software a
+                  Estudio de desarrollo y diseño web. Además de Mi Sitio construimos software a
                   medida para negocios que necesitan algo propio.
                 </p>
                 <a

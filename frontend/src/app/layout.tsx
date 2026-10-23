@@ -19,8 +19,8 @@ const mono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Mi Tienda',
-    template: '%s · Mi Tienda',
+    default: 'Mi Sitio',
+    template: '%s · Mi Sitio',
   },
   description: 'Crea tu tienda en línea sin escribir una sola línea de código.',
 }

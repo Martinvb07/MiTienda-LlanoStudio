@@ -62,8 +62,8 @@ export async function agregarMiembro(req: Request, res: Response): Promise<void>
   }
   const existe = await prisma.usuario.findUnique({ where: { email: datos.email }, select: { id: true } })
   if (existe) {
-    throw new ErrorHttp(409, 'Ese correo ya tiene una cuenta en Mi Tienda', 'CORREO_EN_USO', [
-      { campo: 'email', mensaje: 'Ese correo ya tiene una cuenta en Mi Tienda' },
+    throw new ErrorHttp(409, 'Ese correo ya tiene una cuenta en Mi Sitio', 'CORREO_EN_USO', [
+      { campo: 'email', mensaje: 'Ese correo ya tiene una cuenta en Mi Sitio' },
     ])
   }
 

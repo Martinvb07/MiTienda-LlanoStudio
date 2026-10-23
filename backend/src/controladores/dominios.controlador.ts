@@ -44,8 +44,8 @@ export async function agregarDominio(req: Request, res: Response): Promise<void>
   await revisarPlan(req)
   const { dominio } = req.body as z.infer<typeof esquemaDominio>
   if (dominio.endsWith(`.${entorno.DOMINIO_BASE}`) || dominio === entorno.DOMINIO_BASE) {
-    throw new ErrorHttp(400, 'Ese ya es un dominio de Mi Tienda', 'DOMINIO_INVALIDO', [
-      { campo: 'dominio', mensaje: 'Ese ya es un dominio de Mi Tienda' },
+    throw new ErrorHttp(400, 'Ese ya es un dominio de Mi Sitio', 'DOMINIO_INVALIDO', [
+      { campo: 'dominio', mensaje: 'Ese ya es un dominio de Mi Sitio' },
     ])
   }
   const existente = await prisma.dominioPropio.findUnique({ where: { dominio }, select: { id: true } })

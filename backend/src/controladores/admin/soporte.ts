@@ -75,7 +75,7 @@ export async function cambiarTicket(req: Request, res: Response): Promise<void> 
     },
   })
   if (datos.estado === 'RESUELTO' && antes.estado !== 'RESUELTO') {
-    await publicarMensaje(id, 'SISTEMA', 'Mi Tienda', 'La conversación se marcó como resuelta. Si necesitas algo más, escríbenos aquí mismo.')
+    await publicarMensaje(id, 'SISTEMA', 'Mi Sitio', 'La conversación se marcó como resuelta. Si necesitas algo más, escríbenos aquí mismo.')
     registrarActividad(req, 'Resolvió un ticket', `#${antes.numero}`)
   }
   await anunciarTicket(id)

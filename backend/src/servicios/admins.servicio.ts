@@ -47,7 +47,7 @@ export async function tokenSiEsAdmin(email: string, contrasena: string): Promise
     Boolean(entorno.ADMIN_CORREO && entorno.ADMIN_CONTRASENA_HASH) &&
     correo === entorno.ADMIN_CORREO.toLowerCase() &&
     (await verificarContrasena(contrasena, entorno.ADMIN_CONTRASENA_HASH))
-  return delEntorno ? firmarAdmin({ email: correo, nombre: 'Equipo Mi Tienda', rol: 'DUENO' }) : null
+  return delEntorno ? firmarAdmin({ email: correo, nombre: 'Equipo Mi Sitio', rol: 'DUENO' }) : null
 }
 
 /** Lee el token de admin. También lo usa el chat de soporte para los asesores. */

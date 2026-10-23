@@ -6,12 +6,12 @@ import { ChatSoporte } from '@/componentes/comunes/ChatSoporte'
 
 export const metadata: Metadata = {
   // `absolute` salta la plantilla del layout raíz: sin esto la pestaña diría
-  // "Mi Tienda · Mi Tienda".
-  title: { absolute: 'Mi Tienda' },
+  // "Mi Sitio · Mi Sitio".
+  title: { absolute: 'Mi Sitio' },
   description:
     'Diseña, personaliza y publica una tienda moderna sin escribir código. Arrastra bloques, sube tus productos y vende desde tu propio dominio. Hecho para Colombia.',
   openGraph: {
-    title: 'Mi Tienda — Llano Studio',
+    title: 'Mi Sitio — Llano Studio',
     description: 'Tu tienda en línea profesional, sin escribir una sola línea de código.',
     locale: 'es_CO',
     type: 'website',

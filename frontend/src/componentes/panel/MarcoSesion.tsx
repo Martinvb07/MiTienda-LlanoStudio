@@ -60,7 +60,7 @@ export function MarcoSesion({ children }: { children: React.ReactNode }) {
         <div className="absolute right-12 bottom-12 left-12">
           <p className="max-w-[18ch] text-[clamp(28px,2.6vw,40px)] leading-[1.05] tracking-[-0.04em]">{lado.frase}</p>
           <p className="mt-4 text-[12px] tracking-[0.14em] text-white/45 uppercase">
-            {lado.tienda} · hecha con Mi Tienda
+            {lado.tienda} · hecha con Mi Sitio
           </p>
         </div>
       </aside>
@@ -79,7 +79,7 @@ export function MarcoSesion({ children }: { children: React.ReactNode }) {
             <BotonTema />
             <Link href="/" className="flex items-center gap-[10px]">
               <LogoMarca className="h-6 w-auto" />
-              <span className="text-[14px] font-semibold tracking-[-0.02em]">Mi Tienda</span>
+              <span className="text-[14px] font-semibold tracking-[-0.02em]">Mi Sitio</span>
             </Link>
           </div>
         </div>
@@ -95,7 +95,7 @@ export function MarcoSesion({ children }: { children: React.ReactNode }) {
         </motion.div>
 
         <p className="text-center text-[11.5px] text-white/35">
-          © {new Date().getFullYear()} Mi Tienda · Un producto de Llano Studio
+          © {new Date().getFullYear()} Mi Sitio · Un producto de Llano Studio
         </p>
       </main>
     </div>

@@ -175,7 +175,7 @@ export function GestionPasarelas() {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-[13px] leading-relaxed text-sitio-tenue">
-        Conecta una o varias. Tus clientes eligen al pagar y el dinero llega a tu cuenta, sin comisión de Mi Tienda (sólo la de la pasarela). Prueba
+        Conecta una o varias. Tus clientes eligen al pagar y el dinero llega a tu cuenta, sin comisión de Mi Sitio (sólo la de la pasarela). Prueba
         primero con las llaves de prueba.
       </p>
       <ul className="flex flex-col gap-2">

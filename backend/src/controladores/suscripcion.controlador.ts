@@ -144,7 +144,7 @@ export async function crearCheckout(req: Request, res: Response): Promise<void> 
     moneda: 'COP',
     llave: entorno.BOLD_LLAVE_IDENTIDAD,
     firma: firmaIntegridad(pago.referencia, monto),
-    descripcion: `Mi Tienda · Plan ${nombre} ${periodo === 'ANUAL' ? 'anual' : 'mensual'}`,
+    descripcion: `Mi Sitio · Plan ${nombre} ${periodo === 'ANUAL' ? 'anual' : 'mensual'}`,
     redireccion: `${urlPanel()}/panel/plan`,
     correo: req.sesion!.email,
   })

@@ -6,7 +6,7 @@ import { Articulo, ProsaLegal } from '@/componentes/sitio/ProsaLegal'
 export const metadata: Metadata = {
   title: 'Política de privacidad',
   description:
-    'Cómo Mi Tienda trata los datos personales, conforme a la Ley 1581 de 2012 de Colombia.',
+    'Cómo Mi Sitio trata los datos personales, conforme a la Ley 1581 de 2012 de Colombia.',
   robots: { index: false, follow: true },
 }
 
@@ -23,7 +23,7 @@ export default function PaginaPrivacidad() {
         <Articulo numero="1." titulo="Responsable del tratamiento">
           <p>
             Llano Studio, domiciliado en Colombia, es el responsable del tratamiento de los datos
-            recogidos a través de Mi Tienda. Esta política se rige por la Ley 1581 de 2012 y sus
+            recogidos a través de Mi Sitio. Esta política se rige por la Ley 1581 de 2012 y sus
             normas reglamentarias.
           </p>
         </Articulo>

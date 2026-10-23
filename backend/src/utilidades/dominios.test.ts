@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { clasificarHost, esSubdominioValido, normalizarHost } from './dominios.js'
 
-const opciones = { dominioBase: 'llanostudio.co', subdominioPanel: 'mitienda' }
+const opciones = { dominioBase: 'llanostudio.co', subdominioPanel: 'misitio' }
 
 describe('normalizarHost', () => {
   it('quita el puerto y pasa a minúsculas', () => {
@@ -19,7 +19,7 @@ describe('normalizarHost', () => {
 
 describe('clasificarHost', () => {
   it('reconoce el host del panel', () => {
-    expect(clasificarHost('mitienda.llanostudio.co', opciones).tipo).toBe('panel')
+    expect(clasificarHost('misitio.llanostudio.co', opciones).tipo).toBe('panel')
   })
 
   it('trata el dominio pelado y el www como la web comercial', () => {
@@ -41,6 +41,10 @@ describe('clasificarHost', () => {
     })
   })
 
+  it('el nombre anterior de la plataforma no queda libre para una tienda', () => {
+    expect(clasificarHost('mitienda.llanostudio.co', opciones).tipo).toBe('desconocido')
+  })
+
   it('rechaza subdominios reservados', () => {
     expect(clasificarHost('api.llanostudio.co', opciones).tipo).toBe('desconocido')
   })
@@ -55,7 +59,7 @@ describe('clasificarHost', () => {
       subdominio: 'ropa',
     })
     expect(clasificarHost('localhost:3000', opciones).tipo).toBe('sitio')
-    expect(clasificarHost('mitienda.localhost:3000', opciones).tipo).toBe('panel')
+    expect(clasificarHost('misitio.localhost:3000', opciones).tipo).toBe('panel')
   })
 
   it('marca como desconocido un Host vacío', () => {

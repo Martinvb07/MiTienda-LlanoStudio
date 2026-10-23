@@ -10,7 +10,7 @@ const PREGUNTAS = [
   {
     pregunta: '¿Necesito saber de diseño o de código?',
     respuesta:
-      'No. Eliges una plantilla, cambias textos, colores y fotos desde el editor y ves el resultado en vivo. Si sabes usar Instagram, sabes usar Mi Tienda.',
+      'No. Eliges una plantilla, cambias textos, colores y fotos desde el editor y ves el resultado en vivo. Si sabes usar Instagram, sabes usar Mi Sitio.',
   },
   {
     pregunta: '¿Cuánto cuesta empezar?',
@@ -28,7 +28,7 @@ const PREGUNTAS = [
   },
 ]
 
-/** Portada de Mi Tienda, con el mismo recorrido y ritmo que llanostudio.co. */
+/** Portada de Mi Sitio, con el mismo recorrido y ritmo que llanostudio.co. */
 export default async function PaginaInicio() {
   const { testimonios } = await obtenerContenidoSitio()
   return (

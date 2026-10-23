@@ -1,6 +1,6 @@
 <div align="center">
 
-# Mi Tienda
+# Mi Sitio
 
 **Tu tienda en línea lista hoy, sin escribir una sola línea de código**
 
@@ -19,9 +19,9 @@ _Crea, diseña y vende desde tu propio dominio — hecho para Colombia_
 
 ---
 
-## ¿Qué es Mi Tienda?
+## ¿Qué es Mi Sitio?
 
-**Mi Tienda** es una plataforma donde cualquier persona puede montar su tienda en línea sin saber programar. Eliges una plantilla, arrastras bloques para armar tu página, subes tus productos y publicas. Tu tienda queda viviendo en su propia dirección de internet.
+**Mi Sitio** es una plataforma donde cualquier persona puede montar su tienda en línea sin saber programar. Eliges una plantilla, arrastras bloques para armar tu página, subes tus productos y publicas. Tu tienda queda viviendo en su propia dirección de internet.
 
 Es un Shopify simplificado y pensado para el comercio colombiano: precios en pesos, pagos con Wompi y PSE, y facturación adaptada al país.
 
@@ -29,7 +29,7 @@ Cada cliente tiene su tienda completamente separada de las demás, aunque todas 
 
 ---
 
-## ¿Qué podés hacer con Mi Tienda?
+## ¿Qué podés hacer con Mi Sitio?
 
 ### <img src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3a8.svg" width="20" align="top"> Diseñar arrastrando bloques
 
@@ -102,7 +102,7 @@ Un solo sistema atiende a todos los clientes. Lo que cambia es la dirección por
 
 | Dirección de entrada | Qué se muestra |
 | --- | --- |
-| `mitienda.llanostudio.co` | El panel donde el dueño administra su tienda |
+| `misitio.llanostudio.co` | El panel donde el dueño administra su tienda |
 | `tunegocio.llanostudio.co` | La tienda pública de ese cliente |
 | `www.tudominio.com` | La misma tienda, en el dominio propio del cliente |
 
@@ -151,7 +151,7 @@ MiTienda/
 
 ## Dominios
 
-- **Panel:** `mitienda.llanostudio.co`
+- **Panel:** `misitio.llanostudio.co`
 - **Tiendas:** `<cliente>.llanostudio.co` o el dominio propio del cliente
 
 ---
@@ -191,7 +191,7 @@ MiTienda/
 
 ## Licencia
 
-© 2026 Llano Studio — Mi Tienda. Todos los derechos reservados.
+© 2026 Llano Studio — Mi Sitio. Todos los derechos reservados.
 
 ---
 

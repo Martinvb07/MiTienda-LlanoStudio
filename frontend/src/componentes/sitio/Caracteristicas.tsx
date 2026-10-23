@@ -65,7 +65,7 @@ export function Caracteristicas() {
             texto="Arrastra secciones, cambia textos, colores y fotos, y mira tu tienda real actualizándose mientras editas."
           >
             <div className="absolute top-0 left-7 w-[115%] overflow-hidden rounded-t-[8px] shadow-[0_30px_80px_-20px_rgba(0,0,0,1)] ring-1 ring-white/10 transition-transform duration-[1.2s] ease-salida group-hover:-translate-y-2 md:left-8">
-              <Image src="/ejemplos/editor.webp" alt="Editor de tienda de Mi Tienda" width={1440} height={900} sizes="(max-width: 768px) 120vw, 60vw" className="h-auto w-full" />
+              <Image src="/ejemplos/editor.webp" alt="Editor de tienda de Mi Sitio" width={1440} height={900} sizes="(max-width: 768px) 120vw, 60vw" className="h-auto w-full" />
             </div>
           </Baldosa>
 

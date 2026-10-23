@@ -9,7 +9,7 @@ import { Revelar } from '@/componentes/sitio/Revelar'
 export const metadata: Metadata = {
   title: 'Características',
   description:
-    'Editor de bloques, catálogo con fotos optimizadas, dominio propio y pagos colombianos. Todo lo que trae Mi Tienda para vender en línea.',
+    'Editor de bloques, catálogo con fotos optimizadas, dominio propio y pagos colombianos. Todo lo que trae Mi Sitio para vender en línea.',
 }
 
 const DETALLES = [

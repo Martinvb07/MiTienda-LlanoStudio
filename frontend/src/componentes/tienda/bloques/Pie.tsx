@@ -30,7 +30,7 @@ export function Pie({
   const cuentaInstagram = ajustes.instagram || instagram
   const completo = Boolean(ajustes.direccion || ajustes.correo || ajustes.horario)
   const marca = !(quitarMarcaPermitido && ocultarMarca) && (
-    <p className="mt-8 text-center text-xs text-tinta/40">Hecho con Mi Tienda de Llano Studio</p>
+    <p className="mt-8 text-center text-xs text-tinta/40">Hecho con Mi Sitio de Llano Studio</p>
   )
 
   const redes = mostrarRedes && (cuentaInstagram || ajustes.facebook || ajustes.tiktok || telefono) && (
@@ -146,7 +146,7 @@ export function Pie({
 
       <div className="mx-auto mt-12 flex max-w-6xl flex-col items-center justify-between gap-2 border-t border-white/15 pt-6 text-xs opacity-60 sm:flex-row">
         <p>{texto}</p>
-        {!(quitarMarcaPermitido && ocultarMarca) && <p>Hecho con Mi Tienda de Llano Studio</p>}
+        {!(quitarMarcaPermitido && ocultarMarca) && <p>Hecho con Mi Sitio de Llano Studio</p>}
       </div>
     </footer>
   )

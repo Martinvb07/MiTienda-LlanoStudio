@@ -45,7 +45,7 @@ export const useAvisos = () => useContext(Contexto)
 
 /**
  * Pide los avisos al entrar, cada minuto y al volver a la pestaña. Con pedidos
- * nuevos, el título de la pestaña lo dice: "(2) Pedidos · Mi Tienda".
+ * nuevos, el título de la pestaña lo dice: "(2) Pedidos · Mi Sitio".
  */
 export function ProveedorAvisos({ children }: { children: ReactNode }) {
   const [avisos, setAvisos] = useState<Avisos | null>(null)
@@ -116,7 +116,7 @@ export function ProveedorAvisos({ children }: { children: ReactNode }) {
   )
 }
 
-/** Historial de lo nuevo en Mi Tienda, en una ventana. */
+/** Historial de lo nuevo en Mi Sitio, en una ventana. */
 function ModalNovedades({ novedades, alCerrar }: { novedades: Comunicados['novedades']; alCerrar: () => void }) {
   useEffect(() => {
     const alTeclear = (evento: KeyboardEvent) => evento.key === 'Escape' && alCerrar()
@@ -136,7 +136,7 @@ function ModalNovedades({ novedades, alCerrar }: { novedades: Comunicados['noved
         <div className="flex items-center justify-between border-b border-sitio-borde px-5 py-4">
           <span>
             <span className="block text-[16px] font-medium tracking-[-0.01em]">Novedades</span>
-            <span className="text-[12px] text-sitio-tenue">Lo último que llegó a Mi Tienda</span>
+            <span className="text-[12px] text-sitio-tenue">Lo último que llegó a Mi Sitio</span>
           </span>
           <button type="button" aria-label="Cerrar" onClick={alCerrar} className="grid h-8 w-8 place-items-center text-sitio-suave hover:text-white">
             <X aria-hidden="true" className="h-4 w-4" />
@@ -231,7 +231,7 @@ export function CampanaAvisos({ abajo = false }: { abajo?: boolean }) {
                 <strong className="font-medium text-white">
                   {comunicados.novedadesSinVer} {comunicados.novedadesSinVer === 1 ? 'novedad' : 'novedades'}
                 </strong>{' '}
-                en Mi Tienda
+                en Mi Sitio
               </>
             ),
           },

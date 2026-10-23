@@ -6,7 +6,7 @@ import { Revelar } from '@/componentes/sitio/Revelar'
 export const metadata: Metadata = {
   title: 'Contacto',
   description:
-    'Escríbenos si tienes dudas sobre Mi Tienda, necesitas ayuda con tu tienda o quieres el plan Pro.',
+    'Escríbenos si tienes dudas sobre Mi Sitio, necesitas ayuda con tu tienda o quieres el plan Pro.',
 }
 
 const CANALES = [

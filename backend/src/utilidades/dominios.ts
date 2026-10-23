@@ -31,6 +31,8 @@ export interface OpcionesDominio {
  */
 export const SUBDOMINIOS_RESERVADOS: ReadonlySet<string> = new Set([
   'www',
+  'misitio',
+  'mitienda',
   'api',
   'admin',
   'panel',

@@ -1,5 +1,5 @@
 /**
- * Procesos de Mi Tienda en el VPS, gestionados por PM2 (sin Docker).
+ * Procesos de Mi Sitio en el VPS, gestionados por PM2 (sin Docker).
  *
  *   pm2 start ecosystem.config.cjs && pm2 save     primera vez
  *   pm2 reload ecosystem.config.cjs --update-env   lo hace el deploy en cada push
@@ -29,7 +29,7 @@ try {
 }
 
 const PUERTO_WEB = local.PUERTO_WEB || '4200'
-// Node 22 propio de Mi Tienda si el global es más viejo; si no, el global.
+// Node 22 propio de Mi Sitio si el global es más viejo; si no, el global.
 const NODE = local.DIR_NODE ? path.join(local.DIR_NODE, 'node') : 'node'
 
 module.exports = {

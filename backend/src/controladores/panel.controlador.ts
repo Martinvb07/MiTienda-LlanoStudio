@@ -494,7 +494,7 @@ export async function actualizarTiendaPanel(req: Request, res: Response): Promis
   const plantilla = plan.temaLibre || datos.plantilla in TEMAS_PREDEFINIDOS ? datos.plantilla : 'clasica'
   const tema = plan.temaLibre ? datos.tema : TEMAS_PREDEFINIDOS[plantilla]!
 
-  // Quitar "Hecho con Mi Tienda" del pie es de los planes pagos.
+  // Quitar "Hecho con Mi Sitio" del pie es de los planes pagos.
   const bloques = plan.quitarMarca
     ? datos.configuracionBloques
     : datos.configuracionBloques.map((bloque) =>

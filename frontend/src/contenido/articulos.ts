@@ -56,7 +56,7 @@ export const ARTICULOS: Articulo[] = [
       {
         titulo: 'Antes de subir',
         parrafos: [
-          'Limpia el lente con la camiseta (de verdad cambia todo), toma la foto un poco más abierta de lo que crees y recorta después. En Mi Tienda las imágenes se optimizan solas al subirlas, así que no hace falta reducirlas a mano.',
+          'Limpia el lente con la camiseta (de verdad cambia todo), toma la foto un poco más abierta de lo que crees y recorta después. En Mi Sitio las imágenes se optimizan solas al subirlas, así que no hace falta reducirlas a mano.',
         ],
       },
     ],
@@ -110,7 +110,7 @@ export const ARTICULOS: Articulo[] = [
     secciones: [
       {
         parrafos: [
-          'Una buena descripción responde las preguntas que te harían en persona. Y como cada producto de Mi Tienda tiene su propia página, lo que escribes es también lo que Google lee para mostrarte cuando alguien busca algo parecido.',
+          'Una buena descripción responde las preguntas que te harían en persona. Y como cada producto de Mi Sitio tiene su propia página, lo que escribes es también lo que Google lee para mostrarte cuando alguien busca algo parecido.',
         ],
       },
       {
@@ -171,7 +171,7 @@ export const ARTICULOS: Articulo[] = [
         ],
       },
       {
-        titulo: 'En Mi Tienda',
+        titulo: 'En Mi Sitio',
         parrafos: [
           'La integración de pagos con Wompi y PSE está en camino. Mientras tanto, muchas tiendas cierran la venta por WhatsApp con el enlace del producto y cobran por transferencia o link de pago.',
         ],
@@ -226,7 +226,7 @@ export const ARTICULOS: Articulo[] = [
     secciones: [
       {
         parrafos: [
-          'Una plantilla es un punto de partida: define el orden de las secciones, la tipografía y los colores. En Mi Tienda puedes cambiar de plantilla cuando quieras sin perder productos, así que no hay decisión irreversible.',
+          'Una plantilla es un punto de partida: define el orden de las secciones, la tipografía y los colores. En Mi Sitio puedes cambiar de plantilla cuando quieras sin perder productos, así que no hay decisión irreversible.',
         ],
       },
       {

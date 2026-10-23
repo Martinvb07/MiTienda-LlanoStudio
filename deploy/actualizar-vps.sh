@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Pone el VPS al día con todo lo nuevo de Mi Tienda, en un solo comando:
+# Pone el VPS al día con todo lo nuevo de Mi Sitio, en un solo comando:
 #
 #   cd /var/www/llanostudio/sitios/mitienda
 #   sudo bash deploy/actualizar-vps.sh
@@ -44,7 +44,7 @@ agregar_env() {
 }
 
 [ "$(id -u)" -eq 0 ] || falla "Córrelo con sudo: sudo bash deploy/actualizar-vps.sh"
-[ -f "$LOCAL" ] || falla "No encuentro $LOCAL. ¿Mi Tienda se instaló con deploy/instalar.sh en esta carpeta?"
+[ -f "$LOCAL" ] || falla "No encuentro $LOCAL. ¿Mi Sitio se instaló con deploy/instalar.sh en esta carpeta?"
 [ -f "$ENV_BACK" ] || falla "No encuentro $ENV_BACK."
 cd "$RAIZ"
 
@@ -55,7 +55,7 @@ PUERTO_WEB="$(leer_env "$LOCAL" PUERTO_WEB)"
 DOMINIO="$(leer_env "$LOCAL" DOMINIO)"
 PANEL="$(leer_env "$LOCAL" PANEL)"
 DOMINIO="${DOMINIO:-llanostudio.co}"
-PANEL="${PANEL:-mitienda}"
+PANEL="${PANEL:-misitio}"
 
 # ─────────────────────────────────────────────────────────────────────────────
 paso "1/8 · Código"
@@ -107,7 +107,7 @@ for clave in BOLD_LLAVE_IDENTIDAD BOLD_LLAVE_SECRETA URL_PANEL SMTP_HOST SMTP_US
   if agregar_env "$ENV_BACK" "$clave" ""; then ambar "$clave agregada vacía: llénala en backend/.env cuando la tengas."; fi
 done
 agregar_env "$ENV_BACK" SMTP_PUERTO "465" || true
-agregar_env "$ENV_BACK" CORREO_REMITENTE "Mi Tienda <hola@$DOMINIO>" || true
+agregar_env "$ENV_BACK" CORREO_REMITENTE "Mi Sitio <hola@$DOMINIO>" || true
 chmod 600 "$ENV_BACK"
 verde "backend/.env completo (copia del anterior en backend/.env.antes-de-actualizar)."
 
@@ -199,7 +199,7 @@ paso "7/8 · Dominios propios con HTTPS automático"
 # ─────────────────────────────────────────────────────────────────────────────
 chmod +x "$RAIZ/deploy/dominios-propios.sh"
 cat > /etc/cron.d/mitienda-dominios <<CRON
-# Mi Tienda: sitio en nginx y certificado HTTPS para cada dominio propio verificado.
+# Mi Sitio: sitio en nginx y certificado HTTPS para cada dominio propio verificado.
 */5 * * * * root bash $RAIZ/deploy/dominios-propios.sh >> /var/log/mitienda-dominios.log 2>&1
 CRON
 chmod 644 /etc/cron.d/mitienda-dominios
@@ -227,7 +227,7 @@ bash "$RAIZ/deploy/dominios-propios.sh" >/dev/null 2>&1 || true
 trap - ERR
 echo
 printf '\033[32m════════════════════════════════════════════════════════\033[0m\n'
-printf '\033[32m Mi Tienda actualizada (%s)\033[0m\n' "$(git rev-parse --short HEAD)"
+printf '\033[32m Mi Sitio actualizado (%s)\033[0m\n' "$(git rev-parse --short HEAD)"
 printf '   Admin:     https://%s.%s/panel/admin\n' "$PANEL" "$DOMINIO"
 printf '   Respaldo:  %s\n' "$ARCHIVO"
 [ -z "$(leer_env "$ENV_BACK" BOLD_LLAVE_IDENTIDAD)" ] && printf '   Falta:     llaves de Bold en backend/.env (cobro de planes)\n'

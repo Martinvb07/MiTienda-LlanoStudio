@@ -7,7 +7,7 @@ import { urlPanel } from './suscripciones.servicio.js'
 
 /**
  * Pasarelas de pago de las tiendas: Wompi, ePayco y Bold. Cada tienda pone
- * sus propias llaves y el dinero le llega directo a ella; Mi Tienda sólo arma
+ * sus propias llaves y el dinero le llega directo a ella; Mi Sitio sólo arma
  * el checkout y escucha el aviso de pago para marcar el pedido como pagado.
  *
  * Cada pasarela tiene tres piezas:

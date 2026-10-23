@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { HostConfirmaciones } from '@/componentes/panel/ui/confirmar'
 
 export const metadata: Metadata = {
-  title: { default: 'Panel', template: '%s · Panel de Mi Tienda' },
+  title: { default: 'Panel', template: '%s · Panel de Mi Sitio' },
   // El panel nunca debe aparecer en buscadores.
   robots: { index: false, follow: false },
 }

@@ -47,7 +47,7 @@ export function PieSitio() {
           <div>
             <Link href="/" className="flex items-center gap-[11px]">
               <LogoMarca alt="" className="h-7 w-auto" />
-              <span className="text-base font-semibold tracking-[-0.02em] text-white">Mi Tienda</span>
+              <span className="text-base font-semibold tracking-[-0.02em] text-white">Mi Sitio</span>
             </Link>
 
             <p className="mt-[18px] max-w-[16ch] text-xl leading-[1.3] tracking-[-0.02em] text-white">
@@ -95,7 +95,7 @@ export function PieSitio() {
 
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-6 sm:flex-row">
           <p className="text-xs text-white/40">
-            © {anio} Mi Tienda. Todos los derechos reservados.
+            © {anio} Mi Sitio. Todos los derechos reservados.
           </p>
 
           <a

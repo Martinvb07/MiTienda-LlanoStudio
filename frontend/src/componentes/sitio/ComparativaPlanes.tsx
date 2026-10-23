@@ -79,7 +79,7 @@ const GRUPOS: { titulo: string; filas: Fila[] }[] = [
       { etiqueta: 'Buscador de productos', valor: (l) => l.buscador },
       { etiqueta: 'Botón flotante de WhatsApp', valor: (l) => l.whatsappFlotante },
       { etiqueta: 'Pie con contacto, horario y categorías', valor: (l) => l.pieColumnas },
-      { etiqueta: 'Sin “Hecho con Mi Tienda”', valor: (l) => l.quitarMarca },
+      { etiqueta: 'Sin “Hecho con Mi Sitio”', valor: (l) => l.quitarMarca },
     ],
   },
 ]

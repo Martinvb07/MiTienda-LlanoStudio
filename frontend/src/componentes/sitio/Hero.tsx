@@ -23,7 +23,7 @@ const CIFRAS = [
 
 /**
  * Portada como la de llanostudio.co: titular enorme, un botón, y una vitrina
- * de tiendas reales hechas con Mi Tienda que se abre al bajar.
+ * de tiendas reales hechas con Mi Sitio que se abre al bajar.
  */
 export function Hero() {
   const zona = useRef<HTMLDivElement>(null)
@@ -71,7 +71,7 @@ export function Hero() {
           </div>
           <Image
             src="/ejemplos/lana-andina.webp"
-            alt="Tienda de ejemplo Lana Andina hecha con Mi Tienda"
+            alt="Tienda de ejemplo Lana Andina hecha con Mi Sitio"
             width={1440}
             height={900}
             priority

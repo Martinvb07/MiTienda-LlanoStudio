@@ -22,6 +22,8 @@ export interface OpcionesDominio {
 
 export const SUBDOMINIOS_RESERVADOS: ReadonlySet<string> = new Set([
   'www',
+  'misitio',
+  'mitienda',
   'api',
   'admin',
   'panel',
@@ -106,7 +108,7 @@ export function esSubdominioValido(valor: string): boolean {
 /** Configuración de dominios leída del entorno, con valores por defecto. */
 export const configuracionDominios: OpcionesDominio = {
   dominioBase: process.env.NEXT_PUBLIC_DOMINIO_BASE ?? 'llanostudio.co',
-  subdominioPanel: process.env.NEXT_PUBLIC_SUBDOMINIO_PANEL ?? 'mitienda',
+  subdominioPanel: process.env.NEXT_PUBLIC_SUBDOMINIO_PANEL ?? 'misitio',
 }
 
 /**

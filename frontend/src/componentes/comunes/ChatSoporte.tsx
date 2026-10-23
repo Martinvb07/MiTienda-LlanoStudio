@@ -218,7 +218,7 @@ export function ChatSoporte({ modo }: { modo: 'web' | 'panel' }) {
           {abierto && (
             <motion.section
               role="dialog"
-              aria-label="Ayuda de Mi Tienda"
+              aria-label="Ayuda de Mi Sitio"
               initial={{ opacity: 0, y: 28, scale: 0.94, filter: 'blur(10px)' }}
               animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transition: { duration: 0.7, ease: SALIDA } }}
               exit={{ opacity: 0, y: 18, scale: 0.96, filter: 'blur(6px)', transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
@@ -242,7 +242,7 @@ export function ChatSoporte({ modo }: { modo: 'web' | 'panel' }) {
                   )}
                 </AnimatePresence>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[14.5px] font-medium tracking-[-0.01em]">Ayuda de Mi Tienda</span>
+                  <span className="block text-[14.5px] font-medium tracking-[-0.01em]">Ayuda de Mi Sitio</span>
                   <span className="flex items-center gap-1.5 text-[11.5px] text-sitio-tenue">
                     <span aria-hidden="true" className="estado-punto" data-tono={enLinea ? 'verde' : 'neutro'} data-vivo={(token && enLinea) || undefined} />
                     <AnimatePresence mode="wait" initial={false}>

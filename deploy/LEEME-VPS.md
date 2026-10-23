@@ -1,8 +1,8 @@
-# Mi Tienda en el VPS (Ubuntu + nginx + PM2, sin Docker)
+# Mi Sitio en el VPS (Ubuntu + nginx + PM2, sin Docker)
 
 ```
 Internet ─HTTPS─► nginx ─┬─ llanostudio.co, www ───► sitio de Llano Studio (ya existe, no se toca)
-                         └─ mitienda.llanostudio.co ─┐
+                         └─ misitio.llanostudio.co ─┐
                             *.llanostudio.co ────────┤
                                                      ├─ /api/...  ──► mitienda-api  127.0.0.1:<libre> (Express, PM2)
                                                      └─ lo demás ──► mitienda-web  127.0.0.1:<libre> (Next, PM2)
@@ -11,7 +11,7 @@ Internet ─HTTPS─► nginx ─┬─ llanostudio.co, www ───► sitio d
                                      Redis (colas)      ◄──────────────┘
 ```
 
-- `mitienda.llanostudio.co` → web de Mi Tienda, panel (`/panel`) y tu admin (`/panel/admin`).
+- `misitio.llanostudio.co` → web de Mi Sitio, panel (`/panel`) y tu admin (`/panel/admin`).
 - `cualquiercosa.llanostudio.co` → la tienda con ese subdominio. **No hay que crear nada por tienda**:
   un solo registro DNS comodín y un certificado comodín cubren todas.
 
@@ -33,10 +33,10 @@ contraseña de tu panel de admin. Hace todo lo demás:
 - Instala lo que falte: PostgreSQL, Redis, nginx y certbot.
 - **Busca puertos libres** desde el 4200 y no toca los que ya usas.
 - Si tu Node global es menor a 22, baja un Node 22 **aparte**, en `/opt/mitienda-node`, solo
-  para Mi Tienda. Tus otras apps siguen con el suyo.
+  para Mi Sitio. Tus otras apps siguen con el suyo.
 - Crea la base de datos, `backend/.env` y `frontend/.env.local` con claves al azar.
 - Construye, arranca todo en PM2 y crea el sitio `mitienda` en nginx sin editar los tuyos.
-- Saca el HTTPS de `mitienda.llanostudio.co` si el DNS ya apunta al VPS.
+- Saca el HTTPS de `misitio.llanostudio.co` si el DNS ya apunta al VPS.
 
 Se puede volver a correr cuando quieras: conserva las claves y la base de datos.
 Para una tienda de prueba con HTTPS desde ya: `SUBDOMINIOS_PRUEBA="prueba" sudo -E bash deploy/instalar.sh`.
@@ -52,7 +52,7 @@ Lo único manual es el DNS (paso 1) y, más adelante, el certificado comodín pa
 |---|---|---|---|
 | A Record | `*` | `31.220.52.31` | Automatic |
 
-Con eso, `mitienda.llanostudio.co`, `cafe.llanostudio.co` y cualquier otro subdominio llegan al VPS.
+Con eso, `misitio.llanostudio.co`, `cafe.llanostudio.co` y cualquier otro subdominio llegan al VPS.
 Los registros que ya tienes (`@`, `www`, los TXT del correo) se quedan igual: un registro exacto
 siempre gana sobre el comodín.
 
@@ -71,7 +71,7 @@ Quedan anotados en `.mitienda.env` (raíz del proyecto, sólo en el servidor), q
 ## 3. Node 22, PostgreSQL y Redis (sin Docker)
 
 ```bash
-node -v            # Mi Tienda pide Node 22 o más
+node -v            # Mi Sitio pide Node 22 o más
 # Si sale v20:  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt install -y nodejs
 # (el sitio de Llano Studio corre igual en Node 22; después: pm2 update)
 
@@ -108,9 +108,9 @@ PUERTO=4201
 DATABASE_URL="postgresql://mitienda:una-clave-larga@localhost:5432/mitienda?schema=public"
 REDIS_URL="redis://localhost:6379"
 DOMINIO_BASE="llanostudio.co"
-SUBDOMINIO_PANEL="mitienda"
+SUBDOMINIO_PANEL="misitio"
 JWT_SECRETO="pega-aqui-el-resultado-de: node -e \"console.log(require('crypto').randomBytes(48).toString('base64url'))\""
-ORIGENES_PERMITIDOS="https://mitienda.llanostudio.co"
+ORIGENES_PERMITIDOS="https://misitio.llanostudio.co"
 TOKEN_INTERNO="otra-cadena-larga-al-azar"
 # Tu acceso a /panel/admin (paso 5)
 ADMIN_CORREO="martindavidvb@gmail.com"
@@ -129,7 +129,7 @@ R2_URL_PUBLICA=""
 URL_API="http://127.0.0.1:4201"
 MITIENDA_TOKEN_INTERNO="la-misma-cadena-que-TOKEN_INTERNO"
 NEXT_PUBLIC_DOMINIO_BASE="llanostudio.co"
-NEXT_PUBLIC_SUBDOMINIO_PANEL="mitienda"
+NEXT_PUBLIC_SUBDOMINIO_PANEL="misitio"
 ```
 
 ## 5. Contraseña de tu panel de admin
@@ -184,9 +184,9 @@ todas las tiendas a HTTPS. (Si prefieres hacerlo a mano, `deploy/nginx-mitienda.
 ajusta en ella los puertos de `.mitienda.env`.)
 
 nginx atiende primero los nombres exactos (`llanostudio.co`, `www`) con su configuración actual, y sólo lo
-demás cae en el comodín de Mi Tienda: tu sitio no cambia.
+demás cae en el comodín de Mi Sitio: tu sitio no cambia.
 
-Prueba: abre `https://mitienda.llanostudio.co`, crea una tienda, publícala y visítala en su subdominio.
+Prueba: abre `https://misitio.llanostudio.co`, crea una tienda, publícala y visítala en su subdominio.
 
 ## 8. Deploy automático con cada push (igual que Llano Studio)
 
@@ -235,7 +235,7 @@ npx prisma migrate deploy && pm2 reload mitienda-api
 
 El chat usa socket.io bajo `/api/tiempo-real`. Funciona aunque nginx no deje
 pasar el websocket (cae a *polling*), pero va más fluido con este bloque dentro
-del `server` de `mitienda.llanostudio.co`, **antes** de `location /api/`:
+del `server` de `misitio.llanostudio.co`, **antes** de `location /api/`:
 
 ```nginx
 location /api/tiempo-real {

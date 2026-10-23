@@ -139,7 +139,7 @@ function Tablero({ admin, alSalir }: { admin: SesionAdmin; alSalir: () => void }
     return () => clearInterval(intervalo)
   }, [])
   useEffect(() => {
-    document.title = sinLeer > 0 ? `(${sinLeer}) Admin · Mi Tienda` : 'Admin · Mi Tienda'
+    document.title = sinLeer > 0 ? `(${sinLeer}) Admin · Mi Sitio` : 'Admin · Mi Sitio'
   }, [sinLeer])
 
   const abrirTienda = useCallback((id: string) => setFicha(id), [])
@@ -152,7 +152,7 @@ function Tablero({ admin, alSalir }: { admin: SesionAdmin; alSalir: () => void }
           <div className="flex items-center gap-[11px]">
             <LogoMarca className="h-7 w-auto" />
             <span className="flex flex-col">
-              <span className="text-[15px] leading-none font-semibold tracking-[-0.02em]">Mi Tienda</span>
+              <span className="text-[15px] leading-none font-semibold tracking-[-0.02em]">Mi Sitio</span>
               <span className="mt-1 text-[9.5px] tracking-[0.24em] text-sitio-tenue uppercase">Plataforma</span>
             </span>
           </div>
@@ -205,7 +205,7 @@ function Tablero({ admin, alSalir }: { admin: SesionAdmin; alSalir: () => void }
           className="mx-4 mb-2 flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-sitio-suave transition-colors hover:bg-white/[0.05] hover:text-white"
         >
           <House aria-hidden="true" className="h-4 w-4" strokeWidth={1.7} />
-          Ir al inicio de Mi Tienda
+          Ir al inicio de Mi Sitio
         </Link>
         <div className="flex items-center gap-3 border-t border-sitio-borde p-4">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[11.5px] font-semibold">
@@ -429,7 +429,7 @@ function NavegacionMovil({
               </div>
               <Link href="/" className="mt-3 flex items-center gap-3 rounded-xl px-3 py-3 text-[14.5px] text-sitio-suave">
                 <House aria-hidden="true" className="h-5 w-5" strokeWidth={1.6} />
-                Ir al inicio de Mi Tienda
+                Ir al inicio de Mi Sitio
               </Link>
               <div className="mt-3 flex items-center gap-3 border-t border-sitio-borde px-3 pt-4">
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[11.5px] font-semibold">

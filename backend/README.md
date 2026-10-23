@@ -1,6 +1,6 @@
 <div align="center">
 
-# Mi Tienda — Backend
+# Mi Sitio — Backend
 
 **El servidor que atiende al panel y sirve el contenido de todas las tiendas**
 
@@ -30,7 +30,7 @@ Antes de responder nada, el servidor mira por qué dirección entró la petició
 
 | Entra por | El servidor entiende |
 | --- | --- |
-| `mitienda.llanostudio.co` | Es el panel de administración |
+| `misitio.llanostudio.co` | Es el panel de administración |
 | `tunegocio.llanostudio.co` | Es la tienda del cliente con esa etiqueta |
 | Cualquier otro dominio | Busca a qué cliente pertenece ese dominio propio |
 

@@ -311,7 +311,7 @@ export function GestionDominio() {
           </div>
           {dominio.verificado && (
             <p className="mt-2.5 text-[12px] leading-relaxed text-sitio-tenue">
-              El DNS ya apunta a Mi Tienda. El candado de seguridad (HTTPS) se activa solo en unos 5 a 10 minutos; después abre{' '}
+              El DNS ya apunta a Mi Sitio. El candado de seguridad (HTTPS) se activa solo en unos 5 a 10 minutos; después abre{' '}
               <a href={`https://${dominio.dominio}`} target="_blank" rel="noopener noreferrer" className="text-sitio-suave underline-offset-4 hover:underline">
                 https://{dominio.dominio}
               </a>

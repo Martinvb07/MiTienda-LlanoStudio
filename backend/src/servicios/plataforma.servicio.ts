@@ -54,11 +54,11 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   plantillasWhatsapp: [
     {
       titulo: 'Plan por vencer',
-      texto: 'Hola {nombre}, te escribo de Mi Tienda. Tu plan {plan} de {tienda} vence pronto; lo puedes renovar desde tu panel en Plan y pagos. ¿Te ayudo con algo?',
+      texto: 'Hola {nombre}, te escribo de Mi Sitio. Tu plan {plan} de {tienda} vence pronto; lo puedes renovar desde tu panel en Plan y pagos. ¿Te ayudo con algo?',
     },
     {
       titulo: 'Bienvenida',
-      texto: 'Hola {nombre}, bienvenido a Mi Tienda. Vi que creaste {tienda}. Si quieres, te ayudo a dejarla lista para vender.',
+      texto: 'Hola {nombre}, bienvenido a Mi Sitio. Vi que creaste {tienda}. Si quieres, te ayudo a dejarla lista para vender.',
     },
     {
       titulo: 'Pago sin terminar',
@@ -80,7 +80,7 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
     },
     {
       pregunta: '¿Cobran comisión por venta?',
-      respuesta: 'No. Mi Tienda no cobra comisión sobre tus ventas: sólo pagas tu plan.',
+      respuesta: 'No. Mi Sitio no cobra comisión sobre tus ventas: sólo pagas tu plan.',
     },
   ],
 }

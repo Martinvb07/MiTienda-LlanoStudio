@@ -120,7 +120,7 @@ export async function probarCorreo(req: Request, res: Response): Promise<void> {
   if (!smtpConfigurado()) throw new ErrorHttp(400, 'Falta configurar el SMTP en el .env del servidor', 'SIN_SMTP')
   await enviarCorreoDirecto(
     req.admin!.email,
-    'Correo de prueba de Mi Tienda',
+    'Correo de prueba de Mi Sitio',
     plantillaCorreo('Los correos funcionan', ['Si te llegó esto, la configuración de correo del servidor está bien.']),
   )
   res.json({ ok: true })

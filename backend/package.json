@@ -2,7 +2,7 @@
   "name": "mitienda-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "API REST de Mi Tienda (Llano Studio) — SaaS multi-tenant de e-commerce",
+  "description": "API REST de Mi Sitio (Llano Studio) — SaaS multi-tenant de e-commerce",
   "type": "module",
   "engines": {
     "node": ">=22"

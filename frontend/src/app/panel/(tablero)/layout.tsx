@@ -9,7 +9,7 @@ import { ChatSoporte } from '@/componentes/comunes/ChatSoporte'
 
 /**
  * Marco del tablero de administración. Siempre se sirve en
- * mitienda.llanostudio.co; el middleware garantiza que ningún dominio de tienda
+ * misitio.llanostudio.co; el middleware garantiza que ningún dominio de tienda
  * llegue hasta aquí. Mismo negro y misma tipografía que llanostudio.co.
  */
 export default function LayoutTablero({ children }: { children: React.ReactNode }) {

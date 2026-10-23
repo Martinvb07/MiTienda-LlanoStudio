@@ -621,3 +621,33 @@ html[data-hoja-abierta] .chat-soporte {
   transform: translateY(12px) scale(0.92);
   pointer-events: none;
 }
+
+/* ── Lienzo libre: las piezas se ubican en % y la letra escala con el ancho ── */
+.lienzo {
+  position: relative;
+  container-type: inline-size;
+  aspect-ratio: var(--ar);
+  overflow: hidden;
+}
+.lienzo-el {
+  position: absolute;
+  display: flex;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  font-size: calc(var(--t) / 1200 * 100cqw);
+}
+@media (max-width: 640px) {
+  .lienzo {
+    aspect-ratio: var(--arm, var(--ar));
+  }
+  .lienzo-el {
+    display: var(--dm, flex);
+    left: var(--xm, var(--x));
+    top: var(--ym, var(--y));
+    width: var(--wm, var(--w));
+    height: var(--hm, var(--h));
+    font-size: calc(var(--tm) / 390 * 100cqw);
+  }
+}

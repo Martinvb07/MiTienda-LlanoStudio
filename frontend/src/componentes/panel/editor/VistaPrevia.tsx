@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { AccionSeccion, MensajeAccionVista, MensajeVistaPrevia } from '@/app/panel/vista-previa/mensajes'
+import type { AccionSeccion, MensajeAccionVista, MensajeLienzo, MensajeVistaPrevia } from '@/app/panel/vista-previa/mensajes'
 
 export type Dispositivo = 'escritorio' | 'movil'
 
@@ -20,11 +20,14 @@ export function VistaPrevia({
   datos,
   dispositivo,
   alAccion,
+  alLienzo,
 }: {
   datos: MensajeVistaPrevia['datos']
   dispositivo: Dispositivo
   /** Acciones pedidas desde la barra de cada sección dentro de la vista. */
   alAccion?: (id: string, accion: AccionSeccion) => void
+  /** Lo que se hace con el mouse en el lienzo libre. */
+  alLienzo?: (mensaje: MensajeLienzo) => void
 }) {
   const panel = useRef<HTMLDivElement>(null)
   const marco = useRef<HTMLIFrameElement>(null)
@@ -50,10 +53,12 @@ export function VistaPrevia({
 
   const enviarRef = useRef(enviar)
   const accionRef = useRef(alAccion)
+  const lienzoRef = useRef(alLienzo)
   useEffect(() => {
     enviarRef.current = enviar
     accionRef.current = alAccion
-  }, [enviar, alAccion])
+    lienzoRef.current = alLienzo
+  }, [enviar, alAccion, alLienzo])
 
   useEffect(() => {
     function alMensaje(evento: MessageEvent) {
@@ -61,6 +66,10 @@ export function VistaPrevia({
       if (evento.data?.tipo === 'mt-vista-accion') {
         const { id, accion } = evento.data as MensajeAccionVista
         accionRef.current?.(id, accion)
+        return
+      }
+      if (evento.data?.tipo === 'mt-lienzo') {
+        lienzoRef.current?.(evento.data as MensajeLienzo)
         return
       }
       if (evento.data?.tipo === 'mt-vista-lista') {

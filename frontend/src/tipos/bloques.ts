@@ -27,6 +27,7 @@ export type TipoBloque =
   | 'llamado'
   | 'mapa'
   | 'espaciador'
+  | 'lienzo'
 
 /**
  * Apariencia de una sección, igual para todos los tipos. La tienda la aplica
@@ -252,6 +253,50 @@ export interface PropsEspaciador {
   linea?: boolean
 }
 
+/** Posición y tamaño en porcentaje del lienzo: así se adapta a cualquier ancho. */
+export interface CajaLienzo {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+export type TipoElementoLienzo = 'titulo' | 'texto' | 'boton' | 'imagen' | 'forma'
+
+/** Una pieza suelta del lienzo libre: se mueve y se estira donde se quiera. */
+export interface ElementoLienzo extends CajaLienzo {
+  id: string
+  tipo: TipoElementoLienzo
+  /** Acomodo en el celular; sin él, el del computador. */
+  movil?: Partial<CajaLienzo> & { oculto?: boolean; tamano?: number }
+  texto?: string
+  enlace?: string
+  imagenUrl?: string
+  /** Cómo llena la foto su caja. */
+  ajuste?: 'cubrir' | 'contener'
+  color?: string
+  fondo?: string
+  /** Botón sólo con borde. */
+  contorno?: boolean
+  /** Tamaño de letra en px sobre un lienzo de 1200 de ancho. */
+  tamano?: number
+  peso?: 'normal' | 'negrita'
+  alineacion?: 'izquierda' | 'centro' | 'derecha'
+  /** Esquinas en px. */
+  radio?: number
+  /** 0 a 100. */
+  opacidad?: number
+}
+
+export interface PropsLienzo {
+  /** Alto en px sobre un ancho de 1200 (computador). */
+  alto: number
+  /** Alto en px sobre un ancho de 390 (celular). */
+  altoMovil: number
+  fondo?: string
+  elementos: ElementoLienzo[]
+}
+
 interface BloqueBase<T extends TipoBloque, P> {
   /** Identificador estable: es la clave que usa dnd-kit al reordenar. */
   id: string
@@ -280,6 +325,7 @@ export type BloqueBannerDoble = BloqueBase<'banner-doble', PropsBannerDoble>
 export type BloqueLlamado = BloqueBase<'llamado', PropsLlamado>
 export type BloqueMapa = BloqueBase<'mapa', PropsMapa>
 export type BloqueEspaciador = BloqueBase<'espaciador', PropsEspaciador>
+export type BloqueLienzo = BloqueBase<'lienzo', PropsLienzo>
 
 export type Bloque =
   | BloqueAnuncio
@@ -301,6 +347,7 @@ export type Bloque =
   | BloqueLlamado
   | BloqueMapa
   | BloqueEspaciador
+  | BloqueLienzo
 
 /** Nombres y descripciones para el editor del panel. */
 export const ETIQUETAS_BLOQUE: Record<TipoBloque, string> = {
@@ -323,10 +370,12 @@ export const ETIQUETAS_BLOQUE: Record<TipoBloque, string> = {
   llamado: 'Llamado a la acción',
   mapa: 'Mapa',
   espaciador: 'Espacio o línea',
+  lienzo: 'Lienzo libre',
 }
 
 /** Grupos de la paleta de secciones del editor. */
 export const GRUPOS_BLOQUE: { titulo: string; tipos: TipoBloque[] }[] = [
+  { titulo: 'Diseño libre', tipos: ['lienzo'] },
   { titulo: 'Portada', tipos: ['hero', 'carrusel', 'anuncio', 'banner-doble'] },
   { titulo: 'Catálogo', tipos: ['grilla-productos', 'categorias'] },
   { titulo: 'Contenido', tipos: ['texto', 'imagen-texto', 'columnas', 'galeria', 'video'] },
@@ -355,6 +404,7 @@ export const DESCRIPCIONES_BLOQUE: Record<TipoBloque, string> = {
   llamado: 'Franja de color con un mensaje y un botón, también a WhatsApp.',
   mapa: 'Tu local en Google Maps.',
   espaciador: 'Aire entre secciones, con o sin línea.',
+  lienzo: 'Un espacio en blanco: arrastra títulos, fotos y botones donde quieras y estíralos a tu gusto.',
 }
 
 /** Props con las que nace cada tipo de bloque al añadirlo desde el editor. */
@@ -457,6 +507,46 @@ export const PROPS_INICIALES: { [T in TipoBloque]: Extract<Bloque, { tipo: T }>[
   },
   mapa: { titulo: 'Visítanos', direccion: 'Plaza de Bolívar, Bogotá', alto: 'medio' },
   espaciador: { alto: 'medio', linea: false },
+  // Arranca como el banner de dos fotos con el título encima: se ve de una qué se puede hacer.
+  lienzo: {
+    alto: 560,
+    altoMovil: 620,
+    fondo: '#f4f1ec',
+    elementos: [
+      { id: 'f1', tipo: 'imagen', x: 0, y: 0, w: 50, h: 100, ajuste: 'cubrir', movil: { x: 0, y: 0, w: 100, h: 50 } },
+      { id: 'f2', tipo: 'imagen', x: 50, y: 0, w: 50, h: 100, ajuste: 'cubrir', movil: { x: 0, y: 50, w: 100, h: 50 } },
+      { id: 'o1', tipo: 'forma', x: 0, y: 0, w: 100, h: 100, fondo: '#000000', opacidad: 25 },
+      {
+        id: 't1',
+        tipo: 'titulo',
+        x: 15,
+        y: 34,
+        w: 70,
+        h: 22,
+        texto: 'Tus favoritos los encuentras aquí',
+        color: '#ffffff',
+        tamano: 64,
+        peso: 'negrita',
+        alineacion: 'centro',
+        movil: { x: 6, y: 34, w: 88, h: 20, tamano: 34 },
+      },
+      {
+        id: 'b1',
+        tipo: 'boton',
+        x: 42,
+        y: 62,
+        w: 16,
+        h: 10,
+        texto: 'Ver productos',
+        enlace: '#productos',
+        color: '#ffffff',
+        contorno: true,
+        tamano: 18,
+        radio: 14,
+        movil: { x: 25, y: 58, w: 50, h: 8, tamano: 16 },
+      },
+    ],
+  },
 }
 
 export function crearBloque(tipo: TipoBloque): Bloque {

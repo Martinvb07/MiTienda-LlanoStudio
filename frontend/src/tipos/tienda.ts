@@ -71,6 +71,16 @@ export type BloqueFicha =
   | 'envio'
   | 'acordeones'
   | 'compartir'
+  | 'beneficios'
+
+/** Íconos de los beneficios de la página de producto. */
+export type IconoBeneficio = 'envio' | 'garantia' | 'pago' | 'cambios' | 'soporte' | 'calidad'
+
+export interface BeneficioFicha {
+  id: string
+  icono: IconoBeneficio
+  texto: string
+}
 
 export interface AcordeonFicha {
   id: string
@@ -88,6 +98,14 @@ export interface PlantillaProducto {
   acordeones?: AcordeonFicha[]
   relacionados?: boolean
   tituloRelacionados?: string
+  /** Íconos con lo que da confianza: envío, garantía, pago… (desde Emprende). */
+  beneficios?: BeneficioFicha[]
+  /** Lupa que sigue al cursor sobre la foto (desde Emprende). */
+  zoomFoto?: boolean
+  /** La información entra con una animación suave (desde Emprende). */
+  animarEntrada?: boolean
+  /** Barra de compra pegada abajo al pasar el botón (Negocio y Pro). */
+  barraFija?: boolean
 }
 
 /** Cabecera, contacto y redes. Todo opcional: sin nada, la cabecera es la simple. */

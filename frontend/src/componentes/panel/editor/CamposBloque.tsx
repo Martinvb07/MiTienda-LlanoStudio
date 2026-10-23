@@ -15,6 +15,7 @@ import type {
 } from '@/tipos/bloques'
 import { planMinimo, type LimitesPlan } from '@/utilidades/planes'
 import { CLASES_ENTRADA, Campo, CampoArea, Candado, Interruptor, Segmentado } from '../ui/basicos'
+import { CamposLienzo } from './CamposLienzo'
 import { ZonaImagen } from '../ui/imagenes'
 import { ICONOS_BLOQUE, claveIcono } from '@/componentes/comunes/IconoBloque'
 import { cn } from '@/utilidades/clases'
@@ -844,6 +845,11 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
         </>
       )
 
+    case 'lienzo':
+      return (
+        <CamposLienzo bloqueId={bloque.id} props={bloque.props} alCambiar={alCambiar} alError={alError} alSubiendo={alSubiendo} />
+      )
+
     case 'espaciador':
       return (
         <>
@@ -911,6 +917,8 @@ export function resumenBloque(bloque: Bloque): string {
       return bloque.props.direccion
     case 'espaciador':
       return bloque.props.linea ? 'Con línea' : 'Espacio'
+    case 'lienzo':
+      return `${bloque.props.elementos.length} piezas sueltas`
     default:
       return ''
   }

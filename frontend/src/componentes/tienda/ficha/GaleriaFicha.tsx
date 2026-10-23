@@ -9,10 +9,13 @@ export function GaleriaFicha({
   fotos,
   nombre,
   disposicion,
+  zoom = false,
 }: {
   fotos: string[]
   nombre: string
   disposicion: 'miniaturas' | 'cuadricula' | 'apiladas'
+  /** Lupa: al pasar el cursor la foto se agranda siguiéndolo. */
+  zoom?: boolean
 }) {
   const [activa, setActiva] = useState(0)
 
@@ -23,7 +26,20 @@ export function GaleriaFicha({
   }
 
   const foto = (src: string, indice: number, clases = 'aspect-square') => (
-    <div key={src + indice} data-foto-ficha className={`relative overflow-hidden rounded-(--radius-marca) bg-tinta/5 ${clases}`}>
+    <div
+      key={src + indice}
+      data-foto-ficha
+      onMouseMove={
+        zoom
+          ? (evento) => {
+              const caja = evento.currentTarget.getBoundingClientRect()
+              evento.currentTarget.style.setProperty('--zx', `${((evento.clientX - caja.left) / caja.width) * 100}%`)
+              evento.currentTarget.style.setProperty('--zy', `${((evento.clientY - caja.top) / caja.height) * 100}%`)
+            }
+          : undefined
+      }
+      className={`relative overflow-hidden rounded-(--radius-marca) bg-tinta/5 ${zoom ? 'group/zoom cursor-zoom-in' : ''} ${clases}`}
+    >
       <Image
         src={src}
         alt={indice === 0 ? nombre : ''}
@@ -31,7 +47,11 @@ export function GaleriaFicha({
         priority={indice === 0}
         sizes="(max-width: 1024px) 100vw, 50vw"
         unoptimized={esMedioLocal(src)}
-        className="object-cover"
+        className={`object-cover ${
+          zoom
+            ? '[transform-origin:var(--zx,50%)_var(--zy,50%)] transition-transform duration-300 ease-out group-hover/zoom:scale-[1.9]'
+            : ''
+        }`}
       />
     </div>
   )

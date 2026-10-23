@@ -47,7 +47,7 @@ const BLOQUES_EMPRENDE = [
   'llamado',
 ] as const
 
-const BLOQUES_NEGOCIO = [...BLOQUES_EMPRENDE, 'testimonios', 'video', 'logos', 'mapa'] as const
+const BLOQUES_NEGOCIO = [...BLOQUES_EMPRENDE, 'testimonios', 'video', 'logos', 'mapa', 'lienzo'] as const
 
 const TODOS_LOS_BLOQUES = [...BLOQUES_NEGOCIO, 'cuenta-regresiva'] as const
 
@@ -143,6 +143,7 @@ export const ETIQUETAS_BLOQUE_PLAN: Record<string, string> = {
   llamado: 'Llamado a la acción',
   mapa: 'Mapa',
   espaciador: 'Espacio o línea',
+  lienzo: 'Lienzo libre',
 }
 
 export function limitesDe(plan: string): LimitesPlan {

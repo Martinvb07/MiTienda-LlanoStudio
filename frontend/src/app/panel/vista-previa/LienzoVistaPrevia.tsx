@@ -10,6 +10,7 @@ import { ajustarAlPlan, limitesDe, temaAlPlan } from '@/utilidades/planes'
 import { atributosTema, variablesTema } from '@/utilidades/tema'
 import { FuentesTema } from '@/componentes/tienda/FuentesTema'
 import { BarraSeccion } from './BarraSeccion'
+import { EditorLienzo } from './EditorLienzo'
 import type { MensajeVistaPrevia } from './mensajes'
 
 /**
@@ -98,6 +99,7 @@ export function LienzoVistaPrevia() {
         {datos.editable && datos.vista !== 'producto' && (
           <BarraSeccion bloques={bloques.filter((bloque) => bloque.visible !== false)} />
         )}
+        {datos.editable && datos.vista !== 'producto' && <EditorLienzo externo={datos.lienzoElegido ?? null} />}
         {ajustes.whatsappFlotante && ajustes.whatsapp && (
           <BotonWhatsapp numero={ajustes.whatsapp} tienda={tienda.nombre} />
         )}

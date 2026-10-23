@@ -13,14 +13,18 @@ import { restrictToParentElement, restrictToVerticalAxis } from '@dnd-kit/modifi
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Eye, EyeOff, GripVertical, Plus, Trash2 } from 'lucide-react'
-import type { BloqueFicha, PlantillaProducto } from '@/tipos/tienda'
+import type { BloqueFicha, IconoBeneficio, PlantillaProducto } from '@/tipos/tienda'
 import { ETIQUETAS_FICHA, plantillaCompleta } from '@/utilidades/fichaProducto'
 import { cn } from '@/utilidades/clases'
-import { Campo, CampoArea, Interruptor, Seccion, Segmentado } from '../ui/basicos'
+import { experienciaIncluye, planMinimo, type LimitesPlan } from '@/utilidades/planes'
+import { ICONOS_BENEFICIO } from '@/componentes/tienda/ficha/Beneficios'
+import { Campo, CampoArea, Candado, Interruptor, Seccion, Segmentado } from '../ui/basicos'
+import { Selector } from '../ui/flotantes'
 
 interface Props {
   plantilla?: PlantillaProducto
   alCambiar: (plantilla: PlantillaProducto) => void
+  limites: LimitesPlan
 }
 
 function Pieza({ id, visible, alAlternar }: { id: BloqueFicha; visible: boolean; alAlternar: () => void }) {
@@ -60,7 +64,9 @@ function Pieza({ id, visible, alAlternar }: { id: BloqueFicha; visible: boolean;
 }
 
 /** Plantilla de la página de producto: piezas en orden, fotos y extras. */
-export function CamposFicha({ plantilla, alCambiar }: Props) {
+export function CamposFicha({ plantilla, alCambiar, limites }: Props) {
+  const avanzada = experienciaIncluye(limites.experienciaCompra, 'avanzada')
+  const completaPlan = experienciaIncluye(limites.experienciaCompra, 'completa')
   const completa = plantillaCompleta(plantilla)
   const cambiar = (cambios: Partial<PlantillaProducto>) => alCambiar({ ...completa, ...cambios })
   const sensores = useSensors(
@@ -170,6 +176,88 @@ export function CamposFicha({ plantilla, alCambiar }: Props) {
             <Plus aria-hidden="true" className="h-3.5 w-3.5" />
             Agregar pestaña
           </button>
+        )}
+      </Seccion>
+
+      <Seccion titulo="Detalles que venden">
+        {!avanzada ? (
+          <Candado plan={planMinimo((plan) => experienciaIncluye(plan.experienciaCompra, 'avanzada'))}>
+            Beneficios con íconos, lupa en la foto y entrada animada.
+          </Candado>
+        ) : (
+          <>
+            <Interruptor activo={completa.zoomFoto} alCambiar={(zoomFoto) => cambiar({ zoomFoto })}>
+              Lupa en la foto
+              <small className="block text-[11.5px] text-sitio-tenue">Al pasar el cursor, la foto se agranda donde apunta.</small>
+            </Interruptor>
+            <Interruptor activo={completa.animarEntrada} alCambiar={(animarEntrada) => cambiar({ animarEntrada })}>
+              Entrada animada
+              <small className="block text-[11.5px] text-sitio-tenue">El nombre, el precio y el botón aparecen uno tras otro.</small>
+            </Interruptor>
+            <span className="mt-1 text-[11.5px] text-sitio-suave">
+              Beneficios con íconos{' '}
+              <small className="text-sitio-tenue">
+                ({completa.orden.find((pieza) => pieza.id === 'beneficios')?.visible ? 'visibles' : 'actívalos con el ojo en Información del producto'})
+              </small>
+            </span>
+            {completa.beneficios.map((beneficio) => (
+              <div key={beneficio.id} className="grid grid-cols-[110px_1fr_auto] items-end gap-1.5">
+                <Selector
+                  etiqueta="Ícono"
+                  valor={beneficio.icono}
+                  alCambiar={(icono) =>
+                    cambiar({
+                      beneficios: completa.beneficios.map((otro) =>
+                        otro.id === beneficio.id ? { ...otro, icono: icono as IconoBeneficio } : otro,
+                      ),
+                    })
+                  }
+                  opciones={Object.entries(ICONOS_BENEFICIO).map(([valor, { etiqueta }]) => ({ valor, etiqueta }))}
+                />
+                <Campo
+                  etiqueta="Texto"
+                  valor={beneficio.texto}
+                  alCambiar={(texto) =>
+                    cambiar({ beneficios: completa.beneficios.map((otro) => (otro.id === beneficio.id ? { ...otro, texto } : otro)) })
+                  }
+                  maximo={80}
+                />
+                <button
+                  type="button"
+                  aria-label="Quitar beneficio"
+                  onClick={() => cambiar({ beneficios: completa.beneficios.filter((otro) => otro.id !== beneficio.id) })}
+                  className="grid h-[38px] w-8 place-items-center text-sitio-tenue hover:text-red-300"
+                >
+                  <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+            {completa.beneficios.length < 6 && (
+              <button
+                type="button"
+                onClick={() =>
+                  cambiar({
+                    beneficios: [...completa.beneficios, { id: Date.now().toString(36), icono: 'calidad', texto: 'Nuevo beneficio' }],
+                    orden: completa.orden.map((pieza) => (pieza.id === 'beneficios' ? { ...pieza, visible: true } : pieza)),
+                  })
+                }
+                className="flex h-9 items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-sitio-borde text-[12px] text-sitio-suave transition-colors hover:border-white/30 hover:text-white"
+              >
+                <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+                Agregar beneficio
+              </button>
+            )}
+          </>
+        )}
+        {completaPlan ? (
+          <Interruptor activo={completa.barraFija} alCambiar={(barraFija) => cambiar({ barraFija })}>
+            Barra de compra fija
+            <small className="block text-[11.5px] text-sitio-tenue">Al bajar por la página, el botón de compra queda pegado abajo.</small>
+          </Interruptor>
+        ) : (
+          <Candado plan={planMinimo((plan) => experienciaIncluye(plan.experienciaCompra, 'completa'))}>
+            Barra de compra pegada abajo al bajar por la página.
+          </Candado>
         )}
       </Seccion>
 

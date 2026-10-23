@@ -12,6 +12,7 @@ const NOMBRES_BLOQUE: Record<string, string> = {
   texto: 'Texto',
   pie: 'Pie de página',
   espaciador: 'Espaciador',
+  lienzo: 'Lienzo libre',
   anuncio: 'Barra de anuncio',
   carrusel: 'Carrusel',
   categorias: 'Categorías',

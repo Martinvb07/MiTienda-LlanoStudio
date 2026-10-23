@@ -19,6 +19,7 @@ import { Logos } from './bloques/Logos'
 import { BannerDoble } from './bloques/BannerDoble'
 import { Llamado } from './bloques/Llamado'
 import { Mapa } from './bloques/Mapa'
+import { Lienzo } from './bloques/Lienzo'
 import { Espaciador } from './bloques/Espaciador'
 import { EnvolturaSeccion } from './EnvolturaSeccion'
 import { esquemasIniciales } from '@/utilidades/tema'
@@ -87,6 +88,8 @@ function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categ
       return <Mapa {...bloque.props} direccion={bloque.props.direccion || ajustes.direccion || ''} />
     case 'espaciador':
       return <Espaciador {...bloque.props} />
+    case 'lienzo':
+      return <Lienzo {...bloque.props} />
     default:
       return null
   }

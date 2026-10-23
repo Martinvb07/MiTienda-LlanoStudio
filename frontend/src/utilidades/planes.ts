@@ -98,7 +98,7 @@ const BLOQUES_EMPRENDE: readonly TipoBloque[] = [
   'llamado',
 ]
 
-const BLOQUES_NEGOCIO: readonly TipoBloque[] = [...BLOQUES_EMPRENDE, 'testimonios', 'video', 'logos', 'mapa']
+const BLOQUES_NEGOCIO: readonly TipoBloque[] = [...BLOQUES_EMPRENDE, 'testimonios', 'video', 'logos', 'mapa', 'lienzo']
 
 const TODOS_LOS_BLOQUES: readonly TipoBloque[] = [...BLOQUES_NEGOCIO, 'cuenta-regresiva']
 
@@ -259,6 +259,19 @@ export function ajustarAlPlan(
     botonDestacado: completa ? ajustes.botonDestacado : undefined,
     whatsappFlotante: limites.whatsappFlotante ? ajustes.whatsappFlotante : false,
     ...(limites.pieColumnas ? {} : { direccion: undefined, correo: undefined, horario: undefined }),
+    // Lo premium de la página de producto, según el plan.
+    paginaProducto: ajustes.paginaProducto && {
+      ...ajustes.paginaProducto,
+      ...(experienciaIncluye(limites.experienciaCompra, 'avanzada')
+        ? {}
+        : {
+            beneficios: [],
+            zoomFoto: false,
+            animarEntrada: false,
+            orden: ajustes.paginaProducto.orden?.filter((pieza) => pieza.id !== 'beneficios'),
+          }),
+      ...(experienciaIncluye(limites.experienciaCompra, 'completa') ? {} : { barraFija: false }),
+    },
   }
 
   const items = limites.itemsLista

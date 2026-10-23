@@ -5,6 +5,8 @@ import { plantillaCompleta } from '@/utilidades/fichaProducto'
 import { formatearPrecio, generarSlug } from '@/utilidades/formato'
 import { enlaceWhatsapp } from '@/utilidades/whatsapp'
 import { TarjetaProducto } from './TarjetaProducto'
+import { BarraCompraFija } from './ficha/BarraCompraFija'
+import { Beneficios } from './ficha/Beneficios'
 import { BotonComprar } from './ficha/BotonComprar'
 import { Compartir } from './ficha/Compartir'
 import { GaleriaFicha } from './ficha/GaleriaFicha'
@@ -72,7 +74,12 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
     descripcion: producto.descripcion ? (
       <p className="leading-relaxed whitespace-pre-line text-tinta/80">{producto.descripcion}</p>
     ) : null,
-    comprar: <BotonComprar producto={producto} moneda={moneda} />,
+    comprar: (
+      <div data-boton-comprar>
+        <BotonComprar producto={producto} moneda={moneda} />
+      </div>
+    ),
+    beneficios: <Beneficios beneficios={plantilla.beneficios} />,
     whatsapp:
       ajustes.whatsapp && producto.stock > 0 ? (
         <a
@@ -130,9 +137,11 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
       </nav>
 
       <div className="mt-8 grid items-start gap-12 lg:grid-cols-2">
-        <GaleriaFicha fotos={producto.fotos} nombre={producto.nombre} disposicion={plantilla.galeria} />
+        <GaleriaFicha fotos={producto.fotos} nombre={producto.nombre} disposicion={plantilla.galeria} zoom={plantilla.zoomFoto} />
 
-        <div className={`flex flex-col gap-5 ${plantilla.fijarInfo ? 'lg:sticky lg:top-24' : ''}`}>
+        <div
+          className={`flex flex-col gap-5 ${plantilla.fijarInfo ? 'lg:sticky lg:top-24' : ''} ${plantilla.animarEntrada ? 'entrada' : ''}`}
+        >
           {plantilla.orden
             .filter((pieza) => pieza.visible && piezas[pieza.id])
             .map((pieza) => (
@@ -151,6 +160,7 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
           </div>
         </section>
       )}
+      {plantilla.barraFija && <BarraCompraFija producto={producto} moneda={moneda} />}
     </main>
   )
 }

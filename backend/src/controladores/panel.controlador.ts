@@ -146,6 +146,19 @@ const esquemaAjustes = z.object({
         .optional(),
       relacionados: z.boolean().optional(),
       tituloRelacionados: z.string().trim().max(60).optional(),
+      beneficios: z
+        .array(
+          z.object({
+            id: z.string().max(20),
+            icono: z.enum(['envio', 'garantia', 'pago', 'cambios', 'soporte', 'calidad']),
+            texto: z.string().trim().max(80),
+          }),
+        )
+        .max(6)
+        .optional(),
+      zoomFoto: z.boolean().optional(),
+      animarEntrada: z.boolean().optional(),
+      barraFija: z.boolean().optional(),
     })
     .optional(),
 })

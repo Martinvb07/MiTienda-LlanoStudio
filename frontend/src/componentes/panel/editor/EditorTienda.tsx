@@ -3,9 +3,9 @@
 import { ArrowUpRight, LayoutTemplate, Palette, Redo2, Settings2, Undo2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import type { AccionSeccion } from '@/app/panel/vista-previa/mensajes'
+import type { AccionSeccion, MensajeLienzo } from '@/app/panel/vista-previa/mensajes'
 import { guardarTienda, listarProductos, type DatosTienda } from '@/servicios/panel'
-import { ETIQUETAS_BLOQUE, duplicarBloque } from '@/tipos/bloques'
+import { ETIQUETAS_BLOQUE, duplicarBloque, type PropsLienzo } from '@/tipos/bloques'
 import type { AjustesTienda, Producto, TemaTienda, Tienda } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
 import { ESTILOS_PREDEFINIDOS, RADIOS, esquemasIniciales } from '@/utilidades/tema'
@@ -21,6 +21,8 @@ import { CamposFicha } from './CamposFicha'
 import { CamposTema } from './CamposTema'
 import { CamposVentas } from './CamposVentas'
 import { ListaBloques } from './ListaBloques'
+import { ContextoEditorLienzo } from './ContextoLienzo'
+import { cambiarCapa, conCaja, duplicarElemento } from '@/utilidades/lienzo'
 import { MarcoEditor, useAtajosEditor } from './MarcoEditor'
 import { VistaPrevia, type Dispositivo } from './VistaPrevia'
 import { SALIR_SIN_GUARDAR, confirmar } from '../ui/confirmar'
@@ -269,6 +271,72 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     setAbierto(null)
   }
 
+  // ── Lienzo libre: lo que se hace con el mouse en la vista previa ──
+  const [lienzoElegido, setLienzoElegido] = useState<{ bloque: string; elemento: string } | null>(null)
+
+  const cambiarLienzo = useCallback(
+    (bloqueId: string, cambio: (props: PropsLienzo) => PropsLienzo) => {
+      cambiar({
+        configuracionBloques: actualRef.current.configuracionBloques.map((bloque) =>
+          bloque.id === bloqueId && bloque.tipo === 'lienzo' ? { ...bloque, props: cambio(bloque.props) } : bloque,
+        ),
+      })
+    },
+    [cambiar],
+  )
+
+  const alLienzo = useCallback(
+    (mensaje: MensajeLienzo) => {
+      const { bloque, elemento, movil } = mensaje
+      switch (mensaje.accion) {
+        case 'elegir':
+          setLienzoElegido(elemento ? { bloque, elemento } : null)
+          if (elemento) {
+            setPestana('pagina')
+            setPlantillaEditada('portada')
+            setAbierto(bloque)
+          }
+          return
+        case 'mover':
+          if (!elemento || !mensaje.caja) return
+          cambiarLienzo(bloque, (props) => ({
+            ...props,
+            elementos: props.elementos.map((pieza) => (pieza.id === elemento ? conCaja(pieza, mensaje.caja!, movil) : pieza)),
+          }))
+          return
+        case 'alto':
+          if (!mensaje.alto) return
+          cambiarLienzo(bloque, (props) => (movil ? { ...props, altoMovil: mensaje.alto! } : { ...props, alto: mensaje.alto! }))
+          return
+        case 'adelante':
+        case 'atras':
+          if (!elemento) return
+          cambiarLienzo(bloque, (props) => ({
+            ...props,
+            elementos: cambiarCapa(props.elementos, elemento, mensaje.accion === 'adelante' ? 1 : -1),
+          }))
+          return
+        case 'duplicar': {
+          if (!elemento) return
+          let nuevo: string | undefined
+          cambiarLienzo(bloque, (props) => {
+            const resultado = duplicarElemento(props.elementos, elemento)
+            nuevo = resultado.nuevo
+            return { ...props, elementos: resultado.elementos }
+          })
+          if (nuevo) setLienzoElegido({ bloque, elemento: nuevo })
+          return
+        }
+        case 'eliminar':
+          if (!elemento) return
+          cambiarLienzo(bloque, (props) => ({ ...props, elementos: props.elementos.filter((pieza) => pieza.id !== elemento) }))
+          setLienzoElegido(null)
+          return
+      }
+    },
+    [cambiarLienzo],
+  )
+
   async function cerrar() {
     if (sucio && !(await confirmar(SALIR_SIN_GUARDAR))) return
     alCerrar()
@@ -290,8 +358,9 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       producto: productos[0] ?? PRODUCTO_EJEMPLO,
       enfocar: abierto,
       editable: true,
+      lienzoElegido,
     }),
-    [borrador, productos, abierto, tienda.moneda, plan, plantillaEditada],
+    [borrador, productos, abierto, tienda.moneda, plan, plantillaEditada, lienzoElegido],
   )
 
   const estiloActivo = ESTILOS_PREDEFINIDOS.find(
@@ -348,7 +417,13 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
         </>
       }
       lateral={
-        <>
+        <ContextoEditorLienzo.Provider
+          value={{
+            elegido: lienzoElegido,
+            elegir: (bloque, elemento) => setLienzoElegido(elemento ? { bloque, elemento } : null),
+            movil: dispositivo === 'movil',
+          }}
+        >
           <div className="sticky -top-3.5 z-20 -mx-3.5 -mt-3.5 mb-1 border-b border-sitio-borde bg-sitio-lateral/95 px-3.5 pt-3.5 pb-3 backdrop-blur">
             <div className="grid grid-cols-3 gap-1 rounded-[10px] border border-sitio-borde bg-white/[0.03] p-1">
               {PESTANAS.map((opcion) => (
@@ -419,6 +494,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
             <CamposFicha
               plantilla={borrador.ajustes.paginaProducto}
               alCambiar={(paginaProducto) => cambiarAjustes({ paginaProducto })}
+              limites={limites}
             />
           )}
 
@@ -591,9 +667,9 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
               </Seccion>
             </>
           )}
-        </>
+        </ContextoEditorLienzo.Provider>
       }
-      vista={<VistaPrevia datos={datosVista} dispositivo={dispositivo} alAccion={alAccionVista} />}
+      vista={<VistaPrevia datos={datosVista} dispositivo={dispositivo} alAccion={alAccionVista} alLienzo={alLienzo} />}
     />
   )
 }

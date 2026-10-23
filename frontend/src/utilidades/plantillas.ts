@@ -1,5 +1,6 @@
 import type { Bloque } from '@/tipos/bloques'
-import type { AjustesTienda, EnlaceMenu, TemaBase, TemaTienda } from '@/tipos/tienda'
+import type { AjustesTienda, BloqueFicha, EnlaceMenu, PlantillaProducto, TemaBase, TemaTienda } from '@/tipos/tienda'
+import { ORDEN_FICHA } from './fichaProducto'
 import { generarSlug } from './formato'
 import type { Plan } from './planes'
 import { ESTILOS_PREDEFINIDOS } from './tema'
@@ -47,13 +48,22 @@ export interface PlantillaTienda {
 }
 
 /** Lo de los ajustes que es diseño: al cambiar de plantilla se reemplaza; el contacto se conserva. */
-const CLAVES_DISENO = ['cabecera', 'buscador', 'colorBarra', 'menu', 'botonDestacado'] as const
+const CLAVES_DISENO = ['cabecera', 'buscador', 'colorBarra', 'menu', 'botonDestacado', 'paginaProducto'] as const
 
 export function ajustesConPlantilla(actuales: AjustesTienda, plantilla: PlantillaTienda): AjustesTienda {
   const contacto: AjustesTienda = { ...actuales }
   for (const clave of CLAVES_DISENO) delete contacto[clave]
   return { ...contacto, ...plantilla.ajustes }
 }
+
+/** Página de producto: estas piezas visibles en este orden; el resto, ocultas al final. */
+const ficha = (visibles: BloqueFicha[], resto: Omit<PlantillaProducto, 'orden'>): PlantillaProducto => ({
+  orden: [
+    ...visibles.map((id) => ({ id, visible: true })),
+    ...ORDEN_FICHA.filter((id) => !visibles.includes(id)).map((id) => ({ id, visible: false })),
+  ],
+  ...resto,
+})
 
 const aCategoria = (texto: string): EnlaceMenu => ({ texto, enlace: `/categoria/${generarSlug(texto)}` })
 const categorias = (...nombres: string[]) => nombres.map((nombre) => ({ id: id('cat'), nombre }))
@@ -98,6 +108,18 @@ export const PLANTILLAS_TIENDA: PlantillaTienda[] = [
       colorBarra: '#111111',
       menu: [aCategoria('Jugos'), aCategoria('Cervezas'), aCategoria('Vinos'), { texto: 'Ofertas', enlace: '/buscar' }],
       botonDestacado: { texto: 'Tienda en línea', enlace: '/buscar' },
+      paginaProducto: ficha(['titulo', 'presentacion', 'precio', 'stock', 'comprar', 'whatsapp', 'beneficios', 'descripcion'], {
+        galeria: 'miniaturas',
+        fijarInfo: false,
+        animarEntrada: true,
+        beneficios: [
+          { id: 'b1', icono: 'envio', texto: 'Domicilio el mismo día' },
+          { id: 'b2', icono: 'pago', texto: 'Paga al recibir o en línea' },
+          { id: 'b3', icono: 'calidad', texto: 'Frescura garantizada' },
+        ],
+        relacionados: true,
+        tituloRelacionados: 'Completa tu mercado',
+      }),
     },
     bloques: (nombre) => [
       {
@@ -148,6 +170,24 @@ export const PLANTILLAS_TIENDA: PlantillaTienda[] = [
       colorBarra: '#1f3d2b',
       menu: [aCategoria('Interior'), aCategoria('Suculentas'), aCategoria('Flores'), aCategoria('Jardinería')],
       botonDestacado: { texto: 'Ver todas', enlace: '/buscar' },
+      paginaProducto: ficha(['titulo', 'presentacion', 'precio', 'descripcion', 'comprar', 'beneficios', 'acordeones'], {
+        galeria: 'miniaturas',
+        fijarInfo: true,
+        zoomFoto: true,
+        animarEntrada: true,
+        beneficios: [
+          { id: 'b1', icono: 'soporte', texto: 'Te asesoramos por WhatsApp' },
+          { id: 'b2', icono: 'envio', texto: 'Entrega cuidada en tu casa' },
+          { id: 'b3', icono: 'garantia', texto: 'Llega sana o la cambiamos' },
+        ],
+        acordeones: [
+          { id: 'a1', titulo: 'Luz', texto: 'Luz indirecta brillante. Evita el sol directo del mediodía.' },
+          { id: 'a2', titulo: 'Riego', texto: 'Riega cuando la tierra esté seca al tacto, más o menos una vez por semana.' },
+          { id: 'a3', titulo: 'Qué recibes', texto: 'La planta en su matera, con sustrato y una guía de cuidados.' },
+        ],
+        relacionados: true,
+        tituloRelacionados: 'Combina con',
+      }),
     },
     bloques: (nombre) => [
       {
@@ -208,6 +248,24 @@ export const PLANTILLAS_TIENDA: PlantillaTienda[] = [
       colorBarra: '#0b1f3a',
       menu: [aCategoria('Yoga y pilates'), aCategoria('Entrenamiento'), aCategoria('Morrales'), aCategoria('Relojes'), { texto: 'Ofertas', enlace: '/buscar' }],
       botonDestacado: { texto: 'Ver catálogo', enlace: '/buscar' },
+      paginaProducto: ficha(['titulo', 'precio', 'stock', 'presentacion', 'comprar', 'beneficios', 'descripcion', 'acordeones', 'compartir'], {
+        galeria: 'miniaturas',
+        fijarInfo: true,
+        zoomFoto: true,
+        animarEntrada: true,
+        barraFija: true,
+        beneficios: [
+          { id: 'b1', icono: 'garantia', texto: '12 meses de garantía' },
+          { id: 'b2', icono: 'envio', texto: 'Envío gratis desde $200.000' },
+          { id: 'b3', icono: 'pago', texto: 'Hasta 12 cuotas' },
+        ],
+        acordeones: [
+          { id: 'a1', titulo: 'Especificaciones', texto: 'Materiales, medidas y peso del producto.' },
+          { id: 'a2', titulo: 'Envíos y garantía', texto: 'Despachamos en 24 horas. Si algo falla, lo cambiamos en tienda o por mensajería.' },
+        ],
+        relacionados: true,
+        tituloRelacionados: 'Te puede interesar',
+      }),
     },
     bloques: (nombre) => [
       { id: id('anuncio'), tipo: 'anuncio', props: { texto: 'Envío gratis a toda Colombia en compras desde $200.000' } },
@@ -264,6 +322,24 @@ export const PLANTILLAS_TIENDA: PlantillaTienda[] = [
       colorBarra: '#8a6a48',
       menu: [aCategoria('Chaquetas'), aCategoria('Buzos'), aCategoria('Camisetas'), aCategoria('Esqueletos')],
       botonDestacado: { texto: 'Nueva colección', enlace: '/buscar' },
+      paginaProducto: ficha(['titulo', 'precio', 'presentacion', 'comprar', 'beneficios', 'acordeones', 'descripcion'], {
+        galeria: 'apiladas',
+        fijarInfo: true,
+        zoomFoto: true,
+        animarEntrada: true,
+        beneficios: [
+          { id: 'b1', icono: 'cambios', texto: 'Cambios gratis por 30 días' },
+          { id: 'b2', icono: 'envio', texto: 'Envío gratis desde $199.000' },
+          { id: 'b3', icono: 'pago', texto: 'Paga contra entrega' },
+        ],
+        acordeones: [
+          { id: 'a1', titulo: 'Guía de tallas', texto: 'S: 86-91 cm de pecho · M: 92-97 cm · L: 98-103 cm · XL: 104-109 cm.' },
+          { id: 'a2', titulo: 'Materiales y cuidados', texto: 'Lava a máquina en agua fría, del revés. No uses blanqueador ni secadora.' },
+          { id: 'a3', titulo: 'Cambios y devoluciones', texto: 'Tienes 30 días para cambiar talla o color. El primer cambio va por nuestra cuenta.' },
+        ],
+        relacionados: true,
+        tituloRelacionados: 'Completa el look',
+      }),
     },
     bloques: (nombre) => [
       { id: id('anuncio'), tipo: 'anuncio', props: { texto: 'Envío gratis desde $199.000 · Cambios gratis durante 30 días' } },

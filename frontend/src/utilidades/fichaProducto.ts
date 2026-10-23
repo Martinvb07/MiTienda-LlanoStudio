@@ -11,6 +11,7 @@ export const ETIQUETAS_FICHA: Record<BloqueFicha, string> = {
   envio: 'Información de envío',
   acordeones: 'Pestañas desplegables',
   compartir: 'Compartir',
+  beneficios: 'Beneficios con íconos',
 }
 
 export const ORDEN_FICHA: BloqueFicha[] = [
@@ -21,12 +22,13 @@ export const ORDEN_FICHA: BloqueFicha[] = [
   'descripcion',
   'comprar',
   'whatsapp',
+  'beneficios',
   'envio',
   'acordeones',
   'compartir',
 ]
 
-const OCULTOS_POR_DEFECTO = new Set<BloqueFicha>(['stock', 'compartir', 'envio', 'acordeones'])
+const OCULTOS_POR_DEFECTO = new Set<BloqueFicha>(['stock', 'compartir', 'envio', 'acordeones', 'beneficios'])
 
 /** La plantilla guardada completada con lo que falte, en su orden. */
 export function plantillaCompleta(plantilla: PlantillaProducto = {}): Required<PlantillaProducto> {
@@ -46,5 +48,13 @@ export function plantillaCompleta(plantilla: PlantillaProducto = {}): Required<P
     ],
     relacionados: plantilla.relacionados ?? true,
     tituloRelacionados: plantilla.tituloRelacionados ?? 'También te puede gustar',
+    beneficios: plantilla.beneficios ?? [
+      { id: 'b1', icono: 'envio', texto: 'Envíos a todo el país' },
+      { id: 'b2', icono: 'pago', texto: 'Pago seguro' },
+      { id: 'b3', icono: 'cambios', texto: 'Cambios fáciles' },
+    ],
+    zoomFoto: plantilla.zoomFoto ?? false,
+    animarEntrada: plantilla.animarEntrada ?? false,
+    barraFija: plantilla.barraFija ?? false,
   }
 }

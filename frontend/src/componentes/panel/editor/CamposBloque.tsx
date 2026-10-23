@@ -933,8 +933,11 @@ export function resumenBloque(bloque: Bloque): string {
       return bloque.props.dias.map((fila) => fila.dia).filter(Boolean).join(' · ')
     case 'espaciador':
       return bloque.props.linea ? 'Con línea' : 'Espacio'
-    case 'lienzo':
-      return `${bloque.props.elementos.length} piezas sueltas`
+    case 'lienzo': {
+      // Como la sección original: su primer texto (el título de la portada, por ejemplo).
+      const texto = bloque.props.elementos.find((pieza) => (pieza.tipo === 'titulo' || pieza.tipo === 'texto') && pieza.texto?.trim())?.texto
+      return texto?.trim() ?? `${bloque.props.elementos.length} piezas`
+    }
     default:
       return ''
   }

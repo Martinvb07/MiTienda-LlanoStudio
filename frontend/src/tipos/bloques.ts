@@ -320,7 +320,45 @@ export interface CajaLienzo {
   h: number
 }
 
-export type TipoElementoLienzo = 'titulo' | 'texto' | 'boton' | 'imagen' | 'forma'
+export type TipoElementoLienzo =
+  | 'titulo'
+  | 'texto'
+  | 'boton'
+  | 'imagen'
+  | 'forma'
+  // Vivas: se llenan con los datos de la tienda al pintarse.
+  | 'producto'
+  | 'productos'
+  | 'categorias'
+  | 'redes'
+  | 'whatsapp'
+  | 'logo'
+  | 'buscador'
+  | 'menu'
+  | 'carrito'
+  // Fijas con algo más que texto.
+  | 'icono'
+  | 'enlace'
+  | 'linea'
+  | 'video'
+  | 'mapa'
+  | 'cuenta'
+
+export type RedSocial = 'instagram' | 'facebook' | 'tiktok' | 'whatsapp'
+
+/** Qué muestra una tarjeta de producto (en el lienzo y en la grilla de productos). */
+export interface OpcionesTarjeta {
+  estilo?: 'simple' | 'tarjeta'
+  nombre?: boolean
+  precio?: boolean
+  precioAntes?: boolean
+  /** La insignia de descuento sobre la foto. */
+  oferta?: boolean
+  /** Texto de la insignia; por defecto "Oferta". */
+  textoOferta?: string
+  /** Botón Agregar (si el plan lo trae). */
+  boton?: boolean
+}
 
 /** Una pieza suelta del lienzo libre: se mueve y se estira donde se quiera. */
 export interface ElementoLienzo extends CajaLienzo {
@@ -345,6 +383,34 @@ export interface ElementoLienzo extends CajaLienzo {
   radio?: number
   /** 0 a 100. */
   opacidad?: number
+
+  // ── Piezas vivas y especiales ──
+  /** producto: cuál (si ya no existe, se muestra el primero). */
+  productoId?: string
+  /** productos: de qué categoría, cuántos y en cuántas columnas (computador / celular). */
+  categoria?: string
+  limite?: number
+  columnas?: number
+  columnasMovil?: number
+  soloDestacados?: boolean
+  /** producto y productos: qué se ve en cada tarjeta. */
+  tarjeta?: OpcionesTarjeta
+  /** redes: cuáles; sin elegir, todas las que tenga la tienda. */
+  redes?: RedSocial[]
+  /** icono: clave de ICONOS_LIENZO. */
+  icono?: string
+  /** video: enlace de YouTube o Vimeo. */
+  url?: string
+  /** mapa: dirección; sin ella, la de la tienda. */
+  direccion?: string
+  /** cuenta: fecha de cierre (ISO). */
+  fecha?: string
+  /** whatsapp: mensaje con que se abre el chat. */
+  mensaje?: string
+  /** icono: relleno en vez de sólo el trazo (como las estrellas de una reseña). */
+  relleno?: boolean
+  /** enlace: sin subrayar. */
+  sinSubrayado?: boolean
 }
 
 export interface PropsLienzo {
@@ -354,6 +420,8 @@ export interface PropsLienzo {
   altoMovil: number
   fondo?: string
   elementos: ElementoLienzo[]
+  /** La sección de la que salió al pasarla a libre: conserva su nombre ("Portada", "Productos"…). */
+  origen?: TipoBloque
 }
 
 interface BloqueBase<T extends TipoBloque, P> {
@@ -645,6 +713,24 @@ export const PROPS_INICIALES: { [T in TipoBloque]: Extract<Bloque, { tipo: T }>[
       },
     ],
   },
+}
+
+/**
+ * De qué sección viene un lienzo: lo guardado al pasarla a libre o, en las
+ * que se pasaron antes de guardarlo, el tipo con que empieza su id ("hero-…").
+ */
+export function origenLienzo(bloque: Bloque): TipoBloque | null {
+  if (bloque.tipo !== 'lienzo') return null
+  if (bloque.props.origen) return bloque.props.origen
+  if (bloque.id.startsWith('grilla-')) return 'grilla-productos'
+  const tipos = (Object.keys(ETIQUETAS_BLOQUE) as TipoBloque[]).filter((tipo) => tipo !== 'lienzo' && bloque.id.startsWith(`${tipo}-`))
+  return tipos.sort((a, b) => b.length - a.length)[0] ?? null
+}
+
+/** El nombre de una sección; una pasada a libre conserva el de la original. */
+export function etiquetaBloque(bloque: Bloque): string {
+  const origen = origenLienzo(bloque)
+  return ETIQUETAS_BLOQUE[origen ?? bloque.tipo]
 }
 
 export function crearBloque(tipo: TipoBloque): Bloque {

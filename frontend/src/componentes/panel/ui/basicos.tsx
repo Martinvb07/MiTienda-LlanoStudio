@@ -142,7 +142,7 @@ interface PropsCampo {
   etiqueta: string
   valor: string | number
   alCambiar: (valor: string) => void
-  tipo?: 'text' | 'number' | 'url' | 'email' | 'password'
+  tipo?: 'text' | 'number' | 'url' | 'email' | 'password' | 'datetime-local'
   marcador?: string
   maximo?: number
   ayuda?: ReactNode

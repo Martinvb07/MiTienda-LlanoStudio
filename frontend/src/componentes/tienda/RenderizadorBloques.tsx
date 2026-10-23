@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { Bloque } from '@/tipos/bloques'
+import { origenLienzo, type Bloque } from '@/tipos/bloques'
 import type { AjustesTienda, Producto, TemaTienda, TipoSitio } from '@/tipos/tienda'
 import { Anuncio } from './bloques/Anuncio'
 import { Hero } from './bloques/Hero'
@@ -41,6 +41,9 @@ interface Props {
   ajustes?: AjustesTienda
   nombreTienda?: string
   tema?: TemaTienda
+  logoUrl?: string | null
+  /** En la vista previa del editor: las piezas vivas vacías dicen qué les falta. */
+  editando?: boolean
   /** Una página informativa no pinta las secciones de catálogo. */
   tipo?: TipoSitio
 }
@@ -52,9 +55,11 @@ interface Contexto {
   ajustes: AjustesTienda
   categorias: string[]
   nombreTienda?: string
+  logoUrl?: string | null
+  editando?: boolean
 }
 
-function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda }: Contexto) {
+function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda, logoUrl, editando }: Contexto) {
   switch (bloque.tipo) {
     case 'anuncio':
       return <Anuncio {...bloque.props} />
@@ -109,7 +114,7 @@ function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categ
     case 'espaciador':
       return <Espaciador {...bloque.props} />
     case 'lienzo':
-      return <Lienzo {...bloque.props} />
+      return <Lienzo {...bloque.props} contexto={{ productos, moneda, ajustes, nombreTienda, logoUrl, editando }} />
     default:
       return null
   }
@@ -148,13 +153,16 @@ export function RenderizadorBloques({
   ajustes = {},
   nombreTienda,
   tema,
+  logoUrl,
+  editando,
   tipo,
 }: Props) {
   const categorias = categoriasDe(productos)
   const esquemas = tema ? (tema.esquemas ?? esquemasIniciales(tema)) : undefined
-  const contexto: Contexto = { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda }
+  const contexto: Contexto = { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda, logoUrl, editando }
   const visibles = conAnclas(bloquesVisiblesPara(tipo, bloques).filter((bloque) => bloque.visible !== false))
-  const anunciosIniciales = visibles.findIndex((bloque) => bloque.tipo !== 'anuncio')
+  // Las barras de anuncio van arriba del encabezado, también si se pasaron a libre.
+  const anunciosIniciales = visibles.findIndex((bloque) => bloque.tipo !== 'anuncio' && origenLienzo(bloque) !== 'anuncio')
   const corte = anunciosIniciales === -1 ? visibles.length : anunciosIniciales
 
   return (

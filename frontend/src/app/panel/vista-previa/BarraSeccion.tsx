@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ArrowDown, ArrowUp, Copy, EyeOff, Lock, Move, Pencil, Trash2 } from 'lucide-react'
-import { ETIQUETAS_BLOQUE, type Bloque } from '@/tipos/bloques'
+import { etiquetaBloque, type Bloque } from '@/tipos/bloques'
 import { esConvertible } from '@/utilidades/editarLibre'
 import { limitesDe, planMinimo } from '@/utilidades/planes'
 import type { AccionSeccion, MensajeAccionVista } from './mensajes'
@@ -95,7 +95,7 @@ export function BarraSeccion({ bloques, plan }: { bloques: Bloque[]; plan?: stri
         style={{ top: Math.max(8, 8 - caja.top), right: 8 }}
       >
         <span className="px-2 text-[11px] font-medium whitespace-nowrap text-white/70">
-          {ETIQUETAS_BLOQUE[bloque.tipo]}
+          {etiquetaBloque(bloque)}
         </span>
         {acciones.map(({ accion, etiqueta, Icono, deshabilitado }) =>
           accion === 'elegir' ? (

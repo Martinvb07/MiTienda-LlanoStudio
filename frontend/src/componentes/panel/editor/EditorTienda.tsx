@@ -3,9 +3,9 @@
 import { ArrowUpRight, LayoutTemplate, Move, Palette, Redo2, Settings2, Undo2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import type { AccionSeccion, MensajeLienzo } from '@/app/panel/vista-previa/mensajes'
+import type { AccionSeccion, MensajeLienzo, MensajeSoltar } from '@/app/panel/vista-previa/mensajes'
 import { guardarTienda, listarProductos, type DatosTienda } from '@/servicios/panel'
-import { ETIQUETAS_BLOQUE, duplicarBloque, type PropsLienzo } from '@/tipos/bloques'
+import { crearBloque, duplicarBloque, type Bloque, etiquetaBloque, type BloqueLienzo, type PropsLienzo, type TipoBloque, type TipoElementoLienzo } from '@/tipos/bloques'
 import type { AjustesTienda, Producto, TemaTienda, Tienda } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
 import { ESTILOS_PREDEFINIDOS, RADIOS, esquemasIniciales } from '@/utilidades/tema'
@@ -22,9 +22,11 @@ import { CamposCabecera, CamposContacto } from './CamposAjustes'
 import { CamposFicha } from './CamposFicha'
 import { CamposTema } from './CamposTema'
 import { CamposVentas } from './CamposVentas'
-import { ListaBloques } from './ListaBloques'
+import { ListaBloques, posicionNueva } from './ListaBloques'
 import { ContextoEditorLienzo } from './ContextoLienzo'
-import { cambiarCapa, conCaja, duplicarElemento } from '@/utilidades/lienzo'
+import { DISENOS_LIENZO, agregarAlLienzo, cajaVisible, cambiarCapa, conCaja, duplicarElemento, nuevoElemento } from '@/utilidades/lienzo'
+import { PaletaLienzo } from './PaletaLienzo'
+import { ModalPieza } from './CamposLienzo'
 import { aLienzo, avisoConversion, esConvertible } from '@/utilidades/editarLibre'
 import { medirSecciones } from '@/utilidades/medirSecciones'
 import { MarcoEditor, useAtajosEditor } from './MarcoEditor'
@@ -221,7 +223,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
           break
         case 'eliminar':
           void confirmar({
-            titulo: `¿Eliminar la sección "${ETIQUETAS_BLOQUE[bloque.tipo]}"?`,
+            titulo: `¿Eliminar la sección "${etiquetaBloque(bloque)}"?`,
             mensaje: 'Se quita de tu tienda con todo lo que tiene adentro. Puedes recuperarla con Ctrl+Z mientras no cierres el editor.',
             confirmar: 'Sí, eliminar',
             peligro: true,
@@ -365,10 +367,10 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       titulo:
         ids === 'todas'
           ? `¿Pasar ${elegidos.length === 1 ? 'la sección' : `las ${elegidos.length} secciones`} a edición libre?`
-          : `¿Editar libre "${ETIQUETAS_BLOQUE[elegidos[0]!.tipo]}"?`,
+          : `¿Editar libre "${etiquetaBloque(elegidos[0]!)}"?`,
       mensaje: [
         ids === 'todas'
-          ? 'Las secciones que se pueden pasar a edición libre cambian; las de productos, categorías y demás quedan igual. Puedes volver atrás con Ctrl+Z.'
+          ? 'Todas tus secciones pasan a edición libre; los productos y las redes siguen al día. Puedes volver atrás con Ctrl+Z.'
           : 'Esta sección pasa a edición libre. Puedes volver atrás con Ctrl+Z.',
         ...avisos,
       ].join(' '),
@@ -386,6 +388,14 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     setConvirtiendo(false)
     const tema = actualRef.current.tema
     const nuevos = new Map(elegidos.map((bloque) => [bloque.id, aLienzo(bloque, tema, medidas.get(bloque.id))]))
+    // Lo que no se pudo medir se queda como estaba, y se avisa.
+    const fallidas = elegidos.filter((bloque) => !nuevos.get(bloque.id))
+    for (const bloque of fallidas) nuevos.delete(bloque.id)
+    if (fallidas.length)
+      setError(
+        `No pudimos pasar a libre ${fallidas.map((bloque) => `"${etiquetaBloque(bloque)}"`).join(', ')}. Vuelve a intentarlo en un momento.`,
+      )
+    if (nuevos.size === 0) return
     // Un solo paso en el historial: ni se junta con lo anterior ni con lo que siga.
     ultimoCambio.current = 0
     cambiar({
@@ -393,7 +403,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     })
     ultimoCambio.current = 0
 
-    const primero = nuevos.get(elegidos[0]!.id)
+    const primero = [...nuevos.values()][0]
     setPestana('pagina')
     setPlantillaEditada('portada')
     setAbierto(primero?.id ?? null)
@@ -401,6 +411,118 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     setLienzoElegido(primero && pieza ? { bloque: primero.id, elemento: pieza.id } : null)
   }
   const convertibles = borrador.configuracionBloques.filter((bloque) => esConvertible(bloque.tipo)).length
+
+  // ── Paleta de la derecha: agrega piezas al lienzo abierto ──
+  const lienzoAbierto =
+    pestana === 'pagina' && plantillaEditada === 'portada'
+      ? borrador.configuracionBloques.find((bloque): bloque is BloqueLienzo => bloque.id === abierto && bloque.tipo === 'lienzo')
+      : undefined
+
+  /** Agrega una sección antes de `antesDe` (o donde corresponde) y la deja abierta. */
+  function agregarSeccion(tipo: TipoBloque, antesDe: string | null, preparar?: (bloque: Bloque) => Bloque) {
+    const bloques = actualRef.current.configuracionBloques
+    if (bloques.length >= limites.secciones || !limites.bloques.includes(tipo)) {
+      setError(`Tu plan ${limites.nombre} no admite más secciones de este tipo.`)
+      return null
+    }
+    const nuevo = preparar ? preparar(crearBloque(tipo)) : crearBloque(tipo)
+    const indice = antesDe ? bloques.findIndex((bloque) => bloque.id === antesDe) : -1
+    const posicion =
+      tipo === 'anuncio' || tipo === 'pie' || indice === -1 ? posicionNueva(bloques, tipo, abierto) : Math.max(indice, bloques[0]?.tipo === 'anuncio' ? 1 : 0)
+    ultimoCambio.current = 0
+    cambiar({ configuracionBloques: [...bloques.slice(0, posicion), nuevo, ...bloques.slice(posicion)] })
+    ultimoCambio.current = 0
+    setPestana('pagina')
+    setPlantillaEditada('portada')
+    setAbierto(nuevo.id)
+    return nuevo
+  }
+
+  /** Pone una pieza en un lienzo; si no hay uno abierto, crea uno nuevo. */
+  function agregarPieza(tipo: TipoElementoLienzo, donde?: { bloque: string; x: number; y: number; movil: boolean }) {
+    const bloques = actualRef.current.configuracionBloques
+    const destino = donde
+      ? bloques.find((bloque): bloque is BloqueLienzo => bloque.id === donde.bloque && bloque.tipo === 'lienzo')
+      : lienzoAbierto
+    if (!destino) {
+      const pieza = nuevoElemento(tipo)
+      // Sin lienzo donde ponerla: va en uno nuevo, debajo de donde se soltó.
+      const siguiente = donde ? bloques[bloques.findIndex((bloque) => bloque.id === donde.bloque) + 1] : undefined
+      const nuevo = agregarSeccion('lienzo', siguiente?.id ?? null, (bloque) =>
+        bloque.tipo === 'lienzo' ? { ...bloque, props: agregarAlLienzo({ ...bloque.props, elementos: [] }, pieza) } : bloque,
+      )
+      if (nuevo) setLienzoElegido({ bloque: nuevo.id, elemento: pieza.id })
+      return
+    }
+    const id = destino.id
+    const pieza = nuevoElemento(tipo)
+    ultimoCambio.current = 0
+    cambiarLienzo(id, (props) => {
+      const con = agregarAlLienzo(props, pieza)
+      if (!donde) return con
+      // Soltada en un punto: ahí queda en el aparato donde se soltó (sin mover lo
+      // demás); en el otro, debajo de lo que hay.
+      const caja = cajaVisible(pieza, donde.movil)
+      const puesta = conCaja(
+        con.elementos.at(-1)!,
+        { x: Math.min(Math.max(donde.x - caja.w / 2, 0), 100 - caja.w), y: Math.min(Math.max(donde.y - caja.h / 2, 0), 100 - caja.h), w: caja.w, h: caja.h },
+        donde.movil,
+      )
+      const elementos = props.elementos.map((elemento, indice) => {
+        const otro = con.elementos[indice]!
+        return donde.movil ? { ...otro, movil: elemento.movil } : { ...elemento, movil: otro.movil }
+      })
+      return donde.movil
+        ? { ...props, alto: con.alto, elementos: [...elementos, puesta] }
+        : { ...props, altoMovil: con.altoMovil, elementos: [...elementos, puesta] }
+    })
+    ultimoCambio.current = 0
+    setLienzoElegido({ bloque: id, elemento: pieza.id })
+  }
+
+  /** Lo que se suelta desde la paleta dentro de la vista previa. */
+  function alSoltar(mensaje: MensajeSoltar) {
+    if (mensaje.clase === 'seccion') {
+      agregarSeccion(mensaje.que as TipoBloque, mensaje.bloque)
+      return
+    }
+    if (!conLienzo) return
+    agregarPieza(
+      mensaje.que as TipoElementoLienzo,
+      mensaje.bloque ? { bloque: mensaje.bloque, x: mensaje.x ?? 50, y: mensaje.y ?? 50, movil: mensaje.movil } : undefined,
+    )
+  }
+
+  async function usarDiseno(clave: string) {
+    const diseno = DISENOS_LIENZO.find((opcion) => opcion.clave === clave)
+    if (!diseno || !lienzoAbierto) return
+    const id = lienzoAbierto.id
+    if (
+      lienzoAbierto.props.elementos.length > 0 &&
+      !(await confirmar({
+        titulo: `¿Usar "${diseno.nombre}"?`,
+        mensaje: 'Reemplaza las piezas de este lienzo. Puedes volver atrás con Ctrl+Z.',
+        confirmar: 'Usar diseño',
+      }))
+    )
+      return
+    ultimoCambio.current = 0
+    cambiarLienzo(id, (props) => ({ ...props, ...diseno.armar() }))
+    ultimoCambio.current = 0
+    setLienzoElegido(null)
+  }
+
+  // ── La pieza elegida se edita en un modal sobre la vista previa ──
+  const contextoLienzo = {
+    elegido: lienzoElegido,
+    elegir: (bloque: string, elemento: string | null) => setLienzoElegido(elemento ? { bloque, elemento } : null),
+    movil: dispositivo === 'movil',
+    productos,
+    categorias,
+  }
+  const lienzoDeLaPieza = lienzoElegido
+    ? borrador.configuracionBloques.find((bloque): bloque is Extract<typeof bloque, { tipo: 'lienzo' }> => bloque.id === lienzoElegido.bloque && bloque.tipo === 'lienzo')
+    : undefined
 
   async function cerrar() {
     if (sucio && !(await confirmar(SALIR_SIN_GUARDAR))) return
@@ -483,13 +605,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
         </>
       }
       lateral={
-        <ContextoEditorLienzo.Provider
-          value={{
-            elegido: lienzoElegido,
-            elegir: (bloque, elemento) => setLienzoElegido(elemento ? { bloque, elemento } : null),
-            movil: dispositivo === 'movil',
-          }}
-        >
+        <ContextoEditorLienzo.Provider value={contextoLienzo}>
           <div className="sticky -top-3.5 z-20 -mx-3.5 -mt-3.5 mb-1 border-b border-sitio-borde bg-sitio-lateral/95 px-3.5 pt-3.5 pb-3 backdrop-blur">
             <div className="grid grid-cols-3 gap-1 rounded-[10px] border border-sitio-borde bg-white/[0.03] p-1">
               {PESTANAS.map((opcion) => (
@@ -585,7 +701,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
                     </button>
                     {conLienzo ? (
                       <p className="text-[11.5px] leading-relaxed text-sitio-tenue">
-                        Pasa a edición libre {convertibles === 1 ? 'la sección que se puede' : `las ${convertibles} secciones que se pueden`}; las de productos y demás quedan igual.
+                        Pasa a edición libre {convertibles === 1 ? 'la sección' : `las ${convertibles} secciones`}; los productos y las redes siguen al día.
                       </p>
                     ) : (
                       <Candado plan={planMinimo((opcion) => opcion.bloques.includes('lienzo'))}>Mueve y estira cada pieza de tus secciones.</Candado>
@@ -777,7 +893,33 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
           )}
         </ContextoEditorLienzo.Provider>
       }
-      vista={<VistaPrevia datos={datosVista} dispositivo={dispositivo} alAccion={alAccionVista} alLienzo={alLienzo} />}
+      vista={
+        <div className="grid min-h-0 grid-cols-[minmax(0,1fr)_auto]">
+          <div className="relative grid min-h-0">
+            <VistaPrevia datos={datosVista} dispositivo={dispositivo} alAccion={alAccionVista} alLienzo={alLienzo} alSoltar={alSoltar} />
+            {lienzoDeLaPieza && (
+              <ContextoEditorLienzo.Provider value={contextoLienzo}>
+                <ModalPieza
+                  bloqueId={lienzoDeLaPieza.id}
+                  props={lienzoDeLaPieza.props}
+                  alCambiar={(cambios) => cambiarLienzo(lienzoDeLaPieza.id, (props) => ({ ...props, ...cambios }))}
+                  alError={setError}
+                  alSubiendo={alSubiendo}
+                />
+              </ContextoEditorLienzo.Provider>
+            )}
+          </div>
+          <PaletaLienzo
+            key={lienzoAbierto ? 'piezas' : 'secciones'}
+            alAgregarPieza={(tipo) => agregarPieza(tipo)}
+            alAgregarSeccion={(tipo) => agregarSeccion(tipo, null)}
+            alUsarDiseno={(clave) => void usarDiseno(clave)}
+            conLienzo={Boolean(lienzoAbierto)}
+            bloquesDelPlan={limites.bloques}
+            puedeLibre={conLienzo}
+          />
+        </div>
+      }
     />
   )
 }

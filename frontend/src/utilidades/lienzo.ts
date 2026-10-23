@@ -17,8 +17,43 @@ export function nuevoElemento(tipo: TipoElementoLienzo): ElementoLienzo {
       return { ...base, x: 30, y: 15, w: 40, h: 70, ajuste: 'cubrir', radio: 0 }
     case 'forma':
       return { ...base, x: 35, y: 30, w: 30, h: 40, fondo: '#000000', opacidad: 20, radio: 0 }
+    case 'producto':
+      return { ...base, x: 40, y: 8, w: 20, h: 84, tarjeta: {}, movil: { x: 20, y: 4, w: 60, h: 92 } }
+    case 'productos':
+      return { ...base, x: 5, y: 6, w: 90, h: 76, limite: 4, columnas: 4, columnasMovil: 2, tarjeta: {}, movil: { x: 4, y: 3, w: 92, h: 94 } }
+    case 'categorias':
+      return { ...base, x: 10, y: 42, w: 80, h: 16, alineacion: 'centro', movil: { x: 4, y: 35, w: 92, h: 30 } }
+    case 'redes':
+      return { ...base, x: 38, y: 44, w: 24, h: 12, alineacion: 'centro', movil: { x: 15, y: 44, w: 70, h: 12 } }
+    case 'whatsapp':
+      return { ...base, x: 40, y: 44, w: 20, h: 11, texto: 'Escríbenos', movil: { x: 15, y: 45, w: 70, h: 8, tamano: 16 } }
+    case 'logo':
+      return { ...base, x: 42, y: 35, w: 16, h: 30, alineacion: 'centro', movil: { x: 25, y: 38, w: 50, h: 24 } }
+    case 'buscador':
+      return { ...base, x: 30, y: 44, w: 40, h: 11, movil: { x: 5, y: 45, w: 90, h: 10 } }
+    case 'menu':
+      return { ...base, x: 20, y: 44, w: 60, h: 10, alineacion: 'centro', movil: { x: 5, y: 40, w: 90, h: 20 } }
+    case 'carrito':
+      return { ...base, x: 47, y: 43, w: 6, h: 14, alineacion: 'centro', movil: { x: 42, y: 42, w: 16, h: 16 } }
+    case 'icono':
+      return { ...base, x: 46, y: 40, w: 8, h: 14, icono: 'estrella', movil: { x: 40, y: 40, w: 20, h: 11 } }
+    case 'enlace':
+      return { ...base, x: 40, y: 45, w: 20, h: 8, texto: 'Ver más', enlace: '#productos', alineacion: 'centro', movil: { x: 20, y: 45, w: 60, h: 8 } }
+    case 'linea':
+      return { ...base, x: 20, y: 50, w: 60, h: 0.6, opacidad: 25, movil: { x: 10, y: 50, w: 80, h: 0.5 } }
+    case 'video':
+      return { ...base, x: 20, y: 8, w: 60, h: 84, radio: 12, movil: { x: 4, y: 20, w: 92, h: 60 } }
+    case 'mapa':
+      return { ...base, x: 20, y: 8, w: 60, h: 84, radio: 12, movil: { x: 4, y: 10, w: 92, h: 80 } }
+    case 'cuenta': {
+      const fecha = new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 16)
+      return { ...base, x: 32, y: 38, w: 36, h: 24, fecha, movil: { x: 5, y: 40, w: 90, h: 17, tamano: 18 } }
+    }
   }
 }
+
+/** Fotos, formas y piezas vivas guardan su proporción al acomodarse para el celular; el texto se reparte. */
+const PIEZAS_DE_TEXTO: readonly TipoElementoLienzo[] = ['titulo', 'texto', 'boton', 'enlace', 'whatsapp', 'buscador', 'menu', 'redes', 'categorias']
 
 /** La caja que se ve según se esté acomodando el computador o el celular. */
 export function cajaVisible(elemento: ElementoLienzo, movil: boolean): CajaLienzo {
@@ -72,7 +107,7 @@ export function acomodarParaCelular(props: PropsLienzo): PropsLienzo {
   const ANCHO = 390
   const MARGEN = 20
   const esFondo = (elemento: ElementoLienzo) => elemento.w >= 95 && elemento.h >= 95
-  const esVisual = (elemento: ElementoLienzo) => (elemento.tipo === 'imagen' || elemento.tipo === 'forma') && !esFondo(elemento)
+  const esVisual = (elemento: ElementoLienzo) => !PIEZAS_DE_TEXTO.includes(elemento.tipo) && !esFondo(elemento)
   const area = (a: CajaLienzo, b: CajaLienzo) =>
     Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y))
 
@@ -91,7 +126,7 @@ export function acomodarParaCelular(props: PropsLienzo): PropsLienzo {
 
   const altoTexto = (elemento: ElementoLienzo, ancho: number) => {
     const tamano = tamanoMovil(elemento)
-    if (elemento.tipo === 'boton') return Math.round(tamano * 3)
+    if (['boton', 'whatsapp', 'buscador', 'enlace', 'redes'].includes(elemento.tipo)) return Math.round(tamano * 3)
     const letras = (elemento.texto ?? '').length || 10
     const porLinea = Math.max(8, Math.floor(ancho / (tamano * 0.52)))
     return Math.round(Math.ceil(letras / porLinea) * tamano * (elemento.tipo === 'titulo' ? 1.15 : 1.6) + tamano * 0.6)
@@ -105,7 +140,20 @@ export function acomodarParaCelular(props: PropsLienzo): PropsLienzo {
   for (const elemento of orden) {
     let ancho: number
     let alto: number
-    if (esVisual(elemento)) {
+    if (elemento.tipo === 'productos') {
+      // Filas de tarjetas según las columnas del celular: foto cuadrada y unos 130 px de texto y botón.
+      const columnas = elemento.columnasMovil ?? 2
+      const filas = Math.ceil((elemento.limite ?? 4) / columnas)
+      ancho = ANCHO - MARGEN * 2
+      const tarjeta = (ancho - 12 * (columnas - 1)) / columnas
+      alto = Math.round(filas * (tarjeta + 130) + 12 * (filas - 1))
+    } else if (elemento.tipo === 'producto') {
+      ancho = 240
+      alto = 240 + 150
+    } else if (elemento.tipo === 'cuenta') {
+      ancho = ANCHO - MARGEN * 2
+      alto = 110
+    } else if (esVisual(elemento)) {
       ancho = elemento.w >= 45 ? ANCHO : ANCHO - MARGEN * 2
       alto = Math.round(ancho * ((elemento.h * props.alto) / (elemento.w * 1200)))
     } else {
@@ -291,3 +339,69 @@ export const DISENOS_LIENZO: { clave: string; nombre: string; armar: () => Pick<
 ]
 
 export { TAMANO_INICIAL }
+
+/**
+ * Agrega una pieza debajo de lo que ya hay, en vez de encima. Si no cabe, el
+ * lienzo crece lo justo y lo demás se queda donde estaba: las posiciones van
+ * en % del alto, así que se reescalan al nuevo alto. Igual en el celular.
+ */
+export function agregarAlLienzo(props: PropsLienzo, pieza: ElementoLienzo): PropsLienzo {
+  const AIRE = 3
+  const esFondo = (elemento: ElementoLienzo) => elemento.w >= 95 && elemento.h >= 95
+  const colocar = (movil: boolean, altoActual: number) => {
+    const cajas = props.elementos.filter((elemento) => !esFondo(elemento) && !(movil && elemento.movil?.oculto)).map((elemento) => cajaVisible(elemento, movil))
+    const nueva = cajaVisible(pieza, movil)
+    if (cajas.length === 0) return { alto: altoActual, y: nueva.y, escala: 1 }
+    // Piso de lo que hay, en px, y dónde iría la pieza nueva.
+    const piso = Math.max(...cajas.map((caja) => ((caja.y + caja.h) / 100) * altoActual))
+    // El tamaño de una pieza nueva no depende de cuánto haya crecido el lienzo:
+    // sus % de arranque están pensados para un lienzo de 520 (o 640 en el celular).
+    const altoPieza = (nueva.h / 100) * (movil ? 640 : 520)
+    const arriba = piso + (AIRE / 100) * altoActual
+    const alto = Math.max(altoActual, Math.round(arriba + altoPieza + (AIRE / 100) * altoActual))
+    return { alto, y: (arriba / alto) * 100, escala: altoActual / alto, h: (altoPieza / alto) * 100 }
+  }
+  const pc = colocar(false, props.alto)
+  const cel = colocar(true, props.altoMovil)
+  const reescalar = (elemento: ElementoLienzo): ElementoLienzo => {
+    const cambio: Partial<ElementoLienzo> = {}
+    // Lo que cubre todo el lienzo (una foto de fondo) lo sigue cubriendo.
+    if (pc.escala !== 1 && !esFondo(elemento)) Object.assign(cambio, { y: elemento.y * pc.escala, h: elemento.h * pc.escala })
+    const caja = cajaVisible(elemento, true)
+    if (cel.escala !== 1 && !(caja.w >= 95 && caja.h >= 95)) cambio.movil = { ...elemento.movil, y: caja.y * cel.escala, h: caja.h * cel.escala }
+    return { ...elemento, ...cambio }
+  }
+  const nuevaMovil = cajaVisible(pieza, true)
+  return {
+    ...props,
+    alto: pc.alto,
+    altoMovil: cel.alto,
+    elementos: [
+      ...props.elementos.map(reescalar),
+      {
+        ...pieza,
+        y: pc.y,
+        ...(pc.h !== undefined ? { h: pc.h } : {}),
+        movil: { ...pieza.movil, x: nuevaMovil.x, w: nuevaMovil.w, y: cel.y, h: cel.h ?? nuevaMovil.h },
+      },
+    ],
+  }
+}
+
+/**
+ * Agranda o achica una pieza entera: su caja (desde el centro) y su letra, en
+ * el computador o en el celular. factor 1.1 = 10 % más grande.
+ */
+export function escalarElemento(elemento: ElementoLienzo, factor: number, movil: boolean): ElementoLienzo {
+  const caja = cajaVisible(elemento, movil)
+  const w = Math.min(100, Math.max(1, caja.w * factor))
+  const h = Math.min(100, Math.max(0.3, caja.h * factor))
+  // Crece desde el centro, sin salirse del lienzo.
+  const dentro = (valor: number, lado: number) => Math.min(Math.max(valor, 0), 100 - lado)
+  const nueva = { x: dentro(caja.x + (caja.w - w) / 2, w), y: dentro(caja.y + (caja.h - h) / 2, h), w, h }
+  const letra = movil ? tamanoMovil(elemento) : (elemento.tamano ?? TAMANO_INICIAL[elemento.tipo])
+  const tamano = Math.round(Math.min(200, Math.max(6, letra * factor)) * 10) / 10
+  return movil
+    ? { ...elemento, movil: { ...elemento.movil, ...nueva, tamano } }
+    : { ...elemento, ...nueva, tamano }
+}

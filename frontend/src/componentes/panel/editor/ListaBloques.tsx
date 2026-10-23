@@ -33,6 +33,7 @@ import {
   ETIQUETAS_BLOQUE,
   crearBloque,
   duplicarBloque,
+  etiquetaBloque,
   type Bloque,
   type EstiloSeccion,
   type TipoBloque,
@@ -194,7 +195,7 @@ export function ListaBloques({
                 alDuplicar={lleno ? undefined : () => duplicar(bloque)}
                 alQuitar={() =>
                   void confirmar({
-                    titulo: `¿Eliminar la sección "${ETIQUETAS_BLOQUE[bloque.tipo]}"?`,
+                    titulo: `¿Eliminar la sección "${etiquetaBloque(bloque)}"?`,
                     mensaje: 'Se quita de tu tienda con todo lo que tiene adentro. Puedes recuperarla con Ctrl+Z mientras no cierres el editor.',
                     confirmar: 'Sí, eliminar',
                     peligro: true,
@@ -428,7 +429,7 @@ function FilaBloque({
       <div className="flex items-center gap-0.5 py-1.5 pr-1.5 pl-1">
         <button
           type="button"
-          aria-label={`Reordenar ${ETIQUETAS_BLOQUE[bloque.tipo]}`}
+          aria-label={`Reordenar ${etiquetaBloque(bloque)}`}
           className="grid h-8 w-6 shrink-0 cursor-grab touch-none place-items-center text-sitio-tenue hover:text-white active:cursor-grabbing"
           {...attributes}
           {...listeners}
@@ -438,7 +439,7 @@ function FilaBloque({
 
         <button type="button" onClick={alAbrir} className={cn('min-w-0 flex-1 py-1 text-left', oculto && 'opacity-45')}>
           <span className="flex items-center gap-2 text-[13px] text-white">
-            {ETIQUETAS_BLOQUE[bloque.tipo]}
+            {etiquetaBloque(bloque)}
             {conEstilo && <span title="Con estilo propio" className="h-1.5 w-1.5 rounded-full bg-sitio-azul-claro" />}
             {fueraDelPlan && <PlanRequerido plan={planMinimo((plan) => plan.bloques.includes(bloque.tipo))} />}
           </span>

@@ -47,7 +47,7 @@ export function GrillaProductos({
       {visibles.length === 0 ? (
         <p className="text-tinta/50">Todavía no hay productos publicados.</p>
       ) : (
-        <div className={`grid gap-4 sm:gap-6 ${estilo === 'simple' ? 'gap-y-10' : ''} ${CLASES_COLUMNAS[columnas]}`}>
+        <div data-lienzo-vivo="productos" className={`grid gap-4 sm:gap-6 ${estilo === 'simple' ? 'gap-y-10' : ''} ${CLASES_COLUMNAS[columnas]}`}>
           {visibles.map((producto) => (
             <TarjetaProducto key={producto.id} producto={producto} moneda={moneda} estilo={estilo} />
           ))}

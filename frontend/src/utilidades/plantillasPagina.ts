@@ -13,6 +13,7 @@ import { ESTILOS_PREDEFINIDOS } from './tema'
  * tema libre el backend guarda siempre uno de esos). Se pueden usar desde
  * Gratis: al aplicarlas, las secciones que el plan no incluye se dejan por
  * fuera (bloquesDePlantilla) y vuelven al aplicarla otra vez con un plan mayor.
+ * Por eso el menú sólo enlaza a secciones que están en todos los planes.
  */
 
 const temaDe = (clave: string) => ESTILOS_PREDEFINIDOS.find((estilo) => estilo.clave === clave)!.tema
@@ -37,7 +38,7 @@ export const PLANTILLAS_PAGINA: PlantillaTienda[] = [
     capturaMovil: '/ejemplos/morichal-abogados-movil.webp',
     ejemplo: 'Morichal Abogados',
     descripcion: 'Sobria y clara: áreas de práctica con precio de referencia, el equipo, preguntas frecuentes y cómo agendar la primera consulta.',
-    ajustes: { cabecera: 'simple', menu: [enlace('Servicios', 'servicios'), enlace('Equipo', 'equipo'), enlace('Contacto', 'contacto')] },
+    ajustes: { cabecera: 'simple', menu: [enlace('Servicios', 'servicios'), enlace('Contacto', 'contacto')] },
     bloques: (nombre) => [
       {
         id: id('hero'),
@@ -126,7 +127,7 @@ export const PLANTILLAS_PAGINA: PlantillaTienda[] = [
     capturaMovil: '/ejemplos/sonrie-odontologia-movil.webp',
     ejemplo: 'Sonríe Odontología',
     descripcion: 'Limpia y cercana: tratamientos con precio y duración, el equipo médico, opiniones de pacientes y el horario a la vista.',
-    ajustes: { cabecera: 'simple', menu: [enlace('Tratamientos', 'servicios'), enlace('Equipo', 'equipo'), enlace('Horario', 'contacto')] },
+    ajustes: { cabecera: 'simple', menu: [enlace('Tratamientos', 'servicios'), enlace('Horario', 'contacto')] },
     bloques: (nombre) => [
       {
         id: id('hero'),

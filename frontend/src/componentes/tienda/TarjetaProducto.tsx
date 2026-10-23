@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import type { OpcionesTarjeta } from '@/tipos/bloques'
 import type { Producto } from '@/tipos/tienda'
 import { formatearPrecio } from '@/utilidades/formato'
 import { esMedioLocal } from '@/utilidades/medios'
@@ -8,17 +9,29 @@ import { AgregarRapido } from './carrito/AgregarRapido'
 /**
  * Un producto en una grilla. 'simple' es foto grande y texto suelto; 'tarjeta'
  * va en un recuadro con el precio destacado (color propio o el de la marca) y la presentación,
- * como el catálogo de un supermercado.
+ * como el catálogo de un supermercado. `opciones` esconde lo que no se quiera
+ * ver (nombre, precios, insignia, botón); sin ellas se ve todo.
  */
 export function TarjetaProducto({
   producto,
   moneda,
-  estilo = 'simple',
+  estilo: estiloBase = 'simple',
+  opciones = {},
 }: {
   producto: Producto
   moneda: string
   estilo?: 'simple' | 'tarjeta'
+  opciones?: OpcionesTarjeta
 }) {
+  const estilo = opciones.estilo ?? estiloBase
+  const ver = {
+    nombre: opciones.nombre !== false,
+    precio: opciones.precio !== false,
+    precioAntes: opciones.precioAntes !== false,
+    oferta: opciones.oferta !== false,
+    boton: opciones.boton !== false,
+  }
+  const insignia = opciones.textoOferta?.trim() || 'Oferta'
   const foto = producto.fotos[0]
   const segunda = producto.fotos[1]
   // Sólo se ve si el tema lo activa (data-segunda-foto en el marco de la tienda).
@@ -47,24 +60,28 @@ export function TarjetaProducto({
             <span className="flex h-full items-center justify-center text-xs text-tinta/30">Sin foto</span>
           )}
           {fotoAlterna}
-          {producto.precioComparacion && !agotado && (
+          {ver.oferta && producto.precioComparacion && !agotado && (
             <span className="absolute top-2 left-2 rounded-full bg-marca px-2 py-0.5 text-[11px] font-semibold text-marca-contraste">
-              Oferta
+              {insignia}
             </span>
           )}
         </div>
-        <h3 className="mt-3 line-clamp-2 text-center text-sm">{producto.nombre}</h3>
-        <p className="mt-2 text-center">
-          <span className="font-display text-lg font-semibold text-[var(--precio,var(--marca))]">{formatearPrecio(producto.precio, moneda)}</span>
-          {producto.precioComparacion && (
-            <s className="ml-1.5 text-xs text-tinta/40">{formatearPrecio(producto.precioComparacion, moneda)}</s>
-          )}
-        </p>
+        {ver.nombre && <h3 className="mt-3 line-clamp-2 text-center text-sm">{producto.nombre}</h3>}
+        {(ver.precio || ver.precioAntes) && (
+          <p className="mt-2 text-center">
+            {ver.precio && (
+              <span className="font-display text-lg font-semibold text-[var(--precio,var(--marca))]">{formatearPrecio(producto.precio, moneda)}</span>
+            )}
+            {ver.precioAntes && producto.precioComparacion && (
+              <s className="ml-1.5 text-xs text-tinta/40">{formatearPrecio(producto.precioComparacion, moneda)}</s>
+            )}
+          </p>
+        )}
         {(producto.presentacion || agotado) && (
           <p className="mt-0.5 text-center text-xs text-tinta/55">{agotado ? 'Agotado' : producto.presentacion}</p>
         )}
         <span className="mt-auto" />
-        <AgregarRapido producto={producto} forma="boton" />
+        {ver.boton && <AgregarRapido producto={producto} forma="boton" />}
       </Link>
     )
   }
@@ -78,11 +95,16 @@ export function TarjetaProducto({
           <div className="flex h-full items-center justify-center text-sm text-tinta/30">Sin foto</div>
         )}
         {fotoAlterna}
-        <AgregarRapido producto={producto} forma="flotante" />
+        {ver.oferta && opciones.textoOferta !== undefined && producto.precioComparacion && !agotado && (
+          <span className="absolute top-2 left-2 rounded-full bg-marca px-2 py-0.5 text-[11px] font-semibold text-marca-contraste">
+            {insignia}
+          </span>
+        )}
+        {ver.boton && <AgregarRapido producto={producto} forma="flotante" />}
       </div>
-      <h3 className="mt-4 font-medium">{producto.nombre}</h3>
-      <p className="mt-1 text-tinta/70">{formatearPrecio(producto.precio, moneda)}</p>
-      {producto.precioComparacion && (
+      {ver.nombre && <h3 className="mt-4 font-medium">{producto.nombre}</h3>}
+      {ver.precio && <p className="mt-1 text-tinta/70">{formatearPrecio(producto.precio, moneda)}</p>}
+      {ver.precioAntes && producto.precioComparacion && (
         <p className="text-sm text-tinta/40 line-through">{formatearPrecio(producto.precioComparacion, moneda)}</p>
       )}
       {producto.presentacion && <p className="mt-1 text-sm text-tinta/50">{producto.presentacion}</p>}

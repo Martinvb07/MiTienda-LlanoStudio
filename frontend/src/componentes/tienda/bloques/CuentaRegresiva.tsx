@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import type { PropsCuentaRegresiva } from '@/tipos/bloques'
 
-function restante(fecha: string) {
+export function restante(fecha: string) {
   const fin = new Date(fecha).getTime()
   if (!Number.isFinite(fin)) return null
   const total = Math.max(0, fin - Date.now())
@@ -43,7 +43,7 @@ export function CuentaRegresiva({ titulo, subtitulo, fecha, textoBoton, enlaceBo
         <p className="mt-8 text-sm text-tinta/40">Elige la fecha de cierre en el editor.</p>
       ) : (
         !terminado && (
-          <div className="mt-10 flex justify-center gap-3 sm:gap-5">
+          <div data-lienzo-vivo="cuenta" className="mt-10 flex justify-center gap-3 sm:gap-5">
             {unidades.map((unidad) => (
               <div key={unidad.etiqueta} className="w-[72px] rounded-(--radius-marca) bg-marca px-2 py-4 text-marca-contraste sm:w-24 sm:py-5">
                 <span className="block font-display text-3xl font-semibold tabular-nums sm:text-4xl">

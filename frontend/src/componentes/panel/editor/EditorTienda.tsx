@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { AccionSeccion, MensajeLienzo } from '@/app/panel/vista-previa/mensajes'
 import { guardarTienda, listarProductos, type DatosTienda } from '@/servicios/panel'
-import { ETIQUETAS_BLOQUE, duplicarBloque, type PropsLienzo } from '@/tipos/bloques'
+import { ETIQUETAS_BLOQUE, duplicarBloque, type PropsLienzo, type TipoElementoLienzo } from '@/tipos/bloques'
 import type { AjustesTienda, Producto, TemaTienda, Tienda } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
 import { ESTILOS_PREDEFINIDOS, RADIOS, esquemasIniciales } from '@/utilidades/tema'
@@ -22,7 +22,8 @@ import { CamposTema } from './CamposTema'
 import { CamposVentas } from './CamposVentas'
 import { ListaBloques } from './ListaBloques'
 import { ContextoEditorLienzo } from './ContextoLienzo'
-import { cambiarCapa, conCaja, duplicarElemento } from '@/utilidades/lienzo'
+import { agregarAlLienzo, cambiarCapa, conCaja, duplicarElemento, nuevoElemento } from '@/utilidades/lienzo'
+import { PaletaLienzo } from './PaletaLienzo'
 import { aLienzo, avisoConversion, esConvertible } from '@/utilidades/editarLibre'
 import { medirSecciones } from '@/utilidades/medirSecciones'
 import { MarcoEditor, useAtajosEditor } from './MarcoEditor'
@@ -397,6 +398,20 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
   }
   const convertibles = borrador.configuracionBloques.filter((bloque) => esConvertible(bloque.tipo)).length
 
+  // ── Paleta de la derecha: agrega piezas al lienzo abierto ──
+  const lienzoAbierto =
+    pestana === 'pagina' && plantillaEditada === 'portada'
+      ? borrador.configuracionBloques.find((bloque) => bloque.id === abierto && bloque.tipo === 'lienzo')
+      : undefined
+
+  function agregarPieza(tipo: TipoElementoLienzo) {
+    if (!lienzoAbierto) return
+    const pieza = nuevoElemento(tipo)
+    ultimoCambio.current = 0
+    cambiarLienzo(lienzoAbierto.id, (props) => agregarAlLienzo(props, pieza))
+    setLienzoElegido({ bloque: lienzoAbierto.id, elemento: pieza.id })
+  }
+
   async function cerrar() {
     if (sucio && !(await confirmar(SALIR_SIN_GUARDAR))) return
     alCerrar()
@@ -482,6 +497,8 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
             elegido: lienzoElegido,
             elegir: (bloque, elemento) => setLienzoElegido(elemento ? { bloque, elemento } : null),
             movil: dispositivo === 'movil',
+            productos,
+            categorias,
           }}
         >
           <div className="sticky -top-3.5 z-20 -mx-3.5 -mt-3.5 mb-1 border-b border-sitio-borde bg-sitio-lateral/95 px-3.5 pt-3.5 pb-3 backdrop-blur">
@@ -769,7 +786,12 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
           )}
         </ContextoEditorLienzo.Provider>
       }
-      vista={<VistaPrevia datos={datosVista} dispositivo={dispositivo} alAccion={alAccionVista} alLienzo={alLienzo} />}
+      vista={
+        <div className="grid min-h-0 grid-cols-[minmax(0,1fr)_auto]">
+          <VistaPrevia datos={datosVista} dispositivo={dispositivo} alAccion={alAccionVista} alLienzo={alLienzo} />
+          <AnimatePresence>{lienzoAbierto && <PaletaLienzo key="paleta" alAgregar={agregarPieza} />}</AnimatePresence>
+        </div>
+      }
     />
   )
 }

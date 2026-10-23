@@ -638,7 +638,13 @@ html[data-hoja-abierta] .chat-soporte {
   height: var(--h);
   font-size: calc(var(--t) / 1200 * 100cqw);
 }
+.lienzo-grilla {
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+}
 @media (max-width: 640px) {
+  .lienzo-grilla {
+    grid-template-columns: repeat(var(--colsm, 2), minmax(0, 1fr));
+  }
   .lienzo {
     aspect-ratio: var(--arm, var(--ar));
   }

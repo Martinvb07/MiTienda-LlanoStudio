@@ -1,12 +1,14 @@
 'use client'
 
-import { ArrowDown, ArrowUp, Copy, Heading, ImageIcon, Monitor, MousePointerClick, Plus, Smartphone, Square, Trash2, Type, Wand2 } from 'lucide-react'
-import type { ElementoLienzo, PropsLienzo, TipoElementoLienzo } from '@/tipos/bloques'
+import { ArrowDown, ArrowUp, Copy, Monitor, Plus, Smartphone, Trash2, Wand2 } from 'lucide-react'
+import type { ElementoLienzo, OpcionesTarjeta, PropsLienzo, RedSocial, TipoElementoLienzo } from '@/tipos/bloques'
+import { ICONOS_LIENZO } from '@/componentes/tienda/bloques/PiezasLienzo'
 import { cn } from '@/utilidades/clases'
 import {
   DISENOS_LIENZO,
   TAMANO_INICIAL,
   acomodarParaCelular,
+  agregarAlLienzo,
   cajaVisible,
   cambiarCapa,
   conCaja,
@@ -18,19 +20,13 @@ import { Campo, CampoArea, CampoColor, Interruptor, Segmentado } from '../ui/bas
 import { ZonaImagen } from '../ui/imagenes'
 import { useLienzo } from './ContextoLienzo'
 import { confirmar } from '../ui/confirmar'
+import { Selector } from '../ui/flotantes'
+import { GRUPOS_PIEZAS, iconoPieza, nombrePieza } from './piezasLienzo'
 
-const PIEZAS: { tipo: TipoElementoLienzo; etiqueta: string; Icono: typeof Type }[] = [
-  { tipo: 'titulo', etiqueta: 'Título', Icono: Heading },
-  { tipo: 'texto', etiqueta: 'Texto', Icono: Type },
-  { tipo: 'boton', etiqueta: 'Botón', Icono: MousePointerClick },
-  { tipo: 'imagen', etiqueta: 'Foto', Icono: ImageIcon },
-  { tipo: 'forma', etiqueta: 'Forma', Icono: Square },
-]
-
-const ICONO_PIEZA = Object.fromEntries(PIEZAS.map(({ tipo, Icono }) => [tipo, Icono])) as Record<TipoElementoLienzo, typeof Type>
-
-const nombrePieza = (pieza: ElementoLienzo) =>
-  pieza.texto?.trim() || PIEZAS.find((opcion) => opcion.tipo === pieza.tipo)?.etiqueta || 'Pieza'
+/** Las que llevan letra propia (tamaño y color). */
+const CON_LETRA: readonly TipoElementoLienzo[] = ['titulo', 'texto', 'boton', 'whatsapp', 'enlace', 'menu', 'categorias', 'redes', 'buscador', 'cuenta', 'logo']
+/** Las que se alinean a la izquierda, al centro o a la derecha. */
+const CON_ALINEACION: readonly TipoElementoLienzo[] = ['titulo', 'texto', 'enlace', 'menu', 'categorias', 'redes', 'logo', 'carrito']
 
 interface Props {
   bloqueId: string
@@ -54,7 +50,7 @@ export function CamposLienzo({ bloqueId, props, alCambiar, alError, alSubiendo }
 
   function agregar(tipo: TipoElementoLienzo) {
     const pieza = nuevoElemento(tipo)
-    alCambiar({ elementos: [...props.elementos, pieza] })
+    alCambiar(agregarAlLienzo(props, pieza))
     elegir(bloqueId, pieza.id)
   }
 
@@ -128,20 +124,28 @@ export function CamposLienzo({ bloqueId, props, alCambiar, alError, alSubiendo }
       )}
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-[11.5px] text-sitio-suave">Agregar</span>
-        <div className="grid grid-cols-5 gap-1">
-          {PIEZAS.map(({ tipo, etiqueta, Icono }) => (
-            <button
-              key={tipo}
-              type="button"
-              onClick={() => agregar(tipo)}
-              className="flex flex-col items-center gap-1 rounded-lg border border-sitio-borde py-2 text-[10.5px] text-sitio-suave transition-colors hover:border-white/30 hover:text-white"
-            >
-              <Icono aria-hidden="true" className="h-4 w-4" />
-              {etiqueta}
-            </button>
-          ))}
-        </div>
+        <span className="text-[11.5px] text-sitio-suave">
+          Agregar <small className="text-sitio-tenue">(también desde la paleta de la derecha)</small>
+        </span>
+        {GRUPOS_PIEZAS.map((grupo) => (
+          <div key={grupo.titulo} className="flex flex-col gap-1">
+            <span className="text-[10.5px] tracking-[0.08em] text-sitio-tenue uppercase">{grupo.titulo}</span>
+            <div className="grid grid-cols-4 gap-1">
+              {grupo.piezas.map(({ tipo, etiqueta, Icono, detalle }) => (
+                <button
+                  key={tipo}
+                  type="button"
+                  title={detalle}
+                  onClick={() => agregar(tipo)}
+                  className="flex flex-col items-center gap-1 rounded-lg border border-sitio-borde px-1 py-2 text-center text-[10.5px] leading-tight text-sitio-suave transition-colors hover:border-white/30 hover:text-white"
+                >
+                  <Icono aria-hidden="true" className="h-4 w-4" />
+                  {etiqueta}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -151,7 +155,7 @@ export function CamposLienzo({ bloqueId, props, alCambiar, alError, alSubiendo }
         {props.elementos.length === 0 && <p className="text-[12px] text-sitio-tenue">Lienzo vacío: agrega una pieza o usa un diseño.</p>}
         <ul className="flex flex-col gap-1">
           {[...props.elementos].reverse().map((pieza) => {
-            const Icono = ICONO_PIEZA[pieza.tipo]
+            const Icono = iconoPieza(pieza.tipo)
             const activa = actual?.id === pieza.id
             return (
               <li key={pieza.id}>
@@ -219,7 +223,8 @@ function CamposPieza({
   alSubiendo: (delta: number) => void
 }) {
   const caja = cajaVisible(pieza, movil)
-  const conLetra = pieza.tipo === 'titulo' || pieza.tipo === 'texto' || pieza.tipo === 'boton'
+  const conLetra = CON_LETRA.includes(pieza.tipo)
+  const { productos, categorias } = useLienzo()
   const boton = 'grid h-8 flex-1 place-items-center rounded-lg border border-sitio-borde text-sitio-suave transition-colors hover:border-white/30 hover:text-white'
 
   return (
@@ -270,6 +275,8 @@ function CamposPieza({
         </>
       )}
 
+      <CamposEspeciales pieza={pieza} alCambiar={alCambiar} productos={productos} categorias={categorias} />
+
       {conLetra && (
         <div className="grid grid-cols-2 gap-2">
           <Campo
@@ -289,24 +296,26 @@ function CamposPieza({
           />
         </div>
       )}
-      {(pieza.tipo === 'titulo' || pieza.tipo === 'texto') && (
+      {CON_ALINEACION.includes(pieza.tipo) && (
         <div className="flex flex-wrap gap-2">
-          <Segmentado
-            opciones={[
-              { valor: 'normal', etiqueta: 'Normal' },
-              { valor: 'negrita', etiqueta: 'Negrita' },
-            ]}
-            valor={pieza.peso ?? (pieza.tipo === 'titulo' ? 'negrita' : 'normal')}
-            alCambiar={(peso) => alCambiar({ peso })}
-            chico
-          />
+          {(pieza.tipo === 'titulo' || pieza.tipo === 'texto') && (
+            <Segmentado
+              opciones={[
+                { valor: 'normal', etiqueta: 'Normal' },
+                { valor: 'negrita', etiqueta: 'Negrita' },
+              ]}
+              valor={pieza.peso ?? (pieza.tipo === 'titulo' ? 'negrita' : 'normal')}
+              alCambiar={(peso) => alCambiar({ peso })}
+              chico
+            />
+          )}
           <Segmentado
             opciones={[
               { valor: 'izquierda', etiqueta: 'Izq.' },
               { valor: 'centro', etiqueta: 'Centro' },
               { valor: 'derecha', etiqueta: 'Der.' },
             ]}
-            valor={pieza.alineacion ?? 'izquierda'}
+            valor={pieza.alineacion ?? (pieza.tipo === 'titulo' || pieza.tipo === 'texto' ? 'izquierda' : 'centro')}
             alCambiar={(alineacion) => alCambiar({ alineacion })}
             chico
           />
@@ -327,7 +336,7 @@ function CamposPieza({
       )}
 
       <div className="grid grid-cols-2 gap-2">
-        {(pieza.tipo === 'imagen' || pieza.tipo === 'forma' || pieza.tipo === 'boton') && (
+        {['imagen', 'forma', 'boton', 'whatsapp', 'video', 'mapa'].includes(pieza.tipo) && (
           <Campo
             etiqueta="Esquinas (px)"
             tipo="number"
@@ -336,7 +345,7 @@ function CamposPieza({
             alCambiar={(valor) => alCambiar({ radio: Math.min(999, Math.max(0, Number(valor) || 0)) })}
           />
         )}
-        {(pieza.tipo === 'imagen' || pieza.tipo === 'forma') && (
+        {(pieza.tipo === 'imagen' || pieza.tipo === 'forma' || pieza.tipo === 'linea') && (
           <Campo
             etiqueta="Opacidad (%)"
             tipo="number"
@@ -378,4 +387,231 @@ function CamposPieza({
       </p>
     </div>
   )
+}
+
+const REDES: { valor: RedSocial; etiqueta: string }[] = [
+  { valor: 'instagram', etiqueta: 'Instagram' },
+  { valor: 'facebook', etiqueta: 'Facebook' },
+  { valor: 'tiktok', etiqueta: 'TikTok' },
+  { valor: 'whatsapp', etiqueta: 'WhatsApp' },
+]
+
+/** Qué se ve en cada tarjeta de producto: todo se puede apagar. */
+function CamposTarjeta({ tarjeta = {}, alCambiar }: { tarjeta?: OpcionesTarjeta; alCambiar: (tarjeta: OpcionesTarjeta) => void }) {
+  const cambiar = (cambios: Partial<OpcionesTarjeta>) => alCambiar({ ...tarjeta, ...cambios })
+  return (
+    <div className="flex flex-col gap-2 rounded-[10px] border border-sitio-borde p-2.5">
+      <span className="text-[11.5px] text-sitio-suave">Qué muestra la tarjeta</span>
+      <Segmentado
+        opciones={[
+          { valor: 'tarjeta', etiqueta: 'Con borde' },
+          { valor: 'simple', etiqueta: 'Simple' },
+        ]}
+        valor={tarjeta.estilo ?? 'tarjeta'}
+        alCambiar={(estilo) => cambiar({ estilo })}
+        chico
+      />
+      <Interruptor activo={tarjeta.nombre !== false} alCambiar={(nombre) => cambiar({ nombre })}>
+        Nombre
+      </Interruptor>
+      <Interruptor activo={tarjeta.precio !== false} alCambiar={(precio) => cambiar({ precio })}>
+        Precio
+      </Interruptor>
+      <Interruptor activo={tarjeta.precioAntes !== false} alCambiar={(precioAntes) => cambiar({ precioAntes })}>
+        Precio antes (tachado)
+      </Interruptor>
+      <Interruptor activo={tarjeta.oferta !== false} alCambiar={(oferta) => cambiar({ oferta })}>
+        Insignia de oferta
+      </Interruptor>
+      {tarjeta.oferta !== false && (
+        <Campo etiqueta="Texto de la insignia" valor={tarjeta.textoOferta ?? ''} marcador="Oferta" maximo={20} alCambiar={(textoOferta) => cambiar({ textoOferta })} />
+      )}
+      <Interruptor activo={tarjeta.boton !== false} alCambiar={(boton) => cambiar({ boton })}>
+        Botón Agregar
+      </Interruptor>
+    </div>
+  )
+}
+
+/** Campos de las piezas vivas y especiales: producto, grilla, redes, video… */
+function CamposEspeciales({
+  pieza,
+  alCambiar,
+  productos,
+  categorias,
+}: {
+  pieza: ElementoLienzo
+  alCambiar: (cambios: Partial<ElementoLienzo>) => void
+  productos: { id: string; nombre: string }[]
+  categorias: string[]
+}) {
+  const colores = (textoEtiqueta: string, fondoEtiqueta?: string) => (
+    <div className="grid grid-cols-2 gap-2">
+      {fondoEtiqueta && <CampoColor etiqueta={fondoEtiqueta} valor={pieza.fondo ?? '#111111'} alCambiar={(fondo) => alCambiar({ fondo })} />}
+      <CampoColor etiqueta={textoEtiqueta} valor={pieza.color ?? '#ffffff'} alCambiar={(color) => alCambiar({ color })} />
+    </div>
+  )
+  const ayuda = (texto: string) => <p className="text-[11.5px] leading-relaxed text-sitio-tenue">{texto}</p>
+
+  switch (pieza.tipo) {
+    case 'producto':
+      return (
+        <>
+          {productos.length ? (
+            <Selector
+              etiqueta="Producto"
+              valor={pieza.productoId ?? productos[0]!.id}
+              opciones={productos.map((producto) => ({ valor: producto.id, etiqueta: producto.nombre }))}
+              alCambiar={(productoId) => alCambiar({ productoId })}
+            />
+          ) : (
+            ayuda('Todavía no tienes productos: créalos en Productos y aquí eliges cuál mostrar.')
+          )}
+          {ayuda('Se actualiza solo: si cambias el precio, la foto o el stock, la tarjeta cambia.')}
+          <CamposTarjeta tarjeta={pieza.tarjeta} alCambiar={(tarjeta) => alCambiar({ tarjeta })} />
+        </>
+      )
+    case 'productos':
+      return (
+        <>
+          <Selector
+            etiqueta="De qué categoría"
+            valor={pieza.categoria ?? ''}
+            opciones={[{ valor: '', etiqueta: 'Todos los productos' }, ...categorias.map((categoria) => ({ valor: categoria, etiqueta: categoria }))]}
+            alCambiar={(categoria) => alCambiar({ categoria: categoria || undefined })}
+          />
+          <Campo
+            etiqueta="Cuántos mostrar"
+            tipo="number"
+            min={1}
+            valor={pieza.limite ?? 4}
+            alCambiar={(valor) => alCambiar({ limite: Math.min(24, Math.max(1, Number(valor) || 1)) })}
+          />
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11.5px] text-sitio-suave">Columnas en el computador</span>
+            <Segmentado
+              opciones={(['1', '2', '3', '4', '5', '6'] as const).map((valor) => ({ valor, etiqueta: valor }))}
+              valor={String(pieza.columnas ?? 4) as '4'}
+              alCambiar={(valor) => alCambiar({ columnas: Number(valor) })}
+              chico
+            />
+            <span className="text-[11.5px] text-sitio-suave">Columnas en el celular</span>
+            <Segmentado
+              opciones={(['1', '2', '3'] as const).map((valor) => ({ valor, etiqueta: valor }))}
+              valor={String(pieza.columnasMovil ?? 2) as '2'}
+              alCambiar={(valor) => alCambiar({ columnasMovil: Number(valor) })}
+              chico
+            />
+          </div>
+          <Interruptor activo={pieza.soloDestacados ?? false} alCambiar={(soloDestacados) => alCambiar({ soloDestacados })}>
+            Sólo los destacados
+          </Interruptor>
+          {ayuda('Se actualiza sola con tu catálogo. Si no caben, agranda la caja o el alto del lienzo.')}
+          <CamposTarjeta tarjeta={pieza.tarjeta} alCambiar={(tarjeta) => alCambiar({ tarjeta })} />
+        </>
+      )
+    case 'categorias':
+      return (
+        <>
+          {ayuda('Un botón por cada categoría de tus productos, al día.')}
+          {colores('Color del texto', 'Color de los botones')}
+        </>
+      )
+    case 'redes':
+      return (
+        <>
+          <div className="flex flex-col gap-1.5 rounded-[10px] border border-sitio-borde p-2.5">
+            <span className="text-[11.5px] text-sitio-suave">Cuáles mostrar</span>
+            {REDES.map(({ valor, etiqueta }) => {
+              const elegidas = pieza.redes?.length ? pieza.redes : REDES.map((red) => red.valor)
+              return (
+                <Interruptor
+                  key={valor}
+                  activo={elegidas.includes(valor)}
+                  alCambiar={(activo) => alCambiar({ redes: activo ? [...elegidas, valor] : elegidas.filter((red) => red !== valor) })}
+                >
+                  {etiqueta}
+                </Interruptor>
+              )
+            })}
+          </div>
+          {ayuda('Los enlaces salen de Ajustes > Contacto y redes.')}
+          {colores('Color de los íconos', 'Fondo (opcional)')}
+        </>
+      )
+    case 'whatsapp':
+      return (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <Campo etiqueta="Texto" valor={pieza.texto ?? ''} alCambiar={(texto) => alCambiar({ texto })} maximo={40} />
+            <Campo etiqueta="Mensaje inicial" valor={pieza.mensaje ?? ''} marcador="Hola, quiero…" alCambiar={(mensaje) => alCambiar({ mensaje })} maximo={200} />
+          </div>
+          {ayuda('El número sale de Ajustes > Contacto y redes.')}
+          <CampoColor etiqueta="Color del botón" valor={pieza.fondo ?? '#25d366'} alCambiar={(fondo) => alCambiar({ fondo })} />
+        </>
+      )
+    case 'logo':
+      return ayuda('Es el logo de la tienda (o su nombre si no tiene). Se cambia en Ajustes.')
+    case 'buscador':
+      return (
+        <>
+          <Campo etiqueta="Texto de ayuda" valor={pieza.texto ?? ''} marcador="¿Qué estás buscando?" alCambiar={(texto) => alCambiar({ texto })} maximo={60} />
+          {colores('Color de la lupa', 'Color del botón')}
+        </>
+      )
+    case 'menu':
+      return ayuda('Los enlaces se arman en Encabezado > Menú.')
+    case 'carrito':
+      return <CampoColor etiqueta="Color" valor={pieza.color ?? '#111111'} alCambiar={(color) => alCambiar({ color })} />
+    case 'icono':
+      return (
+        <>
+          <div className="grid grid-cols-6 gap-1">
+            {Object.entries(ICONOS_LIENZO).map(([clave, { Icono, nombre }]) => (
+              <button
+                key={clave}
+                type="button"
+                title={nombre}
+                aria-pressed={(pieza.icono ?? 'estrella') === clave}
+                onClick={() => alCambiar({ icono: clave })}
+                className={cn(
+                  'grid h-9 place-items-center rounded-lg border transition-colors',
+                  (pieza.icono ?? 'estrella') === clave ? 'border-sitio-azul bg-sitio-azul/10 text-white' : 'border-sitio-borde text-sitio-suave hover:border-white/30 hover:text-white',
+                )}
+              >
+                <Icono aria-hidden="true" className="h-4 w-4" />
+              </button>
+            ))}
+          </div>
+          <CampoColor etiqueta="Color" valor={pieza.color ?? '#111111'} alCambiar={(color) => alCambiar({ color })} />
+        </>
+      )
+    case 'enlace':
+      return (
+        <div className="grid grid-cols-2 gap-2">
+          <Campo etiqueta="Texto" valor={pieza.texto ?? ''} alCambiar={(texto) => alCambiar({ texto })} maximo={60} />
+          <Campo etiqueta="Lleva a" valor={pieza.enlace ?? ''} marcador="/buscar" alCambiar={(enlace) => alCambiar({ enlace })} />
+        </div>
+      )
+    case 'linea':
+      return <CampoColor etiqueta="Color" valor={pieza.fondo ?? '#111111'} alCambiar={(fondo) => alCambiar({ fondo })} />
+    case 'video':
+      return <Campo etiqueta="Enlace del video" valor={pieza.url ?? ''} marcador="https://youtu.be/…" alCambiar={(url) => alCambiar({ url })} />
+    case 'mapa':
+      return (
+        <>
+          <Campo etiqueta="Dirección" valor={pieza.direccion ?? ''} marcador="Calle 10 # 5-20, Villavicencio" alCambiar={(direccion) => alCambiar({ direccion })} />
+          {ayuda('Vacía, usa la dirección de Ajustes.')}
+        </>
+      )
+    case 'cuenta':
+      return (
+        <>
+          <Campo etiqueta="Termina el" tipo="datetime-local" valor={pieza.fecha ?? ''} alCambiar={(fecha) => alCambiar({ fecha })} />
+          {colores('Color de los números', 'Color de las casillas')}
+        </>
+      )
+    default:
+      return null
+  }
 }

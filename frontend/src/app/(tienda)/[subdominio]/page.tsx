@@ -34,6 +34,7 @@ export default async function PaginaTienda({ params }: Props) {
         ajustes={tienda.ajustes}
         nombreTienda={tienda.nombre}
         tema={tienda.tema}
+        logoUrl={tienda.logoUrl}
       />
     </main>
   )

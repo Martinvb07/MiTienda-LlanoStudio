@@ -94,6 +94,8 @@ export function LienzoVistaPrevia() {
             ajustes={ajustes}
             nombreTienda={tienda.nombre}
             tema={tienda.tema}
+            logoUrl={tienda.logoUrl}
+            editando={datos.editable}
           />
         )}
         {datos.editable && datos.vista !== 'producto' && (

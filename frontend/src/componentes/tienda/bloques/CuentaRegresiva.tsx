@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import type { PropsCuentaRegresiva } from '@/tipos/bloques'
 
-function restante(fecha: string) {
+export function restante(fecha: string) {
   const fin = new Date(fecha).getTime()
   if (!Number.isFinite(fin)) return null
   const total = Math.max(0, fin - Date.now())

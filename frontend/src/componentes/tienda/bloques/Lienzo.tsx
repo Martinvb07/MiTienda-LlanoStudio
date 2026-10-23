@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import { ImageIcon } from 'lucide-react'
 import type { ElementoLienzo, PropsLienzo } from '@/tipos/bloques'
 import { esMedioLocal } from '@/utilidades/medios'
+import { PiezaEspecial, type ContextoLienzo } from './PiezasLienzo'
 
 /** Tamaño de letra por defecto de cada pieza, en px sobre un lienzo de 1200. */
 export const TAMANO_INICIAL: Record<ElementoLienzo['tipo'], number> = {
@@ -11,6 +12,21 @@ export const TAMANO_INICIAL: Record<ElementoLienzo['tipo'], number> = {
   boton: 17,
   imagen: 16,
   forma: 16,
+  producto: 16,
+  productos: 16,
+  categorias: 16,
+  redes: 18,
+  whatsapp: 17,
+  logo: 18,
+  buscador: 16,
+  menu: 16,
+  carrito: 16,
+  icono: 16,
+  enlace: 17,
+  linea: 16,
+  video: 16,
+  mapa: 16,
+  cuenta: 22,
 }
 
 /** En el celular la letra baja a algo más de la mitad, salvo que se haya fijado. */
@@ -42,7 +58,7 @@ function variables(elemento: ElementoLienzo, capa: number): CSSProperties {
   } as CSSProperties
 }
 
-function Pieza({ elemento }: { elemento: ElementoLienzo }) {
+function Pieza({ elemento, contexto }: { elemento: ElementoLienzo; contexto?: ContextoLienzo }) {
   const radio = elemento.radio ? `${elemento.radio}px` : undefined
   const opacidad = elemento.opacidad !== undefined ? elemento.opacidad / 100 : undefined
   const alineacion = elemento.alineacion ?? (elemento.tipo === 'boton' ? 'centro' : 'izquierda')
@@ -105,11 +121,16 @@ function Pieza({ elemento }: { elemento: ElementoLienzo }) {
       return (
         <div className="h-full w-full" style={{ background: elemento.fondo ?? 'var(--marca)', borderRadius: radio, opacity: opacidad }} />
       )
+    default:
+      return <PiezaEspecial elemento={elemento} contexto={contexto} />
   }
 }
 
-/** Lienzo libre: piezas sueltas con posición y tamaño propios, una encima de otra. */
-export function Lienzo({ alto, altoMovil, fondo, elementos }: PropsLienzo) {
+/**
+ * Lienzo libre: piezas sueltas con posición y tamaño propios, una encima de
+ * otra. `contexto` trae los datos de la tienda para las piezas vivas.
+ */
+export function Lienzo({ alto, altoMovil, fondo, elementos, contexto }: PropsLienzo & { contexto?: ContextoLienzo }) {
   return (
     <section
       data-lienzo
@@ -118,7 +139,7 @@ export function Lienzo({ alto, altoMovil, fondo, elementos }: PropsLienzo) {
     >
       {elementos.map((elemento, capa) => (
         <div key={elemento.id} data-lienzo-el={elemento.id} className="lienzo-el" style={variables(elemento, capa)}>
-          <Pieza elemento={elemento} />
+          <Pieza elemento={elemento} contexto={contexto} />
         </div>
       ))}
     </section>

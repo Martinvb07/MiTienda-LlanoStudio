@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { Bloque } from '@/tipos/bloques'
+import { origenLienzo, type Bloque } from '@/tipos/bloques'
 import type { AjustesTienda, Producto, TemaTienda } from '@/tipos/tienda'
 import { Anuncio } from './bloques/Anuncio'
 import { Hero } from './bloques/Hero'
@@ -127,7 +127,8 @@ export function RenderizadorBloques({
   const esquemas = tema ? (tema.esquemas ?? esquemasIniciales(tema)) : undefined
   const contexto: Contexto = { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda, logoUrl, editando }
   const visibles = bloques.filter((bloque) => bloque.visible !== false)
-  const anunciosIniciales = visibles.findIndex((bloque) => bloque.tipo !== 'anuncio')
+  // Las barras de anuncio van arriba del encabezado, también si se pasaron a libre.
+  const anunciosIniciales = visibles.findIndex((bloque) => bloque.tipo !== 'anuncio' && origenLienzo(bloque) !== 'anuncio')
   const corte = anunciosIniciales === -1 ? visibles.length : anunciosIniciales
 
   return (

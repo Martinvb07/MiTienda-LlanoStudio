@@ -11,6 +11,7 @@ import { atributosTema, variablesTema } from '@/utilidades/tema'
 import { FuentesTema } from '@/componentes/tienda/FuentesTema'
 import { BarraSeccion } from './BarraSeccion'
 import { EditorLienzo } from './EditorLienzo'
+import { SoltarEnVista } from './SoltarEnVista'
 import type { MensajeVistaPrevia } from './mensajes'
 
 /**
@@ -102,6 +103,7 @@ export function LienzoVistaPrevia() {
           <BarraSeccion bloques={bloques.filter((bloque) => bloque.visible !== false)} plan={tienda.plan} />
         )}
         {datos.editable && datos.vista !== 'producto' && <EditorLienzo externo={datos.lienzoElegido ?? null} />}
+        {datos.editable && datos.vista !== 'producto' && <SoltarEnVista />}
         {ajustes.whatsappFlotante && ajustes.whatsapp && (
           <BotonWhatsapp numero={ajustes.whatsapp} tienda={tienda.nombre} />
         )}

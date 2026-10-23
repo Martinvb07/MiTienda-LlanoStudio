@@ -387,3 +387,21 @@ export function agregarAlLienzo(props: PropsLienzo, pieza: ElementoLienzo): Prop
     ],
   }
 }
+
+/**
+ * Agranda o achica una pieza entera: su caja (desde el centro) y su letra, en
+ * el computador o en el celular. factor 1.1 = 10 % más grande.
+ */
+export function escalarElemento(elemento: ElementoLienzo, factor: number, movil: boolean): ElementoLienzo {
+  const caja = cajaVisible(elemento, movil)
+  const w = Math.min(100, Math.max(1, caja.w * factor))
+  const h = Math.min(100, Math.max(0.3, caja.h * factor))
+  // Crece desde el centro, sin salirse del lienzo.
+  const dentro = (valor: number, lado: number) => Math.min(Math.max(valor, 0), 100 - lado)
+  const nueva = { x: dentro(caja.x + (caja.w - w) / 2, w), y: dentro(caja.y + (caja.h - h) / 2, h), w, h }
+  const letra = movil ? tamanoMovil(elemento) : (elemento.tamano ?? TAMANO_INICIAL[elemento.tipo])
+  const tamano = Math.round(Math.min(200, Math.max(6, letra * factor)) * 10) / 10
+  return movil
+    ? { ...elemento, movil: { ...elemento.movil, ...nueva, tamano } }
+    : { ...elemento, ...nueva, tamano }
+}

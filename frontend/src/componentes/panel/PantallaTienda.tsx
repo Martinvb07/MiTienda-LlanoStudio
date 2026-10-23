@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AnimatePresence } from 'motion/react'
 import { listarProductos, obtenerTienda } from '@/servicios/panel'
-import { ETIQUETAS_BLOQUE } from '@/tipos/bloques'
+import { etiquetaBloque } from '@/tipos/bloques'
 import type { Producto, Tienda } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
 import { PLANTILLAS_TIENDA } from '@/utilidades/plantillas'
@@ -130,7 +130,7 @@ export function PantallaTienda() {
                   <span className="w-5 font-mono text-[11px] text-sitio-tenue">
                     {String(indice + 1).padStart(2, '0')}
                   </span>
-                  {ETIQUETAS_BLOQUE[bloque.tipo]}
+                  {etiquetaBloque(bloque)}
                 </li>
               ))}
             </ol>

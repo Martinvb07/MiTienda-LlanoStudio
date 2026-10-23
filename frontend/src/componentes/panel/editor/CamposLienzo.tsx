@@ -1,27 +1,26 @@
 'use client'
 
-import { ArrowDown, ArrowUp, Copy, Monitor, Plus, Smartphone, Trash2, Wand2 } from 'lucide-react'
+import { useEffect } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { ArrowDown, ArrowUp, Copy, Maximize2, Minimize2, Monitor, Plus, Smartphone, Trash2, Wand2, X } from 'lucide-react'
 import type { ElementoLienzo, OpcionesTarjeta, PropsLienzo, RedSocial, TipoElementoLienzo } from '@/tipos/bloques'
 import { ICONOS_LIENZO } from '@/componentes/tienda/bloques/PiezasLienzo'
 import { cn } from '@/utilidades/clases'
 import {
-  DISENOS_LIENZO,
   TAMANO_INICIAL,
   acomodarParaCelular,
-  agregarAlLienzo,
   cajaVisible,
   cambiarCapa,
   conCaja,
   duplicarElemento,
-  nuevoElemento,
+  escalarElemento,
 } from '@/utilidades/lienzo'
 import { tamanoMovil } from '@/componentes/tienda/bloques/Lienzo'
-import { Campo, CampoArea, CampoColor, Interruptor, Segmentado } from '../ui/basicos'
+import { CURVA, Campo, CampoArea, CampoColor, Interruptor, Segmentado } from '../ui/basicos'
 import { ZonaImagen } from '../ui/imagenes'
 import { useLienzo } from './ContextoLienzo'
-import { confirmar } from '../ui/confirmar'
 import { Selector } from '../ui/flotantes'
-import { GRUPOS_PIEZAS, iconoPieza, nombrePieza } from './piezasLienzo'
+import { iconoPieza, nombrePieza } from './piezasLienzo'
 
 /** Las que llevan letra propia (tamaño y color). */
 const CON_LETRA: readonly TipoElementoLienzo[] = ['titulo', 'texto', 'boton', 'whatsapp', 'enlace', 'menu', 'categorias', 'redes', 'buscador', 'cuenta', 'logo']
@@ -41,73 +40,29 @@ interface Props {
  * la vista previa; aquí van el contenido de cada pieza, sus colores, las capas
  * y los atajos: diseños de arranque y el acomodo automático para el celular.
  */
-export function CamposLienzo({ bloqueId, props, alCambiar, alError, alSubiendo }: Props) {
+export function CamposLienzo({ bloqueId, props, alCambiar }: Props) {
   const { elegido, elegir, movil } = useLienzo()
   const actual = elegido?.bloque === bloqueId ? props.elementos.find((pieza) => pieza.id === elegido.elemento) : undefined
 
-  const cambiarPieza = (id: string, cambios: Partial<ElementoLienzo>) =>
-    alCambiar({ elementos: props.elementos.map((pieza) => (pieza.id === id ? { ...pieza, ...cambios } : pieza)) })
-
-  function agregar(tipo: TipoElementoLienzo) {
-    const pieza = nuevoElemento(tipo)
-    alCambiar(agregarAlLienzo(props, pieza))
-    elegir(bloqueId, pieza.id)
-  }
-
-  async function usarDiseno(clave: string) {
-    const diseno = DISENOS_LIENZO.find((opcion) => opcion.clave === clave)
-    if (!diseno) return
-    if (
-      props.elementos.length > 0 &&
-      !(await confirmar({
-        titulo: `¿Usar "${diseno.nombre}"?`,
-        mensaje: 'Reemplaza las piezas de este lienzo. Puedes volver atrás con Ctrl+Z.',
-        confirmar: 'Usar diseño',
-      }))
-    )
-      return
-    alCambiar(diseno.armar())
-    elegir(bloqueId, null)
-  }
-
   return (
     <>
-      <div className="flex items-start gap-2.5 rounded-[10px] border border-sitio-azul/30 bg-sitio-azul/[0.08] p-3 text-[12px] leading-relaxed text-sitio-suave">
-        {movil ? <Smartphone aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-sitio-azul-claro" /> : <Monitor aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-sitio-azul-claro" />}
+      <p className="flex items-start gap-2 text-[12px] leading-relaxed text-sitio-tenue">
+        {movil ? <Smartphone aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" /> : <Monitor aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />}
         <span>
-          Arrastra las piezas en la vista previa para moverlas; los puntos de las esquinas las agrandan o achican. Estás acomodando la versión de{' '}
-          <b className="font-medium text-white">{movil ? 'celular' : 'computador'}</b>: cambia arriba con el ícono del{' '}
-          {movil ? 'computador' : 'celular'}.
+          Arrastra y estira en la vista previa ({movil ? 'celular' : 'computador'}). Toca una pieza para editarla; agrega desde la derecha.
         </span>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[11.5px] text-sitio-suave">Diseños para empezar</span>
-        <div className="grid grid-cols-2 gap-1.5">
-          {DISENOS_LIENZO.map((diseno) => (
-            <button
-              key={diseno.clave}
-              type="button"
-              onClick={() => void usarDiseno(diseno.clave)}
-              className="rounded-lg border border-sitio-borde px-2.5 py-2 text-left text-[11.5px] leading-snug text-sitio-suave transition-colors hover:border-white/30 hover:text-white"
-            >
-              {diseno.nombre}
-            </button>
-          ))}
-        </div>
-      </div>
+      </p>
 
       <div className="grid grid-cols-2 gap-2.5">
         <Campo
-          etiqueta={movil ? 'Alto en el celular' : 'Alto en el computador'}
+          etiqueta={movil ? 'Alto en el celular' : 'Alto'}
           tipo="number"
-          min={120}
+          min={40}
           valor={movil ? props.altoMovil : props.alto}
           alCambiar={(valor) => {
-            const alto = Math.min(2400, Math.max(120, Number(valor) || 120))
+            const alto = Math.min(2400, Math.max(40, Number(valor) || 40))
             alCambiar(movil ? { altoMovil: alto } : { alto })
           }}
-          ayuda="También con la barrita azul de abajo."
         />
         <CampoColor etiqueta="Fondo" valor={props.fondo ?? '#ffffff'} alCambiar={(fondo) => alCambiar({ fondo })} />
       </div>
@@ -119,41 +74,14 @@ export function CamposLienzo({ bloqueId, props, alCambiar, alError, alSubiendo }
           className="flex h-9 items-center justify-center gap-1.5 rounded-[10px] border border-sitio-borde text-[12px] text-sitio-suave transition-colors hover:border-white/30 hover:text-white"
         >
           <Wand2 aria-hidden="true" className="h-3.5 w-3.5" />
-          Acomodar para celular automáticamente
+          Acomodar para celular
         </button>
       )}
 
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[11.5px] text-sitio-suave">
-          Agregar <small className="text-sitio-tenue">(también desde la paleta de la derecha)</small>
-        </span>
-        {GRUPOS_PIEZAS.map((grupo) => (
-          <div key={grupo.titulo} className="flex flex-col gap-1">
-            <span className="text-[10.5px] tracking-[0.08em] text-sitio-tenue uppercase">{grupo.titulo}</span>
-            <div className="grid grid-cols-4 gap-1">
-              {grupo.piezas.map(({ tipo, etiqueta, Icono, detalle }) => (
-                <button
-                  key={tipo}
-                  type="button"
-                  title={detalle}
-                  onClick={() => agregar(tipo)}
-                  className="flex flex-col items-center gap-1 rounded-lg border border-sitio-borde px-1 py-2 text-center text-[10.5px] leading-tight text-sitio-suave transition-colors hover:border-white/30 hover:text-white"
-                >
-                  <Icono aria-hidden="true" className="h-4 w-4" />
-                  {etiqueta}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[11.5px] text-sitio-suave">
-          Capas <small className="text-sitio-tenue">(la de arriba queda encima)</small>
-        </span>
-        {props.elementos.length === 0 && <p className="text-[12px] text-sitio-tenue">Lienzo vacío: agrega una pieza o usa un diseño.</p>}
-        <ul className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1">
+        <span className="text-[11.5px] text-sitio-suave">Piezas</span>
+        {props.elementos.length === 0 && <p className="text-[12px] text-sitio-tenue">Vacío: arrastra algo desde la derecha.</p>}
+        <ul className="flex flex-col gap-0.5">
           {[...props.elementos].reverse().map((pieza) => {
             const Icono = iconoPieza(pieza.tipo)
             const activa = actual?.id === pieza.id
@@ -165,41 +93,97 @@ export function CamposLienzo({ bloqueId, props, alCambiar, alError, alSubiendo }
                   aria-pressed={activa}
                   onClick={() => elegir(bloqueId, activa ? null : pieza.id)}
                   className={cn(
-                    'flex w-full items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-[12.5px] transition-colors',
-                    activa ? 'border-sitio-azul bg-sitio-azul/10 text-white' : 'border-sitio-borde text-sitio-suave hover:border-white/25 hover:text-white',
+                    'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] transition-colors',
+                    activa ? 'bg-sitio-azul/15 text-white' : 'text-sitio-suave hover:bg-white/[0.05] hover:text-white',
                   )}
                 >
                   <Icono aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate">{nombrePieza(pieza)}</span>
-                  {movil && pieza.movil?.oculto && <span className="ml-auto text-[10.5px] text-sitio-tenue">oculta en celular</span>}
+                  {movil && pieza.movil?.oculto && <span className="ml-auto text-[10.5px] text-sitio-tenue">oculta</span>}
                 </button>
               </li>
             )
           })}
         </ul>
       </div>
-
-      {actual && (
-        <CamposPieza
-          key={actual.id}
-          pieza={actual}
-          movil={movil}
-          alCambiar={(cambios) => cambiarPieza(actual.id, cambios)}
-          alCapa={(paso) => alCambiar({ elementos: cambiarCapa(props.elementos, actual.id, paso) })}
-          alDuplicar={() => {
-            const { elementos, nuevo } = duplicarElemento(props.elementos, actual.id)
-            alCambiar({ elementos })
-            if (nuevo) elegir(bloqueId, nuevo)
-          }}
-          alQuitar={() => {
-            alCambiar({ elementos: props.elementos.filter((pieza) => pieza.id !== actual.id) })
-            elegir(bloqueId, null)
-          }}
-          alError={alError}
-          alSubiendo={alSubiendo}
-        />
-      )}
     </>
+  )
+}
+
+/**
+ * Las opciones de la pieza elegida, en un modal flotante sobre la vista previa
+ * (no en la columna de la izquierda, que queda para las secciones).
+ */
+export function ModalPieza({
+  bloqueId,
+  props,
+  alCambiar,
+  alError,
+  alSubiendo,
+}: Props) {
+  const { elegido, elegir, movil } = useLienzo()
+  const actual = elegido?.bloque === bloqueId ? props.elementos.find((pieza) => pieza.id === elegido.elemento) : undefined
+  const cambiarPieza = (id: string, cambios: Partial<ElementoLienzo>) =>
+    alCambiar({ elementos: props.elementos.map((pieza) => (pieza.id === id ? { ...pieza, ...cambios } : pieza)) })
+
+  useEffect(() => {
+    if (!actual) return
+    const alTeclear = (evento: KeyboardEvent) => evento.key === 'Escape' && elegir(bloqueId, null)
+    window.addEventListener('keydown', alTeclear)
+    return () => window.removeEventListener('keydown', alTeclear)
+  }, [actual, bloqueId, elegir])
+
+  return (
+    <AnimatePresence>
+      {actual && (
+        <motion.div
+          key="modal-pieza"
+          role="dialog"
+          aria-label={`Editar ${nombrePieza(actual)}`}
+          initial={{ opacity: 0, y: 12, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 8, scale: 0.98 }}
+          transition={{ duration: 0.35, ease: CURVA }}
+          className="absolute top-4 right-4 z-30 flex max-h-[calc(100%-32px)] w-[320px] flex-col overflow-hidden rounded-[14px] border border-sitio-borde bg-sitio-lateral shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)]"
+        >
+          <div className="flex items-center gap-2 border-b border-sitio-borde px-3.5 py-2.5">
+            {(() => {
+              const Icono = iconoPieza(actual.tipo)
+              return <Icono aria-hidden="true" className="h-4 w-4 text-sitio-suave" />
+            })()}
+            <span className="flex-1 truncate text-[13px] text-white">{nombrePieza(actual)}</span>
+            <button
+              type="button"
+              onClick={() => elegir(bloqueId, null)}
+              aria-label="Cerrar"
+              className="grid h-7 w-7 place-items-center rounded-md text-sitio-tenue transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <X aria-hidden="true" className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="min-h-0 overflow-y-auto overscroll-contain p-3">
+            <CamposPieza
+              key={actual.id}
+              pieza={actual}
+              movil={movil}
+              alCambiar={(cambios) => cambiarPieza(actual.id, cambios)}
+              alCapa={(paso) => alCambiar({ elementos: cambiarCapa(props.elementos, actual.id, paso) })}
+              alDuplicar={() => {
+                const { elementos, nuevo } = duplicarElemento(props.elementos, actual.id)
+                alCambiar({ elementos })
+                if (nuevo) elegir(bloqueId, nuevo)
+              }}
+              alQuitar={() => {
+                alCambiar({ elementos: props.elementos.filter((pieza) => pieza.id !== actual.id) })
+                elegir(bloqueId, null)
+              }}
+              alError={alError}
+              alSubiendo={alSubiendo}
+            />
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -244,6 +228,16 @@ function CamposPieza({
         </button>
       </div>
 
+      <div className="flex items-center gap-1.5">
+        <span className="flex-1 text-[11.5px] text-sitio-suave">Tamaño {movil ? '(celular)' : ''}</span>
+        <button type="button" title="Achicar" onClick={() => alCambiar(escalarElemento(pieza, 0.9, movil))} className={cn(boton, 'flex-none px-3')}>
+          <Minimize2 aria-hidden="true" className="h-3.5 w-3.5" />
+        </button>
+        <button type="button" title="Agrandar" onClick={() => alCambiar(escalarElemento(pieza, 1.1, movil))} className={cn(boton, 'flex-none px-3')}>
+          <Maximize2 aria-hidden="true" className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
       {(pieza.tipo === 'titulo' || pieza.tipo === 'texto') && (
         <CampoArea etiqueta="Texto" valor={pieza.texto ?? ''} alCambiar={(texto) => alCambiar({ texto })} filas={3} maximo={600} />
       )}
@@ -263,6 +257,7 @@ function CamposPieza({
             alError={alError}
             alSubiendo={alSubiendo}
           />
+          <Campo etiqueta="Lleva a (opcional)" valor={pieza.enlace ?? ''} marcador="/categoria/…" alCambiar={(enlace) => alCambiar({ enlace: enlace || undefined })} />
           <Segmentado
             opciones={[
               { valor: 'cubrir', etiqueta: 'Llenar la caja' },

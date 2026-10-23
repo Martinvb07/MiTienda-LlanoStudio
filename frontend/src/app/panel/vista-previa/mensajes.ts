@@ -48,3 +48,23 @@ export interface MensajeLienzo {
   alto?: number
   movil: boolean
 }
+
+/** Formatos del arrastre desde la paleta de la derecha (el tipo viaja en los datos). */
+export const ARRASTRE_PIEZA = 'text/x-mi-sitio-pieza'
+export const ARRASTRE_SECCION = 'text/x-mi-sitio-seccion'
+
+/**
+ * Lo que el iframe avisa al soltar algo de la paleta: una pieza en un punto
+ * de una sección (x, y en % de ella) o una sección nueva antes de otra.
+ */
+export interface MensajeSoltar {
+  tipo: 'mt-soltar'
+  clase: 'pieza' | 'seccion'
+  /** El tipo de pieza o de sección que se soltó. */
+  que: string
+  /** pieza: la sección donde cayó; seccion: la que queda debajo (null = al final). */
+  bloque: string | null
+  x?: number
+  y?: number
+  movil: boolean
+}

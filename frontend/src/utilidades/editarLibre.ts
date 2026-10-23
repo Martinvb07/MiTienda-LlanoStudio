@@ -747,6 +747,7 @@ export function aLienzo(bloque: Bloque, tema: TemaTienda, medidas?: MedidasSecci
   // Sin conversor propio hace falta la sección medida: se arma pieza por pieza.
   else props = medidas?.pc.nodos ? desdeNodos(bloque, tema, medidas) : null
   if (!props) return null
+  props.origen = bloque.tipo
   const { esquema, fondo, texto, ancla, animacion, dispositivos, forma } = bloque.estilo ?? {}
   const estilo = Object.fromEntries(
     Object.entries({ esquema, fondo, texto, ancla, animacion, dispositivos, forma }).filter(([, valor]) => valor !== undefined),

@@ -361,6 +361,8 @@ export interface PropsLienzo {
   altoMovil: number
   fondo?: string
   elementos: ElementoLienzo[]
+  /** La sección de la que salió al pasarla a libre: conserva su nombre ("Portada", "Productos"…). */
+  origen?: TipoBloque
 }
 
 interface BloqueBase<T extends TipoBloque, P> {
@@ -613,6 +615,24 @@ export const PROPS_INICIALES: { [T in TipoBloque]: Extract<Bloque, { tipo: T }>[
       },
     ],
   },
+}
+
+/**
+ * De qué sección viene un lienzo: lo guardado al pasarla a libre o, en las
+ * que se pasaron antes de guardarlo, el tipo con que empieza su id ("hero-…").
+ */
+export function origenLienzo(bloque: Bloque): TipoBloque | null {
+  if (bloque.tipo !== 'lienzo') return null
+  if (bloque.props.origen) return bloque.props.origen
+  if (bloque.id.startsWith('grilla-')) return 'grilla-productos'
+  const tipos = (Object.keys(ETIQUETAS_BLOQUE) as TipoBloque[]).filter((tipo) => tipo !== 'lienzo' && bloque.id.startsWith(`${tipo}-`))
+  return tipos.sort((a, b) => b.length - a.length)[0] ?? null
+}
+
+/** El nombre de una sección; una pasada a libre conserva el de la original. */
+export function etiquetaBloque(bloque: Bloque): string {
+  const origen = origenLienzo(bloque)
+  return ETIQUETAS_BLOQUE[origen ?? bloque.tipo]
 }
 
 export function crearBloque(tipo: TipoBloque): Bloque {

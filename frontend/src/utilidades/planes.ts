@@ -1,4 +1,4 @@
-import type { Bloque, EstiloSeccion, TipoBloque } from '@/tipos/bloques'
+import { normalizarBloques, type Bloque, type EstiloSeccion, type TipoBloque } from '@/tipos/bloques'
 import type { AjustesTienda, TemaTienda } from '@/tipos/tienda'
 
 /**
@@ -37,6 +37,8 @@ export interface LimitesPlan {
   itemsLista: number
   /** Botones de los enlaces para tu bio, contando todas sus secciones. */
   enlacesBio: number
+  /** Páginas aparte de la de inicio (/servicios…) en la página para tu negocio. */
+  paginasExtra: number
   /** Cupones activos a la vez; null = sin límite. */
   cupones: number | null
   /** Opciones de variante por producto (Talla, Color…); 0 = sin variantes. */
@@ -136,6 +138,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     estiloSeccion: 'ninguno',
     itemsLista: 0,
     enlacesBio: 6,
+    paginasExtra: 0,
     cupones: 0,
     opcionesVariantes: 0,
     accionesLote: false,
@@ -166,6 +169,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     estiloSeccion: 'basico',
     itemsLista: 6,
     enlacesBio: 15,
+    paginasExtra: 0,
     cupones: 3,
     opcionesVariantes: 1,
     accionesLote: true,
@@ -196,6 +200,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     estiloSeccion: 'avanzado',
     itemsLista: 12,
     enlacesBio: 40,
+    paginasExtra: 5,
     cupones: 20,
     opcionesVariantes: 2,
     accionesLote: true,
@@ -226,6 +231,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     estiloSeccion: 'completo',
     itemsLista: 30,
     enlacesBio: 100,
+    paginasExtra: 15,
     cupones: null,
     opcionesVariantes: 3,
     accionesLote: true,
@@ -292,11 +298,24 @@ export function ajustarAlPlan(
     },
   }
 
+  // Las páginas extra: las que el plan incluye, con sus secciones recortadas igual.
+  if (ajustes.paginas) {
+    ajustados.paginas = ajustes.paginas.slice(0, limites.paginasExtra).map((pagina) => ({
+      ...pagina,
+      bloques: bloquesAlPlan(limites, normalizarBloques(pagina.bloques)),
+    }))
+  }
+
+  return { ajustes: ajustados, bloques: bloquesAlPlan(limites, bloques) }
+}
+
+/** Las secciones de una página, recortadas a lo que el plan permite. */
+function bloquesAlPlan(limites: LimitesPlan, bloques: Bloque[]): Bloque[] {
   const items = limites.itemsLista
   // El tope de botones de la bio cuenta los de todas sus secciones, en orden.
   let enlacesLibres = limites.enlacesBio
 
-  const permitidos = bloques
+  return bloques
     .filter((bloque) => limites.bloques.includes(bloque.tipo))
     .map((bloque): Bloque => ({ ...bloque, estilo: estiloDelPlan(bloque.estilo, limites.estiloSeccion) }) as Bloque)
     .map((bloque): Bloque => {
@@ -349,8 +368,6 @@ export function ajustarAlPlan(
           return bloque
       }
     })
-
-  return { ajustes: ajustados, bloques: permitidos }
 }
 
 /** Deja del estilo de una sección sólo lo que el nivel del plan incluye. */

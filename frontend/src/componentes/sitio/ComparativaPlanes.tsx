@@ -99,6 +99,7 @@ const GRUPOS_PAGINA: { titulo: string; filas: Fila[] }[] = [
       { etiqueta: 'Servicios con precio y agenda por WhatsApp', valor: (l) => l.bloques.includes('servicios') },
       { etiqueta: 'Horario, dirección y contacto', valor: (l) => l.bloques.includes('horario') },
       { etiqueta: 'Equipo con foto y cargo', valor: (l) => l.bloques.includes('equipo') },
+      { etiqueta: 'Páginas aparte (/servicios, /nosotros…)', valor: (l) => (l.paginasExtra ? `Hasta ${l.paginasExtra}` : false) },
       { etiqueta: 'Estadísticas de visitas', valor: (l) => (l.diasMetricas >= 365 ? '1 año' : `${l.diasMetricas} días`) },
       { etiqueta: 'Personas en el panel', valor: (l) => l.usuarios },
       { etiqueta: 'Dominio propio con HTTPS', valor: (l) => l.dominioPropio },

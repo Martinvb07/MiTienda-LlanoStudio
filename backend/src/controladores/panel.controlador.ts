@@ -8,7 +8,7 @@ import { guardarImagen } from '../almacenamiento/index.js'
 import { cifrarContrasena, verificarContrasena } from '../utilidades/contrasenas.js'
 import { esSubdominioValido } from '../utilidades/dominios.js'
 import { ErrorHttp, noAutorizado, noEncontrado, solicitudInvalida } from '../utilidades/errores.js'
-import { ETIQUETAS_BLOQUE_PLAN, TEMAS_PREDEFINIDOS, fueraDelPlan, limitesDe } from '../utilidades/planes.js'
+import { ETIQUETAS_BLOQUE_PLAN, RUTAS_RESERVADAS, TEMAS_PREDEFINIDOS, fueraDelPlan, limitesDe, type LimitesPlan } from '../utilidades/planes.js'
 import { aplicarVencimientos, estadoSuscripcion } from '../servicios/suscripciones.servicio.js'
 import { tokenSiEsAdmin } from '../servicios/admins.servicio.js'
 import { cambiarPlan, leerAjuste } from '../servicios/plataforma.servicio.js'
@@ -166,6 +166,25 @@ const esquemaAjustes = z.object({
   // Enlaces para tu bio
   fondoBio: z.enum(['liso', 'degradado', 'malla']).optional(),
   ocultarMarca: z.boolean().optional(),
+  // Páginas aparte de la de inicio (/servicios…), con sus secciones
+  paginas: z
+    .array(
+      z.object({
+        id: z.string().min(1).max(40),
+        titulo: z.string().trim().min(1, 'La página necesita un nombre').max(60),
+        ruta: z
+          .string()
+          .trim()
+          .toLowerCase()
+          .regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, 'La dirección de la página usa sólo letras, números y guiones')
+          .max(40)
+          .refine((ruta) => !RUTAS_RESERVADAS.has(ruta), 'Esa dirección ya la usa el sitio'),
+        bloques: z.array(esquemaBloque).max(60),
+      }),
+    )
+    .max(15)
+    .refine((paginas) => new Set(paginas.map((pagina) => pagina.ruta)).size === paginas.length, 'Dos páginas no pueden tener la misma dirección')
+    .optional(),
 })
 
 export const esquemaTienda = z.object({
@@ -555,31 +574,45 @@ async function planDeLaSesion(req: Request) {
   return limitesDe(tenant?.plan ?? 'GRATIS')
 }
 
+type BloqueGuardado = z.infer<typeof esquemaBloque>
+
+/** Las secciones de una página tienen que caber en el plan: cuántas y de qué tipo. */
+function validarBloques(bloques: BloqueGuardado[], plan: LimitesPlan, donde = '') {
+  if (bloques.length > plan.secciones) {
+    throw fueraDelPlan(`Tu plan ${plan.nombre} admite hasta ${plan.secciones} secciones${donde}`)
+  }
+  const fuera = bloques.find((bloque) => !plan.bloques.includes(bloque.tipo))
+  if (fuera) {
+    throw fueraDelPlan(
+      `La sección "${ETIQUETAS_BLOQUE_PLAN[fuera.tipo] ?? fuera.tipo}"${donde} no está incluida en tu plan ${plan.nombre}`,
+    )
+  }
+}
+
+/** Quitar "Hecho con Mi Sitio" del pie es de los planes pagos. */
+const conMarca = (bloques: BloqueGuardado[], plan: LimitesPlan) =>
+  plan.quitarMarca
+    ? bloques
+    : bloques.map((bloque) => (bloque.tipo === 'pie' ? { ...bloque, props: { ...bloque.props, ocultarMarca: false } } : bloque))
+
 export async function actualizarTiendaPanel(req: Request, res: Response): Promise<void> {
   const datos = req.body as z.infer<typeof esquemaTienda>
   const plan = await planDeLaSesion(req)
 
-  if (datos.configuracionBloques.length > plan.secciones) {
-    throw fueraDelPlan(`Tu plan ${plan.nombre} admite hasta ${plan.secciones} secciones`)
-  }
-  const fuera = datos.configuracionBloques.find((bloque) => !plan.bloques.includes(bloque.tipo))
-  if (fuera) {
-    throw fueraDelPlan(
-      `La sección "${ETIQUETAS_BLOQUE_PLAN[fuera.tipo] ?? fuera.tipo}" no está incluida en tu plan ${plan.nombre}`,
-    )
-  }
+  validarBloques(datos.configuracionBloques, plan)
+  // Las páginas extra no se rechazan por cantidad: si el plan baja, se guardan
+  // igual y sólo se publican las que el plan incluye. Sus secciones sí cuentan.
+  for (const pagina of datos.ajustes.paginas ?? []) validarBloques(pagina.bloques, plan, ` (página ${pagina.titulo})`)
+  const ajustes = datos.ajustes.paginas
+    ? { ...datos.ajustes, paginas: datos.ajustes.paginas.map((pagina) => ({ ...pagina, bloques: conMarca(pagina.bloques, plan) })) }
+    : datos.ajustes
 
   // Sin tema libre, el tema es siempre el del estilo predefinido elegido: lo
   // que llegue en el cuerpo se ignora.
   const plantilla = plan.temaLibre || datos.plantilla in TEMAS_PREDEFINIDOS ? datos.plantilla : 'clasica'
   const tema = plan.temaLibre ? datos.tema : TEMAS_PREDEFINIDOS[plantilla]!
 
-  // Quitar "Hecho con Mi Sitio" del pie es de los planes pagos.
-  const bloques = plan.quitarMarca
-    ? datos.configuracionBloques
-    : datos.configuracionBloques.map((bloque) =>
-        bloque.tipo === 'pie' ? { ...bloque, props: { ...bloque.props, ocultarMarca: false } } : bloque,
-      )
+  const bloques = conMarca(datos.configuracionBloques, plan)
 
   const tienda = await prisma.tienda.update({
     where: { tenantId: req.sesion!.tenantId },
@@ -590,7 +623,8 @@ export async function actualizarTiendaPanel(req: Request, res: Response): Promis
       plantilla,
       tema,
       configuracionBloques: bloques as object[],
-      ajustes: datos.ajustes,
+      // Mismo trato que configuracionBloques: JSON libre ya validado arriba.
+      ajustes: ajustes as object,
       publicada: datos.publicada,
     },
     select: camposTienda,

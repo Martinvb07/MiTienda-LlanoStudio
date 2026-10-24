@@ -65,3 +65,35 @@ describe('botones de los enlaces en el admin', () => {
     expect(contarEnlaces('no es una lista')).toBe(0)
   })
 })
+
+describe('páginas extra de la página para tu negocio', () => {
+  const tienda = (paginas: unknown) => ({
+    nombre: 'Morichal Abogados',
+    descripcion: null,
+    logoUrl: null,
+    plantilla: 'clasica',
+    tema: {},
+    configuracionBloques: [],
+    ajustes: { paginas },
+    publicada: true,
+  })
+  const pagina = (ruta: string) => ({ id: ruta, titulo: 'Servicios', ruta, bloques: [{ id: 'h', tipo: 'hero', props: { titulo: 'Hola' } }] })
+
+  it('acepta páginas con dirección propia', () => {
+    const datos = controlador.esquemaTienda.parse(tienda([pagina('servicios'), pagina('nosotros')]))
+    expect(datos.ajustes.paginas?.map((otra) => otra.ruta)).toEqual(['servicios', 'nosotros'])
+  })
+
+  it('rechaza direcciones que ya usa el sitio, repetidas o con caracteres raros', () => {
+    expect(controlador.esquemaTienda.safeParse(tienda([pagina('carrito')])).success).toBe(false)
+    expect(controlador.esquemaTienda.safeParse(tienda([pagina('servicios'), pagina('servicios')])).success).toBe(false)
+    expect(controlador.esquemaTienda.safeParse(tienda([pagina('mis servicios')])).success).toBe(false)
+  })
+
+  it('sólo Negocio y Pro traen páginas extra', () => {
+    expect(PLANES.GRATIS.paginasExtra).toBe(0)
+    expect(PLANES.EMPRENDE.paginasExtra).toBe(0)
+    expect(PLANES.NEGOCIO.paginasExtra).toBeGreaterThan(0)
+    expect(PLANES.PRO.paginasExtra).toBeGreaterThan(PLANES.NEGOCIO.paginasExtra)
+  })
+})

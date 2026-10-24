@@ -86,9 +86,15 @@ function Buscador({ ancho }: { ancho?: boolean }) {
  * suma buscador, WhatsApp de servicio al cliente y una barra de menú con color
  * propio y un botón destacado, como las tiendas de supermercado.
  */
+/**
+ * "#servicios" lleva a esa sección de la página de inicio también desde una
+ * página extra (/nosotros): sin la barra, buscaría la sección en la página actual.
+ */
+const desdeCualquierPagina = (enlace: string) => (enlace.startsWith('#') && enlace.length > 1 ? `/${enlace}` : enlace)
+
 export function CabeceraTienda({ nombre, logoUrl, ajustes = {}, tipo }: Props) {
   const vende = vendeEnLinea(tipo)
-  const menu = ajustes.menu?.filter((item) => item.texto.trim()) ?? []
+  const menu = ajustes.menu?.filter((item) => item.texto.trim()).map((item) => ({ ...item, enlace: desdeCualquierPagina(item.enlace) })) ?? []
   const buscador = vende && ajustes.buscador
   // Sin menú propio, una tienda ofrece sus productos; una página no inventa enlaces.
   const menuSimple = menu.length > 0 || !vende ? menu : [{ texto: 'Productos', enlace: '/#productos' }]
@@ -165,7 +171,7 @@ export function CabeceraTienda({ nombre, logoUrl, ajustes = {}, tipo }: Props) {
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-3 sm:gap-6">
           {ajustes.botonDestacado?.texto && (
             <a
-              href={ajustes.botonDestacado.enlace || '#productos'}
+              href={desdeCualquierPagina(ajustes.botonDestacado.enlace || '#productos')}
               className="boton-tienda flex shrink-0 items-center gap-2 rounded-(--radius-marca) bg-marca px-5 py-2.5 text-sm font-medium text-marca-contraste transition hover:opacity-90"
             >
               {vende ? <ShoppingBag aria-hidden="true" className="h-4 w-4" /> : <CalendarCheck aria-hidden="true" className="h-4 w-4" />}

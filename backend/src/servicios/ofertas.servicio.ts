@@ -99,7 +99,7 @@ export const OFERTAS_PAGINA_POR_DEFECTO: Record<Plan, Oferta> = {
     precio: 49900,
     precioAnual: 499000,
     resumen: 'Para negocios con varias sedes o personas al frente.',
-    incluye: ['Hasta 30 secciones y diseño libre', 'Opiniones, video, mapa y logos de clientes', 'Dominio propio con HTTPS', 'Soporte prioritario'],
+    incluye: ['Hasta 5 páginas aparte, como /servicios', 'Hasta 30 secciones y diseño libre', 'Opiniones, video, mapa y logos de clientes', 'Dominio propio con HTTPS', 'Soporte prioritario'],
     destacado: true,
   },
   PRO: {
@@ -107,7 +107,7 @@ export const OFERTAS_PAGINA_POR_DEFECTO: Record<Plan, Oferta> = {
     precio: 99900,
     precioAnual: 999000,
     resumen: 'Para quien maneja más de una marca.',
-    incluye: ['Todo lo de Negocio', 'Hasta 60 secciones', 'Acompañamiento en la puesta en marcha'],
+    incluye: ['Todo lo de Negocio', 'Hasta 15 páginas aparte', 'Hasta 60 secciones', 'Acompañamiento en la puesta en marcha'],
     destacado: false,
   },
 }

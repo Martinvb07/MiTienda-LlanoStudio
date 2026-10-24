@@ -22,6 +22,8 @@ import { CamposCabecera, CamposContacto } from './CamposAjustes'
 import { CamposFicha } from './CamposFicha'
 import { CamposTema } from './CamposTema'
 import { CamposVentas } from './CamposVentas'
+import { CamposPaginas } from './CamposPaginas'
+import { crearPagina, menuConPagina, RUTAS_RESERVADAS } from '@/utilidades/paginas'
 import { ListaBloques, posicionNueva } from './ListaBloques'
 import { ContextoEditorLienzo } from './ContextoLienzo'
 import { DISENOS_LIENZO, agregarAlLienzo, cajaVisible, cambiarCapa, cambiarCapaVarios, conCaja, duplicarElemento, duplicarVarios, nuevoElemento } from '@/utilidades/lienzo'
@@ -115,7 +117,28 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     }))
   }, [plantillaInicial, plan, tienda.tipo])
 
-  const sucio = JSON.stringify(borrador) !== inicial
+  // ── Páginas extra (/servicios…): mientras se edita una, sus secciones van en
+  // borrador.configuracionBloques y las de inicio esperan aquí. Así todo lo que
+  // edita secciones (lista, lienzo, plantillas de sección) sirve para cualquiera.
+  const [paginaActiva, setPaginaActiva] = useState<string | null>(null)
+  const bloquesInicio = useRef<Bloque[]>(borrador.configuracionBloques)
+
+  /** El borrador tal como se guarda: inicio en su lugar y la página editada con sus secciones. */
+  function completo(datos: DatosTienda): DatosTienda {
+    if (!paginaActiva) return datos
+    return {
+      ...datos,
+      configuracionBloques: bloquesInicio.current,
+      ajustes: {
+        ...datos.ajustes,
+        paginas: (datos.ajustes.paginas ?? []).map((pagina) =>
+          pagina.id === paginaActiva ? { ...pagina, bloques: datos.configuracionBloques } : pagina,
+        ),
+      },
+    }
+  }
+
+  const sucio = JSON.stringify(completo(borrador)) !== inicial
 
   useEffect(() => {
     listarProductos()
@@ -257,10 +280,17 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     setError('')
     setGuardando(true)
     try {
-      const guardada = await guardarTienda(borrador)
+      const guardada = await guardarTienda(completo(borrador))
       const nuevo = borradorDe(guardada)
-      setBorrador(nuevo)
       setInicial(JSON.stringify(nuevo))
+      // Se sigue en la página que se estaba editando.
+      const editada = paginaActiva ? nuevo.ajustes.paginas?.find((pagina) => pagina.id === paginaActiva) : undefined
+      bloquesInicio.current = nuevo.configuracionBloques
+      if (editada) setBorrador({ ...nuevo, configuracionBloques: editada.bloques })
+      else {
+        setPaginaActiva(null)
+        setBorrador(nuevo)
+      }
       alGuardar(guardada)
       setGuardadoReciente(true)
       setTimeout(() => setGuardadoReciente(false), 2200)
@@ -269,22 +299,33 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     } finally {
       setGuardando(false)
     }
-  }, [alGuardar, borrador, guardando, subiendo])
+    // completo depende de paginaActiva, que ya está en la lista.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alGuardar, borrador, guardando, subiendo, paginaActiva])
 
   useAtajosEditor(sucio, () => void guardar())
 
   async function aplicarPlantilla(plantilla: PlantillaTienda) {
+    // La plantilla es para la página de inicio.
+    irAPagina(null)
     const si = await confirmar({
       titulo: `¿Usar la plantilla ${plantilla.nombre}?`,
       mensaje: 'Reemplaza las secciones, el encabezado y el estilo de tu página. Tus productos y tus datos de contacto no cambian, y puedes deshacerlo con Ctrl+Z.',
       confirmar: 'Usar plantilla',
     })
     if (!si) return
+    // Lo actual (no el de este render): irAPagina pudo haber cambiado el borrador.
+    const actual = actualRef.current
+    const ajustes = ajustesConPlantilla(actual.ajustes, plantilla)
+    // El menú de la plantilla, con las páginas extra que ya había al final si caben.
+    const libres = (actual.ajustes.paginas ?? []).filter((pagina) => !ajustes.menu?.some((item) => item.enlace === `/${pagina.ruta}`))
+    let menu = ajustes.menu ?? []
+    for (const pagina of libres) if (menu.length < limites.enlacesMenu) menu = menuConPagina(menu, { agregar: pagina })
     cambiar({
       tema: { ...plantilla.tema },
       plantilla: plantilla.estilo,
-      configuracionBloques: bloquesDePlantilla(plantilla, borrador.nombre || 'Mi negocio', plan),
-      ajustes: ajustesConPlantilla(borrador.ajustes, plantilla),
+      configuracionBloques: bloquesDePlantilla(plantilla, actual.nombre || 'Mi negocio', plan),
+      ajustes: { ...ajustes, menu },
     })
     setAbierto(null)
   }
@@ -551,6 +592,87 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     elegirPieza(null)
   }
 
+  // ── Páginas extra ──
+  const paginas = borrador.ajustes.paginas ?? []
+
+  /** Pasa a editar otra página: guarda en su lugar las secciones de la actual. */
+  function irAPagina(id: string | null, datos: DatosTienda = completo(actualRef.current)) {
+    if (id === paginaActiva && datos === actualRef.current) return
+    bloquesInicio.current = datos.configuracionBloques
+    const destino = id ? (datos.ajustes.paginas?.find((pagina) => pagina.id === id)?.bloques ?? []) : datos.configuracionBloques
+    setBorrador({ ...datos, configuracionBloques: destino })
+    setPaginaActiva(id)
+    // Deshacer es por página: al cambiar de página se empieza de cero.
+    pasado.current = []
+    futuro.current = []
+    marcar()
+    setAbierto(null)
+    elegirPieza(null)
+  }
+
+  function agregarPagina() {
+    if (paginas.length >= limites.paginasExtra) return
+    const datos = completo(actualRef.current)
+    const nueva = crearPagina(`Página ${paginas.length + 2}`, datos.ajustes.paginas ?? [], datos.configuracionBloques)
+    const menu = datos.ajustes.menu ?? []
+    irAPagina(nueva.id, {
+      ...datos,
+      ajustes: {
+        ...datos.ajustes,
+        paginas: [...(datos.ajustes.paginas ?? []), nueva],
+        // Entra al menú si hay lugar; si no, se enlaza a mano desde Encabezado.
+        menu: menu.length < limites.enlacesMenu ? menuConPagina(menu, { agregar: nueva }) : menu,
+      },
+    })
+  }
+
+  function cambiarPagina(id: string, cambios: { titulo?: string; ruta?: string }) {
+    const anterior = paginas.find((pagina) => pagina.id === id)
+    if (!anterior) return
+    const nueva = { ...anterior, ...cambios }
+    // El enlace del menú sigue a la página si cambia de nombre o de dirección.
+    const enMenu = borrador.ajustes.menu?.some((item) => item.enlace === `/${anterior.ruta}`)
+    const valida = nueva.ruta && !RUTAS_RESERVADAS.has(nueva.ruta) && !paginas.some((otra) => otra.id !== id && otra.ruta === nueva.ruta)
+    const ajustes = {
+      ...borrador.ajustes,
+      paginas: paginas.map((pagina) => (pagina.id === id ? nueva : pagina)),
+      ...(enMenu && valida ? { menu: menuConPagina(borrador.ajustes.menu, { de: anterior.ruta, a: nueva }) } : {}),
+    }
+    // Si la portada de la página todavía dice su nombre viejo, lo sigue.
+    const renombrar = id === paginaActiva && cambios.titulo !== undefined
+    cambiar({
+      ajustes,
+      ...(renombrar
+        ? {
+            configuracionBloques: borrador.configuracionBloques.map((bloque) =>
+              bloque.tipo === 'hero' && bloque.props.titulo === anterior.titulo ? { ...bloque, props: { ...bloque.props, titulo: nueva.titulo } } : bloque,
+            ),
+          }
+        : {}),
+    })
+  }
+
+  async function quitarPagina(id: string) {
+    const pagina = paginas.find((otra) => otra.id === id)
+    if (!pagina) return
+    const si = await confirmar({
+      titulo: `¿Quitar la página ${pagina.titulo}?`,
+      mensaje: `Se borran sus secciones y su enlace del menú. /${pagina.ruta} deja de existir cuando guardes.`,
+      confirmar: 'Quitar página',
+      peligro: true,
+    })
+    if (!si) return
+    const datos = completo(actualRef.current)
+    irAPagina(null, {
+      ...datos,
+      ajustes: {
+        ...datos.ajustes,
+        paginas: (datos.ajustes.paginas ?? []).filter((otra) => otra.id !== id),
+        menu: menuConPagina(datos.ajustes.menu, { quitar: pagina.ruta }),
+      },
+    })
+  }
+
   // ── La pieza elegida se edita en un modal sobre la vista previa ──
   const contextoLienzo = {
     elegido: lienzoElegido,
@@ -741,7 +863,22 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
                 </Seccion>
               )}
 
-              <Seccion titulo="Secciones" abierta abrirCon={abierto}>
+              {tienda.tipo === 'pagina' && (
+                <Seccion titulo="Páginas" abierta={paginas.length > 0}>
+                  <CamposPaginas
+                    paginas={paginas}
+                    activa={paginaActiva}
+                    limite={limites.paginasExtra}
+                    dominio={urlTienda(subdominio).replace(/^https?:\/\//, '')}
+                    alElegir={(id) => irAPagina(id)}
+                    alAgregar={agregarPagina}
+                    alCambiar={cambiarPagina}
+                    alQuitar={(id) => void quitarPagina(id)}
+                  />
+                </Seccion>
+              )}
+
+              <Seccion titulo={paginaActiva ? `Secciones de ${paginas.find((pagina) => pagina.id === paginaActiva)?.titulo ?? 'la página'}` : 'Secciones'} abierta abrirCon={abierto}>
                 <ListaBloques
                   bloques={borrador.configuracionBloques}
                   alCambiar={(configuracionBloques) => cambiar({ configuracionBloques })}

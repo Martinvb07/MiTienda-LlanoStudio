@@ -28,6 +28,8 @@ export interface LimitesPlan {
   metricasAvanzadas: boolean
   usuarios: number
   dominioPropio: boolean
+  /** Páginas aparte de la de inicio (/servicios…) en la página para tu negocio. */
+  paginasExtra: number
 }
 
 /**
@@ -80,6 +82,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     metricasAvanzadas: false,
     usuarios: 1,
     dominioPropio: false,
+    paginasExtra: 0,
   },
   EMPRENDE: {
     nombre: 'Emprende',
@@ -97,6 +100,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     metricasAvanzadas: false,
     usuarios: 2,
     dominioPropio: false,
+    paginasExtra: 0,
   },
   NEGOCIO: {
     nombre: 'Negocio',
@@ -114,6 +118,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     metricasAvanzadas: true,
     usuarios: 5,
     dominioPropio: true,
+    paginasExtra: 5,
   },
   PRO: {
     nombre: 'Pro',
@@ -131,6 +136,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     metricasAvanzadas: true,
     usuarios: 15,
     dominioPropio: true,
+    paginasExtra: 15,
   },
 }
 
@@ -178,6 +184,9 @@ export const TEMAS_PREDEFINIDOS: Record<string, Record<string, string>> = {
   fresca: { colorMarca: '#0f766e', colorContraste: '#ffffff', colorFondo: '#f3faf8', colorTexto: '#123332', fuenteTitulos: 'redondeada', radio: '1.25rem' },
   llanera: { colorMarca: '#3b60ff', colorContraste: '#ffffff', colorFondo: '#f7f5f0', colorTexto: '#0a0f1c', fuenteTitulos: 'moderna', radio: '0.75rem' },
 }
+
+/** Direcciones que ya usa el sitio: una página extra no puede llamarse así. */
+export const RUTAS_RESERVADAS: ReadonlySet<string> = new Set(['buscar', 'carrito', 'categoria', 'pago', 'productos', 'panel', 'api'])
 
 /** Error 403 con el código que el panel reconoce para ofrecer subir de plan. */
 export function fueraDelPlan(mensaje: string) {

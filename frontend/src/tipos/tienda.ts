@@ -150,6 +150,21 @@ export interface AjustesTienda {
   fondoBio?: 'liso' | 'degradado' | 'malla'
   /** Quita "Hecho con Mi Sitio" al pie de la bio; sólo surte efecto en planes pagos. */
   ocultarMarca?: boolean
+
+  /**
+   * Páginas aparte de la de inicio (/servicios, /nosotros…), cada una con sus
+   * secciones. Sólo en la página para tu negocio, desde el plan Negocio.
+   */
+  paginas?: PaginaExtra[]
+}
+
+/** Una página más del sitio, con su dirección propia y sus secciones. */
+export interface PaginaExtra {
+  id: string
+  titulo: string
+  /** Lo que va después de la barra: "servicios" → tunegocio.llanostudio.co/servicios. */
+  ruta: string
+  bloques: Bloque[]
 }
 
 /**

@@ -22,7 +22,11 @@ export async function obtenerPlanes(tipo: TipoSitio = 'tienda'): Promise<PlanPub
   try {
     const respuesta = await fetch(`${URL_API}/api/planes?tipo=${tipo}`, { next: { revalidate: 60, tags: ['planes'] } })
     if (!respuesta.ok) return []
-    return ((await respuesta.json()) as { planes: PlanPublico[] }).planes
+    const datos = (await respuesta.json()) as { tipo?: TipoSitio; planes: PlanPublico[] }
+    // Una API vieja que no conoce el producto contesta con los precios de la
+    // tienda: mejor sin planes un minuto que con los precios de otro producto.
+    if ((datos.tipo ?? 'tienda') !== tipo) return []
+    return datos.planes
   } catch {
     return []
   }

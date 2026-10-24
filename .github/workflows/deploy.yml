@@ -98,9 +98,19 @@ jobs:
             ls -1t "$RESPALDOS"/medios-*.tgz 2>/dev/null | tail -n +6 | xargs -r rm -f
           fi
 
+          # Primero la API, y se recarga antes de construir la web: el build de
+          # Next pre-genera páginas (precios, por ejemplo) pidiéndole datos a la
+          # API, y tienen que salir de la versión nueva, no de la que se va.
           construir() {
             (cd backend && npm ci && npx prisma generate && npx tsc -p tsconfig.build.json) || return 1
+            if pm2 describe mitienda-api >/dev/null 2>&1; then
+              pm2 reload ecosystem.config.cjs --only mitienda-api --update-env || return 1
+            fi
+            esperar_api || return 1
             # El build de Next lee frontend/.env.local (dominios y URL de la API).
+            # Sin las respuestas que guardó la versión anterior: el build las
+            # reutiliza aunque estén vencidas, y pueden ser de la API vieja.
+            rm -rf frontend/.next/cache/fetch-cache
             (cd frontend && npm ci && npm run build) || return 1
           }
 
@@ -118,6 +128,16 @@ jobs:
           PUERTO_API="${PUERTO_API:-4201}"
           PANEL="$( (grep -E '^NEXT_PUBLIC_SUBDOMINIO_PANEL=' frontend/.env.local 2>/dev/null || true) | tail -1 | cut -d= -f2 | tr -d "\"' \r")"
           BASE="$( (grep -E '^NEXT_PUBLIC_DOMINIO_BASE=' frontend/.env.local 2>/dev/null || true) | tail -1 | cut -d= -f2 | tr -d "\"' \r")"
+
+          # Espera hasta ~30 s a que la API recién recargada responda.
+          esperar_api() {
+            local intentos=0
+            until [ "$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:$PUERTO_API/api/salud" || echo 000)" = "200" ]; do
+              intentos=$((intentos + 1))
+              [ "$intentos" -ge 10 ] && { echo "!! La API no respondió después de recargarla"; return 1; }
+              sleep 3
+            done
+          }
 
           # Espera hasta ~45 s a que la API (Postgres y Redis incluidos) y la web respondan.
           verificar() {

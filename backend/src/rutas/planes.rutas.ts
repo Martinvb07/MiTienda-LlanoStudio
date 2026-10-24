@@ -6,9 +6,11 @@ const enrutador = Router()
 
 /** Oferta pública de los planes (?tipo=pagina para la página de negocio): la consume la página de precios. */
 enrutador.get('/', async (req, res) => {
-  const ofertas = await listarOfertas(tipoOferta(req.query.tipo))
+  const tipo = tipoOferta(req.query.tipo)
+  const ofertas = await listarOfertas(tipo)
   res.set('Cache-Control', 'public, max-age=60')
-  res.json({ planes: ofertas.map((oferta) => ({ ...oferta, nombre: PLANES[oferta.plan].nombre })) })
+  // Devuelve de qué producto son: la web descarta una respuesta que no sea del que pidió.
+  res.json({ tipo, planes: ofertas.map((oferta) => ({ ...oferta, nombre: PLANES[oferta.plan].nombre })) })
 })
 
 export default enrutador

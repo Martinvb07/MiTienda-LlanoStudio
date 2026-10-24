@@ -286,6 +286,7 @@ export const tokenParaEntrar = (id: string) => enviar<{ token: string }>(`/tiend
 
 export interface TiendaGaleria {
   id: string
+  tipo: TipoSitioAdmin
   nombre: string
   subdominio: string
   plan: PlanClave
@@ -296,7 +297,8 @@ export interface TiendaGaleria {
   productos: number
   pedidos: number
 }
-export const obtenerGaleria = () => pedir<{ tiendas: TiendaGaleria[] }>('/galeria').then((r) => r.tiendas)
+export const obtenerGaleria = (tipo?: TipoSitioAdmin) =>
+  pedir<{ tiendas: TiendaGaleria[] }>(`/galeria${tipo ? `?tipo=${tipo}` : ''}`).then((r) => r.tiendas)
 
 /** Descarga un archivo del admin (CSV o respaldo) con el token puesto. */
 export async function descargar(ruta: string, nombre: string) {

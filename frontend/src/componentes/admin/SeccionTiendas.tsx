@@ -27,10 +27,10 @@ import { confirmar } from '../panel/ui/confirmar'
 import { SALIDA } from './ui'
 
 /** Una pestaña por producto, con cómo se llama cada cuenta en ese producto. */
-const PRODUCTOS_ADMIN: { tipo: TipoSitioAdmin; titulo: string; ninguna: string; Icono: typeof Store }[] = [
-  { tipo: 'tienda', titulo: 'Tiendas', ninguna: 'Ninguna tienda', Icono: Store },
-  { tipo: 'pagina', titulo: 'Páginas', ninguna: 'Ninguna página', Icono: LayoutTemplate },
-  { tipo: 'enlaces', titulo: 'Enlaces', ninguna: 'Ninguna bio', Icono: Link2 },
+const PRODUCTOS_ADMIN: { tipo: TipoSitioAdmin; titulo: string; ninguna: string; sinPublicadas: string; Icono: typeof Store }[] = [
+  { tipo: 'tienda', titulo: 'Tiendas', ninguna: 'Ninguna tienda', sinPublicadas: 'Todavía no hay tiendas publicadas.', Icono: Store },
+  { tipo: 'pagina', titulo: 'Páginas', ninguna: 'Ninguna página', sinPublicadas: 'Todavía no hay páginas publicadas.', Icono: LayoutTemplate },
+  { tipo: 'enlaces', titulo: 'Enlaces', ninguna: 'Ninguna bio', sinPublicadas: 'Todavía no hay bios publicadas.', Icono: Link2 },
 ]
 
 const OPCIONES_PLAN = ORDEN_PLANES.map((plan) => ({ valor: plan, etiqueta: PLANES[plan].nombre }))
@@ -196,7 +196,7 @@ export function SeccionTiendas({
       </div>
 
       {vista === 'galeria' ? (
-        <Galeria alAbrirTienda={alAbrirTienda} />
+        <Galeria key={tipo} tipo={tipo} vacio={producto.sinPublicadas} alAbrirTienda={alAbrirTienda} />
       ) : (
       <>
       <div className="relative mt-4">
@@ -415,15 +415,15 @@ function ModalContrasena({ tienda, alCerrar }: { tienda: TiendaAdmin; alCerrar: 
   )
 }
 
-/** Tiendas publicadas en miniatura: para ver cómo quedan y elegir ejemplos para la web. */
-function Galeria({ alAbrirTienda }: { alAbrirTienda: (id: string) => void }) {
+/** Las publicadas de la pestaña elegida, en miniatura: para ver cómo quedan y elegir ejemplos para la web. */
+function Galeria({ tipo, vacio, alAbrirTienda }: { tipo: TipoSitioAdmin; vacio: string; alAbrirTienda: (id: string) => void }) {
   const [tiendas, setTiendas] = useState<TiendaGaleria[] | null>(null)
   useEffect(() => {
-    obtenerGaleria().then(setTiendas).catch(() => setTiendas([]))
-  }, [])
+    obtenerGaleria(tipo).then(setTiendas).catch(() => setTiendas([]))
+  }, [tipo])
 
   if (!tiendas) return <div className="brillo mt-4 h-64 rounded-[14px]" />
-  if (tiendas.length === 0) return <p className="mt-10 text-center text-sm text-sitio-tenue">Todavía no hay tiendas publicadas.</p>
+  if (tiendas.length === 0) return <p className="mt-10 text-center text-sm text-sitio-tenue">{vacio}</p>
 
   return (
     <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -456,7 +456,8 @@ function Galeria({ alAbrirTienda }: { alAbrirTienda: (id: string) => void }) {
             <button type="button" onClick={() => alAbrirTienda(tienda.id)} className="min-w-0 flex-1 text-left">
               <span className="block truncate text-[13.5px]">{tienda.nombre}</span>
               <span className="text-[11px] text-sitio-tenue">
-                {PLANES[tienda.plan as Plan]?.nombre} · {tienda.plantilla} · {tienda.productos} productos · {tienda.pedidos} pedidos
+                {PLANES[tienda.plan as Plan]?.nombre} · {tienda.plantilla}
+                {tienda.tipo === 'tienda' && ` · ${tienda.productos} productos · ${tienda.pedidos} pedidos`}
               </span>
             </button>
             <a

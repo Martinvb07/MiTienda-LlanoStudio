@@ -191,12 +191,15 @@ export async function entrarComoTienda(req: Request, res: Response): Promise<voi
 }
 
 /** Tiendas publicadas para la galería, con lo que sirve para elegir ejemplos. */
-export async function galeria(_req: Request, res: Response): Promise<void> {
+export async function galeria(req: Request, res: Response): Promise<void> {
+  // ?tipo= muestra sólo las de ese producto (la pestaña elegida); sin él, todas.
+  const tipo = z.enum(['tienda', 'pagina', 'enlaces']).safeParse(req.query.tipo).data
   const tiendas = await prisma.tienda.findMany({
-    where: { publicada: true, tenant: { activo: true } },
+    where: { publicada: true, tenant: { activo: true }, ...(tipo ? { tipo } : {}) },
     orderBy: { actualizadoEn: 'desc' },
     take: 120,
     select: {
+      tipo: true,
       nombre: true,
       logoUrl: true,
       plantilla: true,

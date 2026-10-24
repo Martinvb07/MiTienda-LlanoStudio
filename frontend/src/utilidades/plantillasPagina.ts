@@ -2,6 +2,7 @@ import type { Bloque } from '@/tipos/bloques'
 import type { TipoSitio } from '@/tipos/tienda'
 import { ORDEN_PLANES, PLANES, limitesDe, type Plan } from './planes'
 import { PLANTILLAS_TIENDA, type PlantillaTienda } from './plantillas'
+import { PLANTILLAS_OFICIOS } from './plantillasOficios'
 import { tipoSitio } from './sitio'
 import { ESTILOS_PREDEFINIDOS } from './tema'
 
@@ -14,6 +15,9 @@ import { ESTILOS_PREDEFINIDOS } from './tema'
  * Gratis: al aplicarlas, las secciones que el plan no incluye se dejan por
  * fuera (bloquesDePlantilla) y vuelven al aplicarla otra vez con un plan mayor.
  * Por eso el menú sólo enlaza a secciones que están en todos los planes.
+ *
+ * Después de estas cuatro van las de oficio con diseño propio
+ * (plantillasOficios.ts), que piden tema libre y por eso arrancan en Emprende.
  */
 
 const temaDe = (clave: string) => ESTILOS_PREDEFINIDOS.find((estilo) => estilo.clave === clave)!.tema
@@ -377,6 +381,7 @@ export const PLANTILLAS_PAGINA: PlantillaTienda[] = [
       pie(nombre),
     ],
   },
+  ...PLANTILLAS_OFICIOS,
 ]
 
 /** Las plantillas que ofrece el editor según el tipo de sitio. */

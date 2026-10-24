@@ -11,7 +11,7 @@ import { PLANTILLAS_PAGINA } from '@/utilidades/plantillasPagina'
 export const metadata: Metadata = {
   title: 'Plantillas para tu negocio',
   description:
-    'Plantillas de página para abogados, clínicas, restaurantes y servicios: servicios, equipo, horario y contacto por WhatsApp. Editables sin código.',
+    'Plantillas de página por oficio: gimnasios, barberías, spas, veterinarias, psicólogos, contadores, inmobiliarias, talleres, hoteles y más. Servicios, equipo, horario y contacto por WhatsApp, editables sin código.',
   alternates: { canonical: '/plantillas/pagina' },
 }
 

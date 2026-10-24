@@ -32,6 +32,13 @@ export interface PlantillaTienda {
       | 'animarSecciones'
       | 'alAgregar'
       | 'agregarRapido'
+      | 'fuenteCuerpo'
+      | 'pesoTitulos'
+      | 'botonForma'
+      | 'botonEstilo'
+      | 'botonMayusculas'
+      | 'anchoPagina'
+      | 'esquemas'
     >
   destacada?: boolean
   /** Columnas de la grilla, para la miniatura. */

@@ -5,6 +5,8 @@ import { LlamadoFinal } from '@/componentes/sitio/LlamadoFinal'
 import { Preguntas } from '@/componentes/sitio/Preguntas'
 import { TablaPrecios } from '@/componentes/sitio/TablaPrecios'
 import { obtenerContenidoSitio } from '@/servicios/contenido.servicio'
+import { SelectorProducto } from '@/componentes/sitio/SelectorProducto'
+import { MENU_PRECIOS } from '@/componentes/sitio/productos'
 
 export const metadata: Metadata = {
   title: 'Precios',
@@ -20,9 +22,9 @@ const PREGUNTAS = [
       'No. El plan Gratis no pide datos de pago: creas tu cuenta, armas la tienda y la publicas. Si pasas a un plan pago, lo pagas desde tu panel con Bold: tarjeta, PSE, Nequi o Botón Bancolombia, mes a mes o por un año con descuento.',
   },
   {
-    pregunta: '¿Los planes incluyen la página y los enlaces?',
+    pregunta: '¿Y la página para mi negocio?',
     respuesta:
-      'La página para tu negocio usa los mismos planes que la tienda: arranca gratis y los planes pagos suman secciones como equipo, opiniones y mapa. Los enlaces para la bio están en construcción; su precio aún no está definido.',
+      'Tiene sus propios precios, más bajos porque no lleva carrito ni pedidos. Los ves en Precios › Página para tu negocio. Los enlaces para la bio están en construcción; su precio aún no está definido.',
   },
   {
     pregunta: '¿Puedo cambiar de plan más adelante?',
@@ -60,11 +62,9 @@ export default async function PaginaPrecios() {
         rotulo="Precios"
         titulo="Empieza gratis. Paga cuando tu tienda lo pida."
         descripcion="Sin comisión por venta y sin permanencia. El plan Gratis no vence."
-      />
-
-      <p className="mx-auto mt-8 max-w-[60ch] px-5 text-center text-[13.5px] text-white/50">
-        Sirven para tu tienda y para la página de tu negocio. Enlaces para tu bio: próximamente, sin precio definido.
-      </p>
+      >
+        <SelectorProducto opciones={MENU_PRECIOS} actual="tienda" />
+      </CabeceraPagina>
 
       <TablaPrecios />
 

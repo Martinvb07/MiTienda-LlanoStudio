@@ -37,7 +37,7 @@ export default function PaginaParaNegocios() {
         <Boton href="/panel/crear-cuenta?producto=pagina" flecha>
           Crear mi página
         </Boton>
-        <Boton href="/plantillas#pagina" variante="secundario">
+        <Boton href="/plantillas/pagina" variante="secundario">
           Ver plantillas
         </Boton>
       </CabeceraPagina>
@@ -83,7 +83,7 @@ export default function PaginaParaNegocios() {
             {PLANTILLAS_PAGINA.map((plantilla, indice) => (
               <Link
                 key={plantilla.clave}
-                href="/plantillas#pagina"
+                href="/plantillas/pagina"
                 className="group grid grid-cols-[56px_1fr_auto] items-center gap-6 border-t border-white/12 py-6 md:grid-cols-[80px_1fr_auto]"
               >
                 <span className="font-mono text-[13px] text-white/40">{String(indice + 1).padStart(2, '0')}</span>
@@ -138,7 +138,7 @@ export default function PaginaParaNegocios() {
       <LlamadoFinal
         titulo="Tu página puede estar lista hoy"
         hrefEmpezar="/panel/crear-cuenta?producto=pagina"
-        hrefPlantillas="/plantillas#pagina"
+        hrefPlantillas="/plantillas/pagina"
       />
     </>
   )

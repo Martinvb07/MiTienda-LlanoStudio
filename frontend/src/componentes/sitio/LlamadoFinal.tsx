@@ -8,6 +8,8 @@ interface Props {
   /** A dónde lleva "Empezar gratis" y "Ver plantillas", si no son los de la tienda. */
   hrefEmpezar?: string
   hrefPlantillas?: string
+  /** Texto del segundo botón, si no lleva a las plantillas. */
+  textoPlantillas?: string
 }
 
 /** Cierre de página: titular enorme sobre una foto que se funde con el negro. */
@@ -16,6 +18,7 @@ export function LlamadoFinal({
   texto = 'Sin código y sin tarjeta de crédito.',
   hrefEmpezar = '/panel/crear-cuenta',
   hrefPlantillas = '/plantillas',
+  textoPlantillas = 'Ver plantillas',
 }: Props) {
   return (
     <section className="relative isolate overflow-hidden py-[140px] text-center md:py-[190px]">
@@ -36,7 +39,7 @@ export function LlamadoFinal({
             Empezar gratis
           </Boton>
           <Boton href={hrefPlantillas} variante="secundario">
-            Ver plantillas
+            {textoPlantillas}
           </Boton>
         </div>
       </Revelar>

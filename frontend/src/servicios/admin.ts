@@ -105,10 +105,14 @@ export interface OfertaPlan {
   destacado: boolean
 }
 
-export const listarPlanes = () => pedir<{ planes: OfertaPlan[] }>('/planes').then((respuesta) => respuesta.planes)
+/** La tienda en línea y la página para tu negocio tienen precios propios. */
+export type TipoOferta = 'tienda' | 'pagina'
 
-export const guardarPlan = ({ plan, ...datos }: OfertaPlan) =>
-  pedir<{ planes: OfertaPlan[] }>(`/planes/${plan}`, {
+export const listarPlanes = (tipo: TipoOferta = 'tienda') =>
+  pedir<{ planes: OfertaPlan[] }>(`/planes?tipo=${tipo}`).then((respuesta) => respuesta.planes)
+
+export const guardarPlan = ({ plan, ...datos }: OfertaPlan, tipo: TipoOferta = 'tienda') =>
+  pedir<{ planes: OfertaPlan[] }>(`/planes/${plan}?tipo=${tipo}`, {
     method: 'PUT',
     body: JSON.stringify(datos),
   }).then((respuesta) => respuesta.planes)

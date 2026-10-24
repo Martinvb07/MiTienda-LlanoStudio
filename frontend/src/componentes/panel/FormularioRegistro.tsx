@@ -42,8 +42,8 @@ export function FormularioRegistro() {
     const parametros = new URLSearchParams(window.location.search)
     const producto = parametros.get('producto')
     if (esPlantillaPagina(parametros.get('plantilla'))) setInteres('pagina')
-    else if (parametros.has('plantilla') || parametros.has('plan')) setInteres('tienda')
     else if (PRODUCTOS.some((otro) => otro.clave === producto)) setInteres(producto as Interes)
+    else if (parametros.has('plantilla') || parametros.has('plan')) setInteres('tienda')
   }, [])
 
   const [nombre, setNombre] = useState('')

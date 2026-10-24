@@ -3,7 +3,7 @@ import type { Request, Response } from 'express'
 import { z } from 'zod'
 import { entorno } from '../config/entorno.js'
 import { prisma } from '../config/prisma.js'
-import { listarOfertas } from '../servicios/ofertas.servicio.js'
+import { listarOfertas, tipoOfertaDe } from '../servicios/ofertas.servicio.js'
 import { leerAjuste } from '../servicios/plataforma.servicio.js'
 import {
   aplicarPago,
@@ -46,7 +46,7 @@ async function aplicarCupon(codigo: string | undefined, plan: 'EMPRENDE' | 'NEGO
 /** Vista previa del cupón antes de pagar. */
 export async function probarCupon(req: Request, res: Response): Promise<void> {
   const { plan, periodo, cupon } = req.body as z.infer<typeof esquemaCheckout>
-  const oferta = (await listarOfertas()).find((item) => item.plan === plan)!
+  const oferta = (await listarOfertas(await tipoOfertaDe(req.sesion!.tenantId))).find((item) => item.plan === plan)!
   const base = periodo === 'ANUAL' ? oferta.precioAnual : oferta.precio
   const resultado = await aplicarCupon(cupon, plan, base)
   res.json({ montoOriginal: base, ...resultado })
@@ -93,7 +93,7 @@ export async function obtenerSuscripcion(req: Request, res: Response): Promise<v
 
   const [tenant, ofertas, pagos] = await Promise.all([
     prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { plan: true, planVenceEn: true } }),
-    listarOfertas(),
+    tipoOfertaDe(tenantId).then(listarOfertas),
     prisma.pagoSuscripcion.findMany({
       where: { tenantId, estado: { not: 'PENDIENTE' } },
       orderBy: { creadoEn: 'desc' },
@@ -120,7 +120,7 @@ export async function crearCheckout(req: Request, res: Response): Promise<void> 
     throw new ErrorHttp(503, 'Los pagos en línea todavía no están activos. Escríbenos y te ayudamos.', 'PAGOS_INACTIVOS')
   }
   const { plan, periodo, cupon: codigo } = req.body as z.infer<typeof esquemaCheckout>
-  const oferta = (await listarOfertas()).find((item) => item.plan === plan)!
+  const oferta = (await listarOfertas(await tipoOfertaDe(req.sesion!.tenantId))).find((item) => item.plan === plan)!
   const base = periodo === 'ANUAL' ? oferta.precioAnual : oferta.precio
   if (base <= 0) throw solicitudInvalida(periodo === 'ANUAL' ? 'Este plan no se vende anual' : 'Este plan no tiene precio')
   const { monto, cupon } = await aplicarCupon(codigo, plan, base)

@@ -7,17 +7,20 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/
 import { ChevronDown } from 'lucide-react'
 import { Contenedor } from './Contenedor'
 import { Flecha } from './Boton'
-import { PRODUCTOS } from './productos'
+import { MENU_PLANTILLAS, MENU_PRECIOS, PRODUCTOS, type OpcionMenu } from './productos'
 import { cn } from '@/utilidades/clases'
 import { LogoMarca } from '@/componentes/comunes/LogoMarca'
 import { BotonTema } from '@/componentes/comunes/BotonTema'
 import { leerToken } from '@/servicios/panel'
 
-const ENLACES = [
-  { href: '/plantillas', etiqueta: 'Plantillas' },
-  { href: '/precios', etiqueta: 'Precios' },
-  { href: '/blog', etiqueta: 'Recursos' },
-] as const
+const ENLACES = [{ href: '/blog', etiqueta: 'Recursos' }] as const
+
+/** Los menús que bajan, en orden: cada uno con una opción por producto. */
+const MENUS: readonly { etiqueta: string; opciones: readonly OpcionMenu[] }[] = [
+  { etiqueta: 'Productos', opciones: PRODUCTOS },
+  { etiqueta: 'Plantillas', opciones: MENU_PLANTILLAS },
+  { etiqueta: 'Precios', opciones: MENU_PRECIOS },
+]
 
 /**
  * Cabecera fija como la de llanostudio.co: transparente sobre el hero y negra
@@ -58,7 +61,9 @@ export function Encabezado() {
           </Link>
 
           <nav className="hidden items-center gap-0.5 md:flex">
-            <MenuProductos rutaActual={rutaActual} />
+            {MENUS.map((menu) => (
+              <MenuDesplegable key={menu.etiqueta} etiqueta={menu.etiqueta} opciones={menu.opciones} rutaActual={rutaActual} />
+            ))}
             {ENLACES.map((enlace) => (
               <Link
                 key={enlace.href}
@@ -137,20 +142,24 @@ export function Encabezado() {
             className="overflow-hidden border-t border-sitio-borde bg-black/95 md:hidden"
           >
             <Contenedor className="flex flex-col pt-3 pb-7">
-              <p className="pt-2 pb-1 text-[11px] tracking-[0.14em] text-white/40 uppercase">Productos</p>
-              {PRODUCTOS.map((producto) => (
-                <Link
-                  key={producto.href}
-                  href={producto.href}
-                  onClick={() => setMenuAbierto(false)}
-                  className="flex items-center gap-3 border-b border-white/5 py-[13px] text-[17px] text-sitio-suave transition-colors hover:text-white"
-                >
-                  <producto.icono aria-hidden="true" strokeWidth={1.5} className="h-[18px] w-[18px] text-white/45" />
-                  {producto.nombre}
-                  {!producto.disponible && (
-                    <span className="ml-auto text-[10.5px] tracking-[0.14em] text-white/35 uppercase">Pronto</span>
-                  )}
-                </Link>
+              {MENUS.map((menu) => (
+                <div key={menu.etiqueta} className="border-b border-white/5 pb-2">
+                  <p className="pt-4 pb-1 text-[11px] tracking-[0.14em] text-white/40 uppercase">{menu.etiqueta}</p>
+                  {menu.opciones.map((opcion) => (
+                    <Link
+                      key={opcion.clave}
+                      href={opcion.href}
+                      onClick={() => setMenuAbierto(false)}
+                      className="flex items-center gap-3 py-[9px] text-[16px] text-sitio-suave transition-colors hover:text-white"
+                    >
+                      <opcion.icono aria-hidden="true" strokeWidth={1.5} className="h-[17px] w-[17px] text-white/45" />
+                      {opcion.nombre}
+                      {!opcion.disponible && (
+                        <span className="ml-auto text-[10.5px] tracking-[0.14em] text-white/35 uppercase">Pronto</span>
+                      )}
+                    </Link>
+                  ))}
+                </div>
               ))}
               {ENLACES.map((enlace) => (
                 <Link
@@ -193,13 +202,15 @@ export function Encabezado() {
 }
 
 /**
- * Las tres formas de usar Mi Sitio en un panel que baja del menú. Se abre al
- * pasar el cursor o con clic, y se cierra con Escape, al salir o al navegar.
+ * Un menú que baja con una opción por producto (Productos, Plantillas o
+ * Precios). Se abre al pasar el cursor o con clic, y se cierra con Escape, al
+ * salir o al navegar.
  */
-function MenuProductos({ rutaActual }: { rutaActual: string }) {
+function MenuDesplegable({ etiqueta, opciones, rutaActual }: { etiqueta: string; opciones: readonly OpcionMenu[]; rutaActual: string }) {
   const [abierto, setAbierto] = useState(false)
   const caja = useRef<HTMLDivElement>(null)
-  const activo = PRODUCTOS.some((producto) => rutaActual.startsWith(producto.href))
+  // /enlaces es de Productos: en Plantillas y Precios sólo cuenta su propia ruta.
+  const activo = opciones.some((opcion) => opcion.disponible && (rutaActual === opcion.href || rutaActual.startsWith(`${opcion.href}/`)))
 
   useEffect(() => setAbierto(false), [rutaActual])
 
@@ -229,7 +240,7 @@ function MenuProductos({ rutaActual }: { rutaActual: string }) {
           activo || abierto ? 'text-white' : 'text-white/60 hover:text-white',
         )}
       >
-        Productos
+        {etiqueta}
         <ChevronDown
           aria-hidden="true"
           strokeWidth={1.6}
@@ -248,11 +259,15 @@ function MenuProductos({ rutaActual }: { rutaActual: string }) {
             className="absolute top-full left-1/2 w-[440px] -translate-x-1/2 pt-3"
           >
             <div className="overflow-hidden rounded-[8px] border border-white/10 bg-sitio-modal p-2 shadow-[0_30px_80px_-20px_rgba(0,0,0,1)]">
-              {PRODUCTOS.map((producto) => (
+              {opciones.map((producto) => (
                 <Link
-                  key={producto.href}
+                  key={producto.clave}
                   href={producto.href}
-                  className="group flex items-start gap-4 rounded-[6px] p-3.5 transition-colors duration-300 hover:bg-white/[0.05]"
+                  aria-current={rutaActual === producto.href ? 'page' : undefined}
+                  className={cn(
+                    'group flex items-start gap-4 rounded-[6px] p-3.5 transition-colors duration-300 hover:bg-white/[0.05]',
+                    rutaActual === producto.href && 'bg-white/[0.04]',
+                  )}
                 >
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[6px] border border-white/10 text-white/70 transition-colors duration-300 group-hover:text-white">
                     <producto.icono aria-hidden="true" strokeWidth={1.5} className="h-[17px] w-[17px]" />

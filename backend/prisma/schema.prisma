@@ -344,7 +344,9 @@ model Pago {
 /// de la plataforma; los límites técnicos del plan viven en el código
 /// (src/utilidades/planes.ts). Si falta una fila, se usa la oferta por defecto.
 model OfertaPlan {
-  plan PlanTenant @id
+  plan PlanTenant
+  /// La tienda y la página tienen precios propios; los límites son los mismos.
+  tipo TipoSitio  @default(tienda)
 
   /// Pesos colombianos al mes. 0 = gratis.
   precio      Int
@@ -356,6 +358,7 @@ model OfertaPlan {
 
   actualizadoEn DateTime @updatedAt
 
+  @@id([plan, tipo])
   @@map("ofertas_planes")
 }
 

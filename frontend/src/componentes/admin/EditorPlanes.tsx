@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Check, Plus, X } from 'lucide-react'
-import { guardarPlan, listarPlanes, type OfertaPlan } from '@/servicios/admin'
+import { guardarPlan, listarPlanes, type OfertaPlan, type TipoOferta } from '@/servicios/admin'
 import { PLANES } from '@/utilidades/planes'
 import { cn } from '@/utilidades/clases'
-import { Aviso, CLASES_ENTRADA, Campo, CampoArea, Interruptor } from '../panel/ui/basicos'
+import { Aviso, CLASES_ENTRADA, Campo, CampoArea, Interruptor, Segmentado } from '../panel/ui/basicos'
 
 const SALIDA = [0.16, 1, 0.3, 1] as const
 
@@ -15,23 +15,36 @@ const SALIDA = [0.16, 1, 0.3, 1] as const
  * técnicos (productos, fotos, secciones) los fija el código, no esta pantalla.
  */
 export function EditorPlanes() {
+  const [tipo, setTipo] = useState<TipoOferta>('tienda')
   const [planes, setPlanes] = useState<OfertaPlan[] | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    listarPlanes()
+    setPlanes(null)
+    listarPlanes(tipo)
       .then(setPlanes)
       .catch((problema: Error) => setError(problema.message))
-  }, [])
+  }, [tipo])
 
   return (
     <>
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <h1 className="text-[clamp(34px,4.4vw,60px)] leading-none tracking-[-0.045em]">Planes y precios</h1>
         <p className="max-w-[46ch] text-[13px] text-white/45">
-          Lo que guardes aquí se ve en la página de precios en menos de un minuto. Los límites de cada plan se
+          La tienda y la página tienen precios propios; lo que guardes se ve en precios en menos de un minuto. Los límites de cada plan se
           ajustan en el código.
         </p>
+      </div>
+
+      <div className="mt-8 max-w-[360px]">
+        <Segmentado
+          opciones={[
+            { valor: 'tienda', etiqueta: 'Tienda en línea' },
+            { valor: 'pagina', etiqueta: 'Página para negocio' },
+          ]}
+          valor={tipo}
+          alCambiar={setTipo}
+        />
       </div>
 
       <AnimatePresence>{error && <div className="mt-6"><Aviso>{error}</Aviso></div>}</AnimatePresence>
@@ -41,12 +54,12 @@ export function EditorPlanes() {
           ? [0, 1, 2, 3].map((indice) => <div key={indice} className="brillo h-[420px] rounded-[12px]" />)
           : planes.map((plan, indice) => (
               <motion.div
-                key={plan.plan}
+                key={`${tipo}-${plan.plan}`}
                 initial={{ opacity: 0, y: 24, filter: 'blur(4px)' }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                 transition={{ duration: 0.9, delay: indice * 0.06, ease: SALIDA }}
               >
-                <TarjetaPlan inicial={plan} alGuardar={setPlanes} />
+                <TarjetaPlan inicial={plan} tipo={tipo} alGuardar={setPlanes} />
               </motion.div>
             ))}
       </div>
@@ -54,7 +67,7 @@ export function EditorPlanes() {
   )
 }
 
-function TarjetaPlan({ inicial, alGuardar }: { inicial: OfertaPlan; alGuardar: (planes: OfertaPlan[]) => void }) {
+function TarjetaPlan({ inicial, tipo, alGuardar }: { inicial: OfertaPlan; tipo: TipoOferta; alGuardar: (planes: OfertaPlan[]) => void }) {
   const [plan, setPlan] = useState(inicial)
   const [nuevo, setNuevo] = useState('')
   const [estado, setEstado] = useState<'quieto' | 'guardando' | 'guardado'>('quieto')
@@ -70,7 +83,7 @@ function TarjetaPlan({ inicial, alGuardar }: { inicial: OfertaPlan; alGuardar: (
     setEstado('guardando')
     setError('')
     try {
-      alGuardar(await guardarPlan(plan))
+      alGuardar(await guardarPlan(plan, tipo))
       setEstado('guardado')
       setTimeout(() => setEstado('quieto'), 2000)
     } catch (problema) {

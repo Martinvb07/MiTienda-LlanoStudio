@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../config/prisma.js'
 import { cifrarContrasena } from '../utilidades/contrasenas.js'
 import { registrarActividad, tokenSiEsAdmin } from '../servicios/admins.servicio.js'
-import { listarOfertas } from '../servicios/ofertas.servicio.js'
+import { listarOfertas, tipoOferta } from '../servicios/ofertas.servicio.js'
 import { cambiarPlan } from '../servicios/plataforma.servicio.js'
 import { noAutorizado, noEncontrado } from '../utilidades/errores.js'
 
@@ -160,33 +160,33 @@ export async function cambiarContrasenaAdmin(req: Request, res: Response): Promi
   res.json({ email: propietario.email })
 }
 
-export async function listarOfertasAdmin(_req: Request, res: Response): Promise<void> {
-  res.json({ planes: await listarOfertas() })
+export async function listarOfertasAdmin(req: Request, res: Response): Promise<void> {
+  res.json({ planes: await listarOfertas(tipoOferta(req.query.tipo)) })
 }
 
 export async function guardarOfertaAdmin(req: Request, res: Response): Promise<void> {
   const plan = PLAN_VALIDO.safeParse(req.params.plan)
   if (!plan.success) throw noEncontrado('Ese plan no existe')
+  const tipo = tipoOferta(req.query.tipo)
   const datos = req.body as z.infer<typeof esquemaOferta>
 
-  // Sólo un plan puede ir destacado como "el más elegido".
+  // Sólo un plan puede ir destacado como "el más elegido" (en la tienda y en la página, cada una).
   if (datos.destacado) {
-    await prisma.ofertaPlan.updateMany({ where: { plan: { not: plan.data } }, data: { destacado: false } })
-    const actuales = await listarOfertas()
+    const actuales = await listarOfertas(tipo)
     for (const oferta of actuales.filter((otra) => otra.plan !== plan.data && otra.destacado)) {
       await prisma.ofertaPlan.upsert({
-        where: { plan: oferta.plan },
-        create: { ...oferta, destacado: false },
+        where: { plan_tipo: { plan: oferta.plan, tipo } },
+        create: { ...oferta, tipo, destacado: false },
         update: { destacado: false },
       })
     }
   }
 
   await prisma.ofertaPlan.upsert({
-    where: { plan: plan.data },
-    create: { plan: plan.data, ...datos },
+    where: { plan_tipo: { plan: plan.data, tipo } },
+    create: { plan: plan.data, tipo, ...datos },
     update: datos,
   })
-  registrarActividad(req, 'Editó la oferta de un plan', plan.data)
-  res.json({ planes: await listarOfertas() })
+  registrarActividad(req, 'Editó la oferta de un plan', tipo === 'pagina' ? `${plan.data} (página)` : plan.data)
+  res.json({ planes: await listarOfertas(tipo) })
 }

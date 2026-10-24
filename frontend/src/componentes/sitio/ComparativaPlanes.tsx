@@ -88,6 +88,44 @@ const GRUPOS: { titulo: string; filas: Fila[] }[] = [
   },
 ]
 
+const ESTILO_SECCION = GRUPOS.find((grupo) => grupo.titulo === 'Estilo de cada sección')!
+
+/** Para la página de negocio: sin catálogo ni ventas, con lo que usa un negocio de servicios. */
+const GRUPOS_PAGINA: { titulo: string; filas: Fila[] }[] = [
+  {
+    titulo: 'Tu negocio',
+    filas: [
+      { etiqueta: 'Servicios con precio y agenda por WhatsApp', valor: (l) => l.bloques.includes('servicios') },
+      { etiqueta: 'Horario, dirección y contacto', valor: (l) => l.bloques.includes('horario') },
+      { etiqueta: 'Equipo con foto y cargo', valor: (l) => l.bloques.includes('equipo') },
+      { etiqueta: 'Estadísticas de visitas', valor: (l) => (l.diasMetricas >= 365 ? '1 año' : `${l.diasMetricas} días`) },
+      { etiqueta: 'Personas en el panel', valor: (l) => l.usuarios },
+      { etiqueta: 'Dominio propio con HTTPS', valor: (l) => l.dominioPropio },
+    ],
+  },
+  {
+    titulo: 'Diseño',
+    filas: [
+      { etiqueta: 'Secciones en la página', valor: (l) => l.secciones },
+      { etiqueta: 'Colores, letra y esquinas a tu medida', valor: (l) => l.temaLibre },
+      { etiqueta: 'Columnas, galería, preguntas y banners', valor: (l) => l.bloques.includes('galeria') },
+      { etiqueta: 'Opiniones, video, logos y mapa', valor: (l) => l.bloques.includes('video') },
+      { etiqueta: 'Lienzo libre', valor: (l) => l.bloques.includes('lienzo') },
+    ],
+  },
+  ESTILO_SECCION,
+  {
+    titulo: 'Cabecera y pie',
+    filas: [
+      { etiqueta: 'Enlaces en el menú', valor: (l) => l.enlacesMenu },
+      { etiqueta: 'Cabecera completa con barra de color', valor: (l) => l.cabeceraCompleta },
+      { etiqueta: 'Botón flotante de WhatsApp', valor: (l) => l.whatsappFlotante },
+      { etiqueta: 'Pie con contacto y horario', valor: (l) => l.pieColumnas },
+      { etiqueta: 'Sin “Hecho con Mi Sitio”', valor: (l) => l.quitarMarca },
+    ],
+  },
+]
+
 function Celda({ valor }: { valor: Valor }): ReactNode {
   if (valor === true) return <Check aria-label="Incluido" className="mx-auto h-4 w-4 text-white" />
   if (valor === false || valor === null) return <Minus aria-label="No incluido" className="mx-auto h-4 w-4 text-white/20" />
@@ -100,8 +138,9 @@ const COLUMNAS = 'grid grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,1fr))] items
  * Tabla comparativa por grupos que se despliegan, como las preguntas
  * frecuentes: el primero abierto y los demás a pedido.
  */
-export function ComparativaPlanes() {
-  const [abiertos, setAbiertos] = useState<Set<string>>(() => new Set([GRUPOS[0]!.titulo]))
+export function ComparativaPlanes({ tipo = 'tienda' }: { tipo?: 'tienda' | 'pagina' }) {
+  const grupos = tipo === 'pagina' ? GRUPOS_PAGINA : GRUPOS
+  const [abiertos, setAbiertos] = useState<Set<string>>(() => new Set([grupos[0]!.titulo]))
 
   function alternar(titulo: string) {
     setAbiertos((actuales) => {
@@ -131,7 +170,7 @@ export function ComparativaPlanes() {
               ))}
             </div>
 
-            {GRUPOS.map((grupo) => {
+            {grupos.map((grupo) => {
               const abierto = abiertos.has(grupo.titulo)
               return (
                 <div key={grupo.titulo} className="border-b border-white/12" role="rowgroup">

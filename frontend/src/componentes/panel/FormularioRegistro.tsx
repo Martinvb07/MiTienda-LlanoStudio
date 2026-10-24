@@ -119,12 +119,13 @@ export function FormularioRegistro() {
         tipo: interes === 'pagina' ? 'pagina' : 'tienda',
         ...leerOrigen(),
       })
-      // Recién creada: directo al editor para que la arme.
-      // Si llegó desde "Usar esta plantilla", el editor abre con ella aplicada.
+      // Recién creada: primero elige con qué plantilla arranca; después se abre el editor.
+      // Si llegó desde "Usar esta plantilla", ya la eligió: el editor abre con ella aplicada.
       const plantilla = new URLSearchParams(window.location.search).get('plantilla')
       // Si venía de elegir un plan pago en /precios, primero a pagarlo.
       if (new URLSearchParams(window.location.search).has('plan')) router.push('/panel/plan')
-      else router.push(`/panel/plantillas?editar=1${plantilla ? `&plantilla=${encodeURIComponent(plantilla)}` : ''}`)
+      else if (plantilla) router.push(`/panel/plantillas?editar=1&plantilla=${encodeURIComponent(plantilla)}`)
+      else router.push('/panel/plantillas?elegir=1')
     } catch (error) {
       if (error instanceof ErrorPanel && Object.keys(error.campos).length > 0) {
         setErrores(error.campos as Errores)

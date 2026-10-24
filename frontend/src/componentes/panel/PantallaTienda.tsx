@@ -13,6 +13,7 @@ import { textosSitio, vendeEnLinea } from '@/utilidades/sitio'
 import { ESTILOS_PREDEFINIDOS } from '@/utilidades/tema'
 import { CabeceraPanel } from './CabeceraPanel'
 import { EditorTienda } from './editor/EditorTienda'
+import { ElegirPlantilla } from './ElegirPlantilla'
 import { VistaPrevia } from './editor/VistaPrevia'
 import { useSesion } from './SesionPanel'
 import { Aviso, BotonPanel, Etiqueta } from './ui/basicos'
@@ -26,6 +27,9 @@ export function PantallaTienda() {
   const [productos, setProductos] = useState<Producto[]>([])
   const [error, setError] = useState('')
   const [editando, setEditando] = useState(parametros.get('editar') === '1')
+  // Recién creada la cuenta: primero se elige la plantilla y después se abre el editor con ella.
+  const [eligiendo, setEligiendo] = useState(parametros.get('elegir') === '1')
+  const [plantilla, setPlantilla] = useState(parametros.get('plantilla'))
 
   useEffect(() => {
     obtenerTienda()
@@ -48,7 +52,8 @@ export function PantallaTienda() {
 
   function cerrarEditor() {
     setEditando(false)
-    if (parametros.get('editar')) router.replace('/panel/plantillas')
+    setPlantilla(null)
+    if (parametros.get('editar') || parametros.get('elegir')) router.replace('/panel/plantillas')
   }
 
   if (error) return <Aviso>{error}</Aviso>
@@ -64,6 +69,23 @@ export function PantallaTienda() {
   const secciones = tienda.configuracionBloques.filter((bloque) => bloque.visible !== false)
   const vende = vendeEnLinea(tienda.tipo)
   const textos = textosSitio(tienda.tipo)
+
+  if (eligiendo && !editando) {
+    return (
+      <ElegirPlantilla
+        tipo={tienda.tipo}
+        alElegir={(clave) => {
+          setPlantilla(clave)
+          setEligiendo(false)
+          setEditando(true)
+        }}
+        alSaltar={() => {
+          setEligiendo(false)
+          router.replace('/panel/plantillas')
+        }}
+      />
+    )
+  }
 
   return (
     <>
@@ -148,7 +170,7 @@ export function PantallaTienda() {
           <EditorTienda
             tienda={tienda}
             subdominio={subdominio}
-            plantillaInicial={parametros.get('plantilla')}
+            plantillaInicial={plantilla}
             alCerrar={cerrarEditor}
             alGuardar={(guardada) => {
               setDatos({ tienda: guardada, subdominio })

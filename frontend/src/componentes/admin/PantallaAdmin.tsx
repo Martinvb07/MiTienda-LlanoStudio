@@ -25,9 +25,7 @@ import {
   cerrarSesionAdmin,
   leerTokenAdmin,
   listarTickets,
-  obtenerResumen,
   quienSoy,
-  type ResumenAdmin,
   type SesionAdmin,
 } from '@/servicios/admin'
 import { cn } from '@/utilidades/clases'
@@ -107,7 +105,6 @@ export function PantallaAdmin() {
 
 function Tablero({ admin, alSalir }: { admin: SesionAdmin; alSalir: () => void }) {
   const [seccion, setSeccion] = useState<Clave>('dinero')
-  const [resumen, setResumen] = useState<ResumenAdmin | null>(null)
   const [ficha, setFicha] = useState<string | null>(null)
   const [sinLeer, setSinLeer] = useState(0)
   const [mas, setMas] = useState(false)
@@ -121,12 +118,6 @@ function Tablero({ admin, alSalir }: { admin: SesionAdmin; alSalir: () => void }
     window.scrollTo({ top: 0 })
   }
 
-  const recargarResumen = useCallback(() => {
-    obtenerResumen()
-      .then(setResumen)
-      .catch(() => (leerTokenAdmin() ? undefined : alSalir()))
-  }, [alSalir])
-  useEffect(recargarResumen, [recargarResumen])
 
   // Mensajes sin leer en soporte, para el globo del menú y el título de la pestaña.
   useEffect(() => {
@@ -242,7 +233,7 @@ function Tablero({ admin, alSalir }: { admin: SesionAdmin; alSalir: () => void }
           >
             {seccion === 'dinero' && <SeccionDinero alAbrirTienda={abrirTienda} />}
             {seccion === 'tiendas' && (
-              <SeccionTiendas admin={admin} resumen={resumen} alCambio={recargarResumen} alSalir={alSalir} alAbrirTienda={abrirTienda} />
+              <SeccionTiendas admin={admin} alSalir={alSalir} alAbrirTienda={abrirTienda} />
             )}
             {seccion === 'soporte' && <SeccionSoporte admin={admin} alAbrirTienda={abrirTienda} alPendientes={setSinLeer} />}
             {seccion === 'pagos' && <SeccionPagos admin={admin} alAbrirTienda={abrirTienda} />}

@@ -70,16 +70,22 @@ export interface TiendaAdmin {
   planVenceEn: string | null
   activo: boolean
   creadoEn: string
+  tipo: TipoSitioAdmin
   publicada: boolean
   logoUrl: string | null
   productos: number
   propietario: { nombre: string; email: string; ultimoAccesoEn: string | null } | null
 }
 
-export const obtenerResumen = () => pedir<ResumenAdmin>('/resumen')
+/** Los tres productos de Mi Sitio; cada cuenta es de uno. */
+export type TipoSitioAdmin = 'tienda' | 'pagina' | 'enlaces'
 
-export const listarTiendas = (buscar = '') =>
-  pedir<{ tiendas: TiendaAdmin[] }>(`/tiendas${buscar ? `?buscar=${encodeURIComponent(buscar)}` : ''}`).then(
+export const obtenerResumen = (tipo?: TipoSitioAdmin) => pedir<ResumenAdmin>(`/resumen${tipo ? `?tipo=${tipo}` : ''}`)
+
+export const listarTiendas = (buscar = '', tipo?: TipoSitioAdmin) =>
+  pedir<{ tiendas: TiendaAdmin[] }>(
+    `/tiendas?${new URLSearchParams({ ...(buscar ? { buscar } : {}), ...(tipo ? { tipo } : {}) }).toString()}`,
+  ).then(
     (respuesta) => respuesta.tiendas,
   )
 

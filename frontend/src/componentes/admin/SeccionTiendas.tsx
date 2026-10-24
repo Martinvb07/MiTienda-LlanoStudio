@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- logos y fotos de tiendas */
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowUpRight, Download, KeyRound, LayoutGrid, List, MoreHorizontal, Power, Search } from 'lucide-react'
+import { ArrowUpRight, Download, KeyRound, LayoutGrid, LayoutTemplate, Link2, List, MoreHorizontal, Power, Search, Store } from 'lucide-react'
 import {
   cambiarContrasena,
   cambiarTienda,
@@ -11,10 +11,12 @@ import {
   leerTokenAdmin,
   listarTiendas,
   obtenerGaleria,
+  obtenerResumen,
   type ResumenAdmin,
   type SesionAdmin,
   type TiendaAdmin,
   type TiendaGaleria,
+  type TipoSitioAdmin,
 } from '@/servicios/admin'
 import { urlTienda } from '@/utilidades/dominios'
 import { ORDEN_PLANES, PLANES, type Plan } from '@/utilidades/planes'
@@ -24,18 +26,21 @@ import { MenuAcciones, ModalPanel, Selector } from '../panel/ui/flotantes'
 import { confirmar } from '../panel/ui/confirmar'
 import { SALIDA } from './ui'
 
+/** Una pestaña por producto, con cómo se llama cada cuenta en ese producto. */
+const PRODUCTOS_ADMIN: { tipo: TipoSitioAdmin; titulo: string; una: string; Icono: typeof Store }[] = [
+  { tipo: 'tienda', titulo: 'Tiendas', una: 'tienda', Icono: Store },
+  { tipo: 'pagina', titulo: 'Páginas', una: 'página', Icono: LayoutTemplate },
+  { tipo: 'enlaces', titulo: 'Enlaces', una: 'enlace', Icono: Link2 },
+]
+
 const OPCIONES_PLAN = ORDEN_PLANES.map((plan) => ({ valor: plan, etiqueta: PLANES[plan].nombre }))
 
 export function SeccionTiendas({
   admin,
-  resumen,
-  alCambio,
   alSalir,
   alAbrirTienda,
 }: {
   admin: SesionAdmin
-  resumen: ResumenAdmin | null
-  alCambio: () => void
   alSalir: () => void
   alAbrirTienda: (id: string) => void
 }) {
@@ -47,10 +52,29 @@ export function SeccionTiendas({
   const [error, setError] = useState('')
   const [cambiando, setCambiando] = useState<string | null>(null)
   const [contrasenaDe, setContrasenaDe] = useState<TiendaAdmin | null>(null)
+  const [tipo, setTipo] = useState<TipoSitioAdmin>('tienda')
+  const producto = PRODUCTOS_ADMIN.find((opcion) => opcion.tipo === tipo)!
+  // Cifras de cada producto; se vuelven a pedir cuando algo cambia.
+  const [resumenes, setResumenes] = useState<Partial<Record<TipoSitioAdmin, ResumenAdmin>>>({})
+  const [version, setVersion] = useState(0)
+  const resumen = resumenes[tipo] ?? null
+
+  useEffect(() => {
+    for (const { tipo: clave } of PRODUCTOS_ADMIN) {
+      obtenerResumen(clave)
+        .then((datos) => setResumenes((actuales) => ({ ...actuales, [clave]: datos })))
+        .catch(() => undefined)
+    }
+  }, [version])
+
+  useEffect(() => {
+    setTiendas(null)
+    setEtiqueta(null)
+  }, [tipo])
 
   useEffect(() => {
     const espera = setTimeout(() => {
-      listarTiendas(buscar)
+      listarTiendas(buscar, tipo)
         .then((lista) => {
           setTiendas(lista)
           setError('')
@@ -58,7 +82,7 @@ export function SeccionTiendas({
         .catch((problema: Error) => (leerTokenAdmin() ? setError(problema.message) : alSalir()))
     }, 250)
     return () => clearTimeout(espera)
-  }, [buscar, alSalir])
+  }, [buscar, tipo, alSalir])
 
   async function cambiar(tienda: TiendaAdmin, cambios: { plan?: string; activo?: boolean }) {
     if (
@@ -75,7 +99,7 @@ export function SeccionTiendas({
     try {
       const actualizado = await cambiarTienda(tienda.id, cambios)
       setTiendas((lista) => lista?.map((otra) => (otra.id === tienda.id ? { ...otra, ...actualizado } : otra)) ?? null)
-      alCambio()
+      setVersion((actual) => actual + 1)
     } catch (problema) {
       setError(problema instanceof Error ? problema.message : 'No se pudo cambiar')
     } finally {
@@ -87,23 +111,55 @@ export function SeccionTiendas({
   const visibles = (tiendas ?? []).filter((tienda) => !etiqueta || tienda.etiquetas.includes(etiqueta))
 
   const cifras = [
-    { valor: resumen?.tiendas, etiqueta: 'Tiendas' },
+    { valor: resumen?.tiendas, etiqueta: producto.titulo },
     { valor: resumen?.publicadas, etiqueta: 'Publicadas' },
     { valor: resumen?.nuevasEstaSemana, etiqueta: 'Nuevas esta semana' },
-    { valor: resumen?.productos, etiqueta: 'Productos' },
+    tipo === 'tienda' ? { valor: resumen?.productos, etiqueta: 'Productos' } : { valor: resumen?.suspendidas, etiqueta: 'Suspendidas' },
   ]
 
   return (
     <>
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-        <h1 className="text-[clamp(30px,3.6vw,48px)] leading-none tracking-[-0.045em]">Tiendas</h1>
+        <h1 className="text-[clamp(30px,3.6vw,48px)] leading-none tracking-[-0.045em]">{producto.titulo}</h1>
         <p className="text-[13px] text-white/45">
           {ORDEN_PLANES.map((plan) => `${PLANES[plan].nombre} ${resumen?.porPlan[plan] ?? 0}`).join(' · ')}
           {resumen?.suspendidas ? ` · ${resumen.suspendidas} suspendidas` : ''}
         </p>
       </div>
 
-      <div className="mt-9 grid grid-cols-2 border-y border-white/10 md:grid-cols-4">
+      <div role="tablist" aria-label="Producto" className="mt-7 flex gap-1 overflow-x-auto border-b border-white/10">
+        {PRODUCTOS_ADMIN.map(({ tipo: clave, titulo, Icono }) => {
+          const elegido = clave === tipo
+          return (
+            <button
+              key={clave}
+              type="button"
+              role="tab"
+              aria-selected={elegido}
+              onClick={() => setTipo(clave)}
+              className={cn(
+                'relative inline-flex h-11 shrink-0 items-center gap-2 px-3.5 text-[13.5px] transition-colors duration-300',
+                elegido ? 'text-white' : 'text-white/50 hover:text-white',
+              )}
+            >
+              <Icono aria-hidden="true" strokeWidth={1.6} className="h-4 w-4" />
+              {titulo}
+              <span className={cn('rounded-full px-1.5 text-[11px] tabular-nums', elegido ? 'bg-white/[0.12]' : 'bg-white/[0.06]')}>
+                {resumenes[clave]?.tiendas ?? '·'}
+              </span>
+              {elegido && (
+                <motion.span
+                  layoutId="pestana-producto-admin"
+                  transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                  className="absolute inset-x-2 -bottom-px h-[2px] rounded-full bg-white"
+                />
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 border-y border-white/10 md:grid-cols-4">
         {cifras.map((cifra, indice) => (
           <div key={cifra.etiqueta} className={cn('py-6', indice > 0 && 'md:border-l md:border-white/10 md:pl-7', indice % 2 === 1 && 'border-l border-white/10 pl-6')}>
             <p className="text-[clamp(32px,3.4vw,44px)] leading-none tracking-[-0.045em]">{cifra.valor ?? '—'}</p>
@@ -175,7 +231,11 @@ export function SeccionTiendas({
           <div className="brillo h-48 rounded-[10px]" />
         ) : visibles.length === 0 ? (
           <p className="py-16 text-center text-sm text-white/45">
-            {buscar ? 'Ninguna tienda coincide con la búsqueda.' : 'Todavía no hay tiendas.'}
+            {tipo === 'enlaces'
+              ? 'Enlaces para tu bio todavía no está disponible.'
+              : buscar
+                ? `Ninguna ${producto.una} coincide con la búsqueda.`
+                : `Todavía no hay ${producto.titulo.toLowerCase()}.`}
           </p>
         ) : (
           <ul className="border-b border-white/10">
@@ -224,7 +284,7 @@ export function SeccionTiendas({
                     <span className="block truncate text-[13.5px]">{tienda.propietario?.nombre ?? '—'}</span>
                     <span className="block truncate text-[12px] text-white/40">{tienda.propietario?.email}</span>
                   </div>
-                  <span className="hidden text-[13px] text-white/60 md:block">{tienda.productos} prod.</span>
+                  <span className="hidden text-[13px] text-white/60 md:block">{tienda.tipo === 'tienda' ? `${tienda.productos} prod.` : '—'}</span>
                   <span className="hidden text-[12px] md:block">
                     <span
                       aria-hidden="true"

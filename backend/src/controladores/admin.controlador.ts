@@ -26,7 +26,11 @@ export const esquemaCambioTienda = z
   })
   .refine((datos) => datos.plan !== undefined || datos.activo !== undefined, 'No hay nada que cambiar')
 
-export const esquemaBusqueda = z.object({ buscar: z.string().trim().max(80).optional() })
+export const esquemaBusqueda = z.object({
+  buscar: z.string().trim().max(80).optional(),
+  /** Sólo las de un producto: tienda en línea, página o enlaces. */
+  tipo: z.enum(['tienda', 'pagina', 'enlaces']).optional(),
+})
 
 export const esquemaContrasena = z.object({
   contrasena: z.string().min(8, 'Tiene que tener al menos 8 caracteres').max(200),
@@ -50,16 +54,19 @@ export async function ingresarAdmin(req: Request, res: Response): Promise<void> 
 }
 
 /** Cifras de toda la plataforma. */
-export async function resumenAdmin(_req: Request, res: Response): Promise<void> {
+export async function resumenAdmin(req: Request, res: Response): Promise<void> {
   const haceUnaSemana = new Date(Date.now() - 7 * 24 * 3600 * 1000)
+  // ?tipo= cuenta sólo las cuentas de ese producto; sin él, todas.
+  const tipo = esquemaBusqueda.shape.tipo.safeParse(req.query.tipo).data
+  const deTipo = tipo ? { tienda: { tipo } } : {}
 
   const [tiendas, publicadas, suspendidas, productos, nuevas, porPlan] = await Promise.all([
-    prisma.tenant.count(),
-    prisma.tienda.count({ where: { publicada: true, tenant: { activo: true } } }),
-    prisma.tenant.count({ where: { activo: false } }),
-    prisma.producto.count(),
-    prisma.tenant.count({ where: { creadoEn: { gte: haceUnaSemana } } }),
-    prisma.tenant.groupBy({ by: ['plan'], _count: { _all: true } }),
+    prisma.tenant.count({ where: deTipo }),
+    prisma.tienda.count({ where: { publicada: true, tenant: { activo: true }, ...(tipo ? { tipo } : {}) } }),
+    prisma.tenant.count({ where: { activo: false, ...deTipo } }),
+    prisma.producto.count(tipo ? { where: { tienda: { tipo } } } : undefined),
+    prisma.tenant.count({ where: { creadoEn: { gte: haceUnaSemana }, ...deTipo } }),
+    prisma.tenant.groupBy({ by: ['plan'], where: deTipo, _count: { _all: true } }),
   ])
 
   res.json({
@@ -74,18 +81,21 @@ export async function resumenAdmin(_req: Request, res: Response): Promise<void> 
 
 /** Todas las tiendas, de la más nueva a la más antigua, con búsqueda por nombre, dirección o correo. */
 export async function listarTiendasAdmin(req: Request, res: Response): Promise<void> {
-  const { buscar } = req.query as z.infer<typeof esquemaBusqueda>
+  const { buscar, tipo } = req.query as z.infer<typeof esquemaBusqueda>
 
   const tenants = await prisma.tenant.findMany({
-    where: buscar
-      ? {
-          OR: [
-            { nombre: { contains: buscar, mode: 'insensitive' } },
-            { subdominio: { contains: buscar, mode: 'insensitive' } },
-            { usuarios: { some: { email: { contains: buscar, mode: 'insensitive' } } } },
-          ],
-        }
-      : undefined,
+    where: {
+      ...(tipo ? { tienda: { tipo } } : {}),
+      ...(buscar
+        ? {
+            OR: [
+              { nombre: { contains: buscar, mode: 'insensitive' } },
+              { subdominio: { contains: buscar, mode: 'insensitive' } },
+              { usuarios: { some: { email: { contains: buscar, mode: 'insensitive' } } } },
+            ],
+          }
+        : {}),
+    },
     orderBy: { creadoEn: 'desc' },
     take: 200,
     select: {
@@ -103,7 +113,7 @@ export async function listarTiendasAdmin(req: Request, res: Response): Promise<v
         take: 1,
         select: { nombre: true, email: true, ultimoAccesoEn: true },
       },
-      tienda: { select: { publicada: true, logoUrl: true, _count: { select: { productos: true } } } },
+      tienda: { select: { tipo: true, publicada: true, logoUrl: true, _count: { select: { productos: true } } } },
     },
   })
 
@@ -111,6 +121,7 @@ export async function listarTiendasAdmin(req: Request, res: Response): Promise<v
     tiendas: tenants.map(({ usuarios, tienda, ...tenant }) => ({
       ...tenant,
       propietario: usuarios[0] ?? null,
+      tipo: tienda?.tipo ?? 'tienda',
       publicada: tienda?.publicada ?? false,
       logoUrl: tienda?.logoUrl ?? null,
       productos: tienda?._count.productos ?? 0,

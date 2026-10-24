@@ -24,7 +24,7 @@ const PREGUNTAS = [
   {
     pregunta: '¿Y la página para mi negocio?',
     respuesta:
-      'Tiene sus propios precios, más bajos porque no lleva carrito ni pedidos. Los ves en Precios › Página para tu negocio. Los enlaces para la bio están en construcción; su precio aún no está definido.',
+      'Tiene sus propios precios, más bajos porque no lleva carrito ni pedidos. Los ves en Precios › Página para tu negocio. Los enlaces para la bio tienen los suyos, todavía más livianos, en Precios › Enlaces para tu bio.',
   },
   {
     pregunta: '¿Puedo cambiar de plan más adelante?',

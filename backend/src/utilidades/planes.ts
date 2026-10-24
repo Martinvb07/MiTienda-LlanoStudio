@@ -36,8 +36,12 @@ export interface LimitesPlan {
  */
 const BLOQUES_NEGOCIO_BASICO = ['servicios', 'horario'] as const
 
+/** Lo de los enlaces para tu bio: el perfil y los botones. Va desde Gratis. */
+const BLOQUES_BIO = ['perfil', 'enlaces'] as const
+
 const BLOQUES_EMPRENDE = [
   ...BLOQUES_NEGOCIO_BASICO,
+  ...BLOQUES_BIO,
   'equipo',
   'anuncio',
   'hero',
@@ -65,7 +69,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     productos: 10,
     fotosPorProducto: 4,
     secciones: 6,
-    bloques: ['hero', 'grilla-productos', 'texto', 'pie', 'espaciador', ...BLOQUES_NEGOCIO_BASICO],
+    bloques: ['hero', 'grilla-productos', 'texto', 'pie', 'espaciador', ...BLOQUES_NEGOCIO_BASICO, ...BLOQUES_BIO],
     temaLibre: false,
     quitarMarca: false,
     cupones: 0,
@@ -155,6 +159,8 @@ export const ETIQUETAS_BLOQUE_PLAN: Record<string, string> = {
   servicios: 'Servicios',
   equipo: 'Equipo',
   horario: 'Horario y contacto',
+  perfil: 'Perfil',
+  enlaces: 'Enlaces',
 }
 
 export function limitesDe(plan: string): LimitesPlan {

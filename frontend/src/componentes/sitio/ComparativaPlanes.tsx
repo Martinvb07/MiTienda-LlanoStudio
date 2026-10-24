@@ -6,6 +6,7 @@ import { Check, Minus, Plus } from 'lucide-react'
 import { Contenedor, Rotulo } from './Contenedor'
 import { Revelar } from './Revelar'
 import { ORDEN_PLANES, PLANES, experienciaIncluye, type LimitesPlan } from '@/utilidades/planes'
+import type { TipoSitio } from '@/tipos/tienda'
 
 type Valor = boolean | number | string | null
 
@@ -126,6 +127,33 @@ const GRUPOS_PAGINA: { titulo: string; filas: Fila[] }[] = [
   },
 ]
 
+/** Para los enlaces de la bio: lo que cabe en una página corta. */
+const GRUPOS_ENLACES: { titulo: string; filas: Fila[] }[] = [
+  {
+    titulo: 'Tus enlaces',
+    filas: [
+      { etiqueta: 'Botones en tu bio', valor: (l) => `Hasta ${l.enlacesBio}` },
+      { etiqueta: 'Perfil con foto, bio y redes', valor: () => true },
+      { etiqueta: 'Enlace destacado con brillo', valor: () => true },
+      { etiqueta: 'Código QR para compartir', valor: () => true },
+      { etiqueta: 'Estadísticas de visitas', valor: (l) => (l.diasMetricas >= 365 ? '1 año' : `${l.diasMetricas} días`) },
+      { etiqueta: 'Dominio propio con HTTPS', valor: (l) => l.dominioPropio },
+    ],
+  },
+  {
+    titulo: 'Diseño',
+    filas: [
+      { etiqueta: 'Colores, letra y esquinas a tu medida', valor: (l) => l.temaLibre },
+      { etiqueta: 'Fondo degradado o de malla', valor: () => true },
+      { etiqueta: 'Secciones en la página', valor: (l) => l.secciones },
+      { etiqueta: 'Galería, preguntas y llamado', valor: (l) => l.bloques.includes('galeria') },
+      { etiqueta: 'Opiniones, video y mapa', valor: (l) => l.bloques.includes('video') },
+      { etiqueta: 'Cuenta regresiva para lanzamientos', valor: (l) => l.bloques.includes('cuenta-regresiva') },
+      { etiqueta: 'Sin “Hecho con Mi Sitio”', valor: (l) => l.quitarMarca },
+    ],
+  },
+]
+
 function Celda({ valor }: { valor: Valor }): ReactNode {
   if (valor === true) return <Check aria-label="Incluido" className="mx-auto h-4 w-4 text-white" />
   if (valor === false || valor === null) return <Minus aria-label="No incluido" className="mx-auto h-4 w-4 text-white/20" />
@@ -138,8 +166,8 @@ const COLUMNAS = 'grid grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,1fr))] items
  * Tabla comparativa por grupos que se despliegan, como las preguntas
  * frecuentes: el primero abierto y los demás a pedido.
  */
-export function ComparativaPlanes({ tipo = 'tienda' }: { tipo?: 'tienda' | 'pagina' }) {
-  const grupos = tipo === 'pagina' ? GRUPOS_PAGINA : GRUPOS
+export function ComparativaPlanes({ tipo = 'tienda' }: { tipo?: TipoSitio }) {
+  const grupos = tipo === 'pagina' ? GRUPOS_PAGINA : tipo === 'enlaces' ? GRUPOS_ENLACES : GRUPOS
   const [abiertos, setAbiertos] = useState<Set<string>>(() => new Set([grupos[0]!.titulo]))
 
   function alternar(titulo: string) {

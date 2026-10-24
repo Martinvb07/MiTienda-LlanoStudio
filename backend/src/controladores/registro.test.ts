@@ -23,10 +23,18 @@ describe('registro por tipo de sitio', () => {
     expect(datos.tipo).toBe('tienda')
   })
 
-  it('acepta página y rechaza lo que todavía no existe', () => {
+  it('acepta página y enlaces, y rechaza lo que no existe', () => {
     const base = { nombre: 'Ana', email: 'ana@correo.co', contrasena: '12345678', tienda: 'Ana', subdominio: 'ana' }
     expect(controlador.esquemaRegistro.parse({ ...base, tipo: 'pagina' }).tipo).toBe('pagina')
-    expect(controlador.esquemaRegistro.safeParse({ ...base, tipo: 'enlaces' }).success).toBe(false)
+    expect(controlador.esquemaRegistro.parse({ ...base, tipo: 'enlaces' }).tipo).toBe('enlaces')
+    expect(controlador.esquemaRegistro.safeParse({ ...base, tipo: 'blog' }).success).toBe(false)
+  })
+
+  it('los enlaces arrancan con perfil y botones, dentro del plan Gratis', () => {
+    const bloques = controlador.bloquesIniciales('Valentina Rey', 'enlaces')
+    const tipos = bloques.map((bloque) => bloque.tipo)
+    expect(tipos).toEqual(['perfil', 'enlaces'])
+    expect(tipos.every((tipo) => PLANES.GRATIS.bloques.includes(tipo))).toBe(true)
   })
 
   it('la página arranca sin catálogo y con secciones que el plan Gratis deja guardar', () => {
@@ -40,5 +48,20 @@ describe('registro por tipo de sitio', () => {
 
   it('la tienda sigue arrancando con su catálogo', () => {
     expect(controlador.bloquesIniciales('Lana Andina').map((bloque) => bloque.tipo)).toContain('grilla-productos')
+  })
+})
+
+describe('botones de los enlaces en el admin', () => {
+  it('cuenta los botones de todas las secciones de enlaces y tolera JSON raro', async () => {
+    const { contarEnlaces } = await import('./admin.controlador.js')
+    const bloques = [
+      { tipo: 'perfil', props: {} },
+      { tipo: 'enlaces', props: { items: [{}, {}, {}] } },
+      { tipo: 'enlaces', props: { items: [{}] } },
+      { tipo: 'enlaces', props: { items: 'nada' } },
+      null,
+    ]
+    expect(contarEnlaces(bloques)).toBe(4)
+    expect(contarEnlaces('no es una lista')).toBe(0)
   })
 })

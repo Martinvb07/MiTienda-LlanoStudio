@@ -144,6 +144,12 @@ export interface AjustesTienda {
   pedidosWhatsapp?: boolean
 
   paginaProducto?: PlantillaProducto
+
+  // Enlaces para tu bio
+  /** Fondo de la página: liso, degradado desde el color de marca o malla de color. */
+  fondoBio?: 'liso' | 'degradado' | 'malla'
+  /** Quita "Hecho con Mi Sitio" al pie de la bio; sólo surte efecto en planes pagos. */
+  ocultarMarca?: boolean
 }
 
 /**

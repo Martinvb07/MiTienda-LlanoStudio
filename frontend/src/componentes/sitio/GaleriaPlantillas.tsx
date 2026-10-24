@@ -9,7 +9,9 @@ import { ETIQUETAS_BLOQUE } from '@/tipos/bloques'
 import { PLANES } from '@/utilidades/planes'
 import { PLANTILLAS_TIENDA, type PlantillaTienda } from '@/utilidades/plantillas'
 import { esPlantillaPagina, PLANTILLAS_PAGINA, planCompleto } from '@/utilidades/plantillasPagina'
+import { PLANTILLAS_ENLACES } from '@/utilidades/plantillasEnlaces'
 import { FUENTES_TITULOS } from '@/utilidades/tema'
+import type { TipoSitio } from '@/tipos/tienda'
 
 const SALIDA = [0.16, 1, 0.3, 1] as const
 
@@ -34,12 +36,14 @@ function notaCompleta(plantilla: PlantillaTienda) {
  * la captura crece hasta el modal con todo lo que trae (layoutId de Motion)
  * y al cerrar vuelve a su sitio.
  */
-export function GaleriaPlantillas({ limite, pro, tipo = 'tienda' }: { limite?: number; pro?: boolean; tipo?: 'tienda' | 'pagina' }) {
+export function GaleriaPlantillas({ limite, pro, tipo = 'tienda' }: { limite?: number; pro?: boolean; tipo?: TipoSitio }) {
   const [abierta, setAbierta] = useState<PlantillaTienda | null>(null)
   const filtradas =
     tipo === 'pagina'
       ? PLANTILLAS_PAGINA
-      : pro === undefined
+      : tipo === 'enlaces'
+        ? PLANTILLAS_ENLACES
+        : pro === undefined
         ? PLANTILLAS_TIENDA
         : PLANTILLAS_TIENDA.filter((plantilla) => PLANTILLAS_PRO.has(plantilla.clave) === pro)
   const plantillas = limite ? filtradas.slice(0, limite) : filtradas
@@ -109,6 +113,11 @@ function ModalPlantilla({ plantilla, alCerrar }: { plantilla: PlantillaTienda; a
     ...(plantilla.ajustes?.cabecera === 'completa' ? ['Cabecera completa con buscador, menú y WhatsApp'] : []),
     ...new Set(plantilla.bloques('').map((bloque) => ETIQUETAS_BLOQUE[bloque.tipo])),
     ...(plantilla.tema.colorPrecio ? ['Precios destacados en color'] : []),
+    ...(plantilla.ajustes?.fondoBio === 'degradado' ? ['Fondo degradado con tu color'] : []),
+    ...(plantilla.ajustes?.fondoBio === 'malla' ? ['Fondo de malla de color'] : []),
+    ...(plantilla.bloques('').some((bloque) => bloque.tipo === 'enlaces' && bloque.props.items.some((enlace) => enlace.destacado))
+      ? ['Enlace destacado con brillo']
+      : []),
   ]
   const colores = [plantilla.tema.colorMarca, plantilla.tema.colorFondo, plantilla.tema.colorTexto]
 

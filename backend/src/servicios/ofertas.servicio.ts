@@ -13,11 +13,11 @@ export interface Oferta {
 
 export const ORDEN: Plan[] = ['GRATIS', 'EMPRENDE', 'NEGOCIO', 'PRO']
 
-/** De quién es la oferta: la tienda en línea o la página para tu negocio. */
-export type TipoOferta = 'tienda' | 'pagina'
+/** De quién es la oferta: la tienda en línea, la página para tu negocio o los enlaces para la bio. */
+export type TipoOferta = 'tienda' | 'pagina' | 'enlaces'
 
 /** Lo que llega en ?tipo=: cualquier otra cosa es la tienda. */
-export const tipoOferta = (valor: unknown): TipoOferta => (valor === 'pagina' ? 'pagina' : 'tienda')
+export const tipoOferta = (valor: unknown): TipoOferta => (valor === 'pagina' || valor === 'enlaces' ? valor : 'tienda')
 
 /** Oferta inicial de cada plan, hasta que el admin la cambie. */
 export const OFERTAS_POR_DEFECTO: Record<Plan, Oferta> = {
@@ -112,7 +112,47 @@ export const OFERTAS_PAGINA_POR_DEFECTO: Record<Plan, Oferta> = {
   },
 }
 
-const DE_FABRICA: Record<TipoOferta, Record<Plan, Oferta>> = { tienda: OFERTAS_POR_DEFECTO, pagina: OFERTAS_PAGINA_POR_DEFECTO }
+/** Oferta inicial de los enlaces para la bio: lo más liviano, cuesta menos que la página. */
+export const OFERTAS_ENLACES_POR_DEFECTO: Record<Plan, Oferta> = {
+  GRATIS: {
+    plan: 'GRATIS',
+    precio: 0,
+    precioAnual: 0,
+    resumen: 'Para tener tu link de la bio hoy mismo.',
+    incluye: ['Subdominio tunombre.llanostudio.co', 'Hasta 6 enlaces y tus redes', 'Plantillas gratuitas', 'Código QR para compartir'],
+    destacado: false,
+  },
+  EMPRENDE: {
+    plan: 'EMPRENDE',
+    precio: 9900,
+    precioAnual: 99000,
+    resumen: 'Para que tu link se vea con tu marca.',
+    incluye: ['Hasta 15 enlaces', 'Colores, letra, fondo degradado o de malla', 'Todas las plantillas', 'Sin marca de Mi Sitio'],
+    destacado: true,
+  },
+  NEGOCIO: {
+    plan: 'NEGOCIO',
+    precio: 19900,
+    precioAnual: 199000,
+    resumen: 'Para creadores y negocios que viven de sus redes.',
+    incluye: ['Hasta 40 enlaces', 'Opiniones, video y mapa', 'Dominio propio con HTTPS', 'Estadísticas de 90 días'],
+    destacado: false,
+  },
+  PRO: {
+    plan: 'PRO',
+    precio: 39900,
+    precioAnual: 399000,
+    resumen: 'Para agencias y quien maneja varias marcas.',
+    incluye: ['Todo lo de Negocio', 'Hasta 100 enlaces', 'Cuenta regresiva para lanzamientos', 'Acompañamiento en la puesta en marcha'],
+    destacado: false,
+  },
+}
+
+const DE_FABRICA: Record<TipoOferta, Record<Plan, Oferta>> = {
+  tienda: OFERTAS_POR_DEFECTO,
+  pagina: OFERTAS_PAGINA_POR_DEFECTO,
+  enlaces: OFERTAS_ENLACES_POR_DEFECTO,
+}
 
 /** Las cuatro ofertas en orden, con lo guardado por el admin encima de lo de fábrica. */
 export async function listarOfertas(tipo: TipoOferta = 'tienda'): Promise<Oferta[]> {
@@ -125,7 +165,7 @@ export async function listarOfertas(tipo: TipoOferta = 'tienda'): Promise<Oferta
   })
 }
 
-/** Qué ofertas le tocan a una cuenta: las de página si su sitio es una página. */
+/** Qué ofertas le tocan a una cuenta: las del tipo de su sitio. */
 export async function tipoOfertaDe(tenantId: string): Promise<TipoOferta> {
   const tienda = await prisma.tienda.findUnique({ where: { tenantId }, select: { tipo: true } })
   return tipoOferta(tienda?.tipo)

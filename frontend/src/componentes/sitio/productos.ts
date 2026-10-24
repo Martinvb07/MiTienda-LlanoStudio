@@ -37,7 +37,7 @@ export const PRODUCTOS: readonly ProductoSitio[] = [
     resumen: 'Todos tus enlaces, para la bio de Instagram.',
     href: '/enlaces',
     icono: Link2,
-    disponible: false,
+    disponible: true,
   },
 ]
 
@@ -46,16 +46,16 @@ export type OpcionMenu = ProductoSitio
 
 const producto = (clave: ProductoSitio['clave']) => PRODUCTOS.find((otro) => otro.clave === clave)!
 
-/** Plantillas de cada producto. Las de enlaces llegan con el producto. */
+/** Plantillas de cada producto. */
 export const MENU_PLANTILLAS: readonly OpcionMenu[] = [
   { ...producto('tienda'), resumen: 'Diseños para vender, por rubro.', href: '/plantillas' },
   { ...producto('pagina'), resumen: 'Por oficio: abogados, salud, comida y servicios.', href: '/plantillas/pagina' },
-  { ...producto('enlaces'), resumen: 'Llegan con el producto.' },
+  { ...producto('enlaces'), resumen: 'Para creadores, artistas y negocios.', href: '/plantillas/enlaces' },
 ]
 
-/** Precios de cada producto: la página cuesta menos que la tienda. */
+/** Precios de cada producto: la página cuesta menos que la tienda, y los enlaces menos que la página. */
 export const MENU_PRECIOS: readonly OpcionMenu[] = [
   { ...producto('tienda'), resumen: 'Carrito, pagos y pedidos. Desde $0.', href: '/precios' },
   { ...producto('pagina'), resumen: 'Sin carrito, más livianos. Desde $0.', href: '/precios/pagina' },
-  { ...producto('enlaces'), resumen: 'Precio por definir.' },
+  { ...producto('enlaces'), resumen: 'Lo más liviano. Desde $0.', href: '/precios/enlaces' },
 ]

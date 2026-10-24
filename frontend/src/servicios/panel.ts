@@ -130,7 +130,7 @@ export async function registrar(datos: {
   ref?: string
   origen?: string
   /** Tienda (por defecto) o página informativa. */
-  tipo?: 'tienda' | 'pagina'
+  tipo?: TipoSitio
 }) {
   const { token } = await pedir<{ token: string }>('/registro', {
     method: 'POST',

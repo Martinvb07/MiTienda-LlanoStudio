@@ -17,6 +17,7 @@ import { planMinimo, type LimitesPlan } from '@/utilidades/planes'
 import { CLASES_ENTRADA, Campo, CampoArea, Candado, Interruptor, Segmentado } from '../ui/basicos'
 import { CamposLienzo } from './CamposLienzo'
 import { CamposEquipo, CamposHorario, CamposServicios } from './CamposNegocio'
+import { CamposEnlaces, CamposPerfil } from './CamposBio'
 import { ZonaImagen } from '../ui/imagenes'
 import { ICONOS_BLOQUE, claveIcono } from '@/componentes/comunes/IconoBloque'
 import { cn } from '@/utilidades/clases'
@@ -855,6 +856,12 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
     case 'horario':
       return <CamposHorario bloque={bloque} alCambiar={alCambiar} limites={limites} {...subida} />
 
+    case 'perfil':
+      return <CamposPerfil bloque={bloque} alCambiar={alCambiar} limites={limites} {...subida} />
+
+    case 'enlaces':
+      return <CamposEnlaces bloque={bloque} alCambiar={alCambiar} limites={limites} {...subida} />
+
     case 'lienzo':
       return (
         <CamposLienzo bloqueId={bloque.id} props={bloque.props} alCambiar={alCambiar} alError={alError} alSubiendo={alSubiendo} />
@@ -933,6 +940,10 @@ export function resumenBloque(bloque: Bloque): string {
       return bloque.props.dias.map((fila) => fila.dia).filter(Boolean).join(' · ')
     case 'espaciador':
       return bloque.props.linea ? 'Con línea' : 'Espacio'
+    case 'perfil':
+      return bloque.props.nombre || bloque.props.bio || 'Tu foto y tu bio'
+    case 'enlaces':
+      return bloque.props.titulo || bloque.props.items.map((enlace) => enlace.texto).filter(Boolean).join(' · ')
     case 'lienzo': {
       // Como la sección original: su primer texto (el título de la portada, por ejemplo).
       const texto = bloque.props.elementos.find((pieza) => (pieza.tipo === 'titulo' || pieza.tipo === 'texto') && pieza.texto?.trim())?.texto
@@ -943,8 +954,8 @@ export function resumenBloque(bloque: Bloque): string {
   }
 }
 
-/** Cuadrícula de íconos para las columnas; el ícono elegido se guarda por su clave. */
-function SelectorIcono({ valor, alCambiar }: { valor?: string; alCambiar: (icono: string) => void }) {
+/** Cuadrícula de íconos para las columnas y los enlaces; el ícono elegido se guarda por su clave. */
+export function SelectorIcono({ valor, alCambiar }: { valor?: string; alCambiar: (icono: string) => void }) {
   const actual = claveIcono(valor)
   return (
     <div className="flex flex-col gap-1.5">

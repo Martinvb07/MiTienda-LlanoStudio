@@ -24,10 +24,13 @@ import { Espaciador } from './bloques/Espaciador'
 import { Servicios } from './bloques/Servicios'
 import { Equipo } from './bloques/Equipo'
 import { Horario } from './bloques/Horario'
+import { Perfil } from './bloques/Perfil'
+import { Enlaces } from './bloques/Enlaces'
 import { EnvolturaSeccion } from './EnvolturaSeccion'
 import { esquemasIniciales } from '@/utilidades/tema'
 import { categoriasDe } from './ListadoProductos'
-import { bloquesVisiblesPara } from '@/utilidades/sitio'
+import { bloquesVisiblesPara, esBio } from '@/utilidades/sitio'
+import { configuracionDominios } from '@/utilidades/dominios'
 
 interface Props {
   bloques: Bloque[]
@@ -113,6 +116,10 @@ function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categ
       )
     case 'espaciador':
       return <Espaciador {...bloque.props} />
+    case 'perfil':
+      return <Perfil {...bloque.props} nombreSitio={nombreTienda} logoUrl={logoUrl} ajustes={ajustes} />
+    case 'enlaces':
+      return <Enlaces {...bloque.props} ajustes={ajustes} />
     case 'lienzo':
       return <Lienzo {...bloque.props} contexto={{ productos, moneda, ajustes, nombreTienda, logoUrl, editando }} />
     default:
@@ -164,6 +171,29 @@ export function RenderizadorBloques({
   // Las barras de anuncio van arriba del encabezado, también si se pasaron a libre.
   const anunciosIniciales = visibles.findIndex((bloque) => bloque.tipo !== 'anuncio' && origenLienzo(bloque) !== 'anuncio')
   const corte = anunciosIniciales === -1 ? visibles.length : anunciosIniciales
+
+  // Los enlaces para tu bio: una columna angosta al centro, sin cabecera, con
+  // el fondo elegido y la marca al pie.
+  if (esBio(tipo)) {
+    return (
+      <div data-fondo-bio={ajustes.fondoBio ?? 'liso'} className="min-h-screen">
+        <div className="bio-columna mx-auto max-w-[580px] pb-6">
+          {visibles.map((bloque) => (
+            <EnvolturaSeccion key={bloque.id} id={bloque.id} estilo={bloque.estilo} esquemas={esquemas} animarPorDefecto={tema?.animarSecciones}>
+              {pintar(bloque, contexto)}
+            </EnvolturaSeccion>
+          ))}
+        </div>
+        {!(quitarMarca && ajustes.ocultarMarca) && (
+          <p className="pb-8 text-center text-xs text-tinta/45">
+            <a href={`https://${configuracionDominios.subdominioPanel}.${configuracionDominios.dominioBase}/enlaces`} target="_blank" rel="noopener noreferrer" className="transition hover:text-tinta/70">
+              Hecho con Mi Sitio de Llano Studio
+            </a>
+          </p>
+        )}
+      </div>
+    )
+  }
 
   return (
     <>

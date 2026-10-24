@@ -1,4 +1,5 @@
 import 'server-only'
+import type { TipoSitio } from '@/tipos/tienda'
 
 export interface PlanPublico {
   plan: 'GRATIS' | 'EMPRENDE' | 'NEGOCIO' | 'PRO'
@@ -17,7 +18,7 @@ const URL_API = process.env.URL_API ?? 'http://localhost:4000'
  * durante el build), la página de precios no se rompe: queda sin planes y se
  * vuelve a intentar al minuto.
  */
-export async function obtenerPlanes(tipo: 'tienda' | 'pagina' = 'tienda'): Promise<PlanPublico[]> {
+export async function obtenerPlanes(tipo: TipoSitio = 'tienda'): Promise<PlanPublico[]> {
   try {
     const respuesta = await fetch(`${URL_API}/api/planes?tipo=${tipo}`, { next: { revalidate: 60, tags: ['planes'] } })
     if (!respuesta.ok) return []

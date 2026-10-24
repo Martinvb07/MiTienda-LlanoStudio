@@ -60,7 +60,7 @@ enum TipoSitio {
   tienda
   /// Página informativa de un negocio: sin carrito ni catálogo.
   pagina
-  /// Enlaces para la bio (todavía no se puede crear).
+  /// Enlaces para la bio: perfil y botones en una columna angosta.
   enlaces
 }
 

@@ -57,6 +57,8 @@ export interface ResumenAdmin {
   productos: number
   nuevasEstaSemana: number
   porPlan: Record<string, number>
+  /** Sólo en ?tipo=enlaces: botones guardados en todas las bios. */
+  enlaces?: number
 }
 
 export interface TiendaAdmin {
@@ -74,6 +76,8 @@ export interface TiendaAdmin {
   publicada: boolean
   logoUrl: string | null
   productos: number
+  /** Sólo en la lista de enlaces: cuántos botones tiene su bio. */
+  enlaces?: number
   propietario: { nombre: string; email: string; ultimoAccesoEn: string | null } | null
 }
 
@@ -112,7 +116,7 @@ export interface OfertaPlan {
 }
 
 /** La tienda en línea y la página para tu negocio tienen precios propios. */
-export type TipoOferta = 'tienda' | 'pagina'
+export type TipoOferta = 'tienda' | 'pagina' | 'enlaces'
 
 export const listarPlanes = (tipo: TipoOferta = 'tienda') =>
   pedir<{ planes: OfertaPlan[] }>(`/planes?tipo=${tipo}`).then((respuesta) => respuesta.planes)

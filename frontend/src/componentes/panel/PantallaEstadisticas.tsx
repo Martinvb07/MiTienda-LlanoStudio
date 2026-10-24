@@ -8,7 +8,7 @@ import { obtenerMetricas, type DiaMetricas, type Metricas } from '@/servicios/pa
 import { formatearPrecio } from '@/utilidades/formato'
 import { limitesDe, planMinimo } from '@/utilidades/planes'
 import { cn } from '@/utilidades/clases'
-import { vendeEnLinea } from '@/utilidades/sitio'
+import { textosSitio, vendeEnLinea } from '@/utilidades/sitio'
 import { CabeceraPanel } from './CabeceraPanel'
 import { useSesion } from './SesionPanel'
 import { Aviso, CURVA, Candado } from './ui/basicos'
@@ -234,7 +234,7 @@ export function PantallaEstadisticas() {
               <Grafica serie={metricas.serie} clave={serie} />
               {sinDatos && (
                 <p className="mt-4 text-center text-[12.5px] text-sitio-tenue">
-                  Todavía no hay movimiento en este período. Comparte tu {vende ? 'tienda' : 'página'} para empezar a ver datos.
+                  Todavía no hay movimiento en este período. Comparte tu {textosSitio(sesion.tienda?.tipo).nombre} para empezar a ver datos.
                 </p>
               )}
             </>

@@ -2,6 +2,7 @@ import type { Bloque } from '@/tipos/bloques'
 import type { TipoSitio } from '@/tipos/tienda'
 import { ORDEN_PLANES, PLANES, limitesDe, type Plan } from './planes'
 import { PLANTILLAS_TIENDA, type PlantillaTienda } from './plantillas'
+import { PLANTILLAS_ENLACES } from './plantillasEnlaces'
 import { PLANTILLAS_OFICIOS } from './plantillasOficios'
 import { tipoSitio } from './sitio'
 import { ESTILOS_PREDEFINIDOS } from './tema'
@@ -386,11 +387,22 @@ export const PLANTILLAS_PAGINA: PlantillaTienda[] = [
 
 /** Las plantillas que ofrece el editor según el tipo de sitio. */
 export function plantillasDe(tipo: TipoSitio | undefined): PlantillaTienda[] {
-  return tipoSitio(tipo) === 'pagina' ? PLANTILLAS_PAGINA : PLANTILLAS_TIENDA
+  const elegido = tipoSitio(tipo)
+  return elegido === 'pagina' ? PLANTILLAS_PAGINA : elegido === 'enlaces' ? PLANTILLAS_ENLACES : PLANTILLAS_TIENDA
 }
 
-export const esPlantillaPagina = (clave: string | null | undefined) =>
-  PLANTILLAS_PAGINA.some((plantilla) => plantilla.clave === clave)
+/** Para qué tipo de sitio es una plantilla, o null si no existe. */
+export function tipoDePlantilla(clave: string | null | undefined): TipoSitio | null {
+  if (!clave) return null
+  const tipos: TipoSitio[] = ['tienda', 'pagina', 'enlaces']
+  return tipos.find((tipo) => plantillasDe(tipo).some((plantilla) => plantilla.clave === clave)) ?? null
+}
+
+/** Las de página y enlaces se usan desde Gratis con las secciones del plan. */
+export const esPlantillaPagina = (clave: string | null | undefined) => {
+  const tipo = tipoDePlantilla(clave)
+  return tipo === 'pagina' || tipo === 'enlaces'
+}
 
 /**
  * Las secciones de la plantilla que el plan deja guardar, hasta su tope de

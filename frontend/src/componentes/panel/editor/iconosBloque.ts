@@ -24,6 +24,8 @@ import {
   ClipboardList,
   Clock,
   Users,
+  CircleUserRound,
+  Link2,
 } from 'lucide-react'
 import type { TipoBloque } from '@/tipos/bloques'
 
@@ -51,6 +53,8 @@ const ICONOS: Record<TipoBloque, LucideIcon> = {
   horario: Clock,
   espaciador: SeparatorHorizontal,
   lienzo: Shapes,
+  perfil: CircleUserRound,
+  enlaces: Link2,
 }
 
 /** Ícono de cada tipo de sección, para la paleta. */

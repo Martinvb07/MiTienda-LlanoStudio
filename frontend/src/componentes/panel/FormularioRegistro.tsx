@@ -11,7 +11,7 @@ import { AvisoFormulario, CampoContrasena, CampoTexto } from './CamposFormulario
 import { configuracionDominios, esSubdominioValido } from '@/utilidades/dominios'
 import { generarSlug } from '@/utilidades/formato'
 import { leerOrigen } from '@/utilidades/origen'
-import { esPlantillaPagina } from '@/utilidades/plantillasPagina'
+import { tipoDePlantilla } from '@/utilidades/plantillasPagina'
 
 interface Errores {
   nombre?: string
@@ -41,7 +41,8 @@ export function FormularioRegistro() {
   useEffect(() => {
     const parametros = new URLSearchParams(window.location.search)
     const producto = parametros.get('producto')
-    if (esPlantillaPagina(parametros.get('plantilla'))) setInteres('pagina')
+    const deLaPlantilla = tipoDePlantilla(parametros.get('plantilla'))
+    if (deLaPlantilla && deLaPlantilla !== 'tienda') setInteres(deLaPlantilla)
     else if (PRODUCTOS.some((otro) => otro.clave === producto)) setInteres(producto as Interes)
     else if (parametros.has('plantilla') || parametros.has('plan')) setInteres('tienda')
   }, [])
@@ -86,7 +87,9 @@ export function FormularioRegistro() {
     if (!contrasena) encontrados.contrasena = 'Elige una contraseña'
     else if (contrasena.length < 8) encontrados.contrasena = 'Tiene que tener al menos 8 caracteres'
 
-    if (!tienda.trim()) encontrados.tienda = interes === 'tienda' ? 'Escribe el nombre de tu tienda' : 'Escribe el nombre de tu negocio'
+    if (!tienda.trim())
+      encontrados.tienda =
+        interes === 'tienda' ? 'Escribe el nombre de tu tienda' : interes === 'enlaces' ? 'Escribe tu nombre o el de tu marca' : 'Escribe el nombre de tu negocio'
 
     if (!subdominioFinal) encontrados.subdominio = 'Elige tu dirección'
     else if (!esSubdominioValido(subdominioFinal)) {
@@ -116,7 +119,7 @@ export function FormularioRegistro() {
         contrasena,
         tienda: tienda.trim(),
         subdominio: subdominioFinal,
-        tipo: interes === 'pagina' ? 'pagina' : 'tienda',
+        tipo: interes ?? 'tienda',
         ...leerOrigen(),
       })
       // Recién creada: primero elige con qué plantilla arranca; después se abre el editor.
@@ -189,6 +192,7 @@ export function FormularioRegistro() {
 
   const esTienda = elegido.clave === 'tienda'
   const esPagina = elegido.clave === 'pagina'
+  const esBio = elegido.clave === 'enlaces'
 
   return (
     <motion.div key="datos" {...PASO}>
@@ -201,10 +205,12 @@ export function FormularioRegistro() {
         {elegido.nombre}
       </button>
       <h1 className="text-[clamp(28px,2.6vw,36px)] leading-[1.02] font-normal tracking-[-0.045em]">
-        {esTienda ? 'Crea tu tienda gratis' : esPagina ? 'Crea tu página gratis' : 'Crea tu cuenta gratis'}
+        {esTienda ? 'Crea tu tienda gratis' : esPagina ? 'Crea tu página gratis' : esBio ? 'Crea tus enlaces gratis' : 'Crea tu cuenta gratis'}
       </h1>
       <p className="mt-1.5 text-sm text-sitio-tenue">
-        {esTienda || esPagina
+        {esBio
+          ? 'En un minuto tienes tu link listo para la bio. Sin tarjeta de crédito.'
+          : esTienda || esPagina
           ? 'En un par de minutos la tienes publicada. Sin tarjeta de crédito.'
           : 'Sin tarjeta de crédito. Tu dirección queda reservada desde hoy.'}
       </p>
@@ -255,11 +261,11 @@ export function FormularioRegistro() {
 
         <div className="col-span-2 sm:col-span-1">
           <CampoTexto
-            etiqueta={esTienda ? 'Nombre de tu tienda' : 'Nombre de tu negocio'}
+            etiqueta={esTienda ? 'Nombre de tu tienda' : esBio ? 'Tu nombre o tu marca' : 'Nombre de tu negocio'}
             nombre="tienda"
             valor={tienda}
             alCambiar={alCambiarTienda}
-            marcador={esTienda ? 'Ropa Llanera' : 'Consultorio Morichal'}
+            marcador={esTienda ? 'Ropa Llanera' : esBio ? 'Valentina Rey' : 'Consultorio Morichal'}
             error={errores.tienda}
           />
         </div>

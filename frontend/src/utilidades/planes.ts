@@ -35,6 +35,8 @@ export interface LimitesPlan {
   estiloSeccion: NivelEstilo
   /** Elementos por lista en las secciones nuevas (columnas, testimonios, fotos…). */
   itemsLista: number
+  /** Botones de los enlaces para tu bio, contando todas sus secciones. */
+  enlacesBio: number
   /** Cupones activos a la vez; null = sin límite. */
   cupones: number | null
   /** Opciones de variante por producto (Talla, Color…); 0 = sin variantes. */
@@ -87,8 +89,12 @@ export function nivelIncluye(actual: NivelEstilo, requerido: NivelEstilo) {
  */
 const BLOQUES_NEGOCIO_BASICO: readonly TipoBloque[] = ['servicios', 'horario']
 
+/** Lo de los enlaces para tu bio: el perfil y los botones. Va desde Gratis. */
+const BLOQUES_BIO: readonly TipoBloque[] = ['perfil', 'enlaces']
+
 const BLOQUES_EMPRENDE: readonly TipoBloque[] = [
   ...BLOQUES_NEGOCIO_BASICO,
+  ...BLOQUES_BIO,
   'equipo',
   'anuncio',
   'hero',
@@ -116,7 +122,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     productos: 10,
     fotosPorProducto: 4,
     secciones: 6,
-    bloques: ['hero', 'grilla-productos', 'texto', 'pie', 'espaciador', ...BLOQUES_NEGOCIO_BASICO],
+    bloques: ['hero', 'grilla-productos', 'texto', 'pie', 'espaciador', ...BLOQUES_NEGOCIO_BASICO, ...BLOQUES_BIO],
     temaLibre: false,
     quitarMarca: false,
     cabeceraCompleta: false,
@@ -129,6 +135,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     grillaAvanzada: false,
     estiloSeccion: 'ninguno',
     itemsLista: 0,
+    enlacesBio: 6,
     cupones: 0,
     opcionesVariantes: 0,
     accionesLote: false,
@@ -158,6 +165,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     grillaAvanzada: true,
     estiloSeccion: 'basico',
     itemsLista: 6,
+    enlacesBio: 15,
     cupones: 3,
     opcionesVariantes: 1,
     accionesLote: true,
@@ -187,6 +195,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     grillaAvanzada: true,
     estiloSeccion: 'avanzado',
     itemsLista: 12,
+    enlacesBio: 40,
     cupones: 20,
     opcionesVariantes: 2,
     accionesLote: true,
@@ -216,6 +225,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     grillaAvanzada: true,
     estiloSeccion: 'completo',
     itemsLista: 30,
+    enlacesBio: 100,
     cupones: null,
     opcionesVariantes: 3,
     accionesLote: true,
@@ -283,6 +293,8 @@ export function ajustarAlPlan(
   }
 
   const items = limites.itemsLista
+  // El tope de botones de la bio cuenta los de todas sus secciones, en orden.
+  let enlacesLibres = limites.enlacesBio
 
   const permitidos = bloques
     .filter((bloque) => limites.bloques.includes(bloque.tipo))
@@ -300,6 +312,11 @@ export function ajustarAlPlan(
           return { ...bloque, props: { ...bloque.props, items: bloque.props.items.slice(0, items) } } as Bloque
         case 'banner-doble':
           return { ...bloque, props: { ...bloque.props, items: bloque.props.items.slice(0, 3) } }
+        case 'enlaces': {
+          const visibles = bloque.props.items.slice(0, Math.max(0, enlacesLibres))
+          enlacesLibres -= visibles.length
+          return { ...bloque, props: { ...bloque.props, items: visibles } }
+        }
         case 'carrusel':
           return {
             ...bloque,

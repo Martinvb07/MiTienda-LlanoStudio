@@ -11,11 +11,11 @@ const PREGUNTAS = [
   {
     pregunta: '¿Qué puedo hacer con Mi Sitio?',
     respuesta:
-      'Una tienda en línea o una página para tu negocio, sin carrito. Pronto, también una de enlaces para tu bio.',
+      'Una tienda en línea, una página para tu negocio sin carrito, o tus enlaces para la bio de Instagram y TikTok.',
   },
   {
-    pregunta: '¿Cuándo llegan los enlaces para la bio?',
-    respuesta: 'Están en construcción, todavía sin fecha. Lo anunciaremos aquí y en tu panel.',
+    pregunta: '¿Qué son los enlaces para la bio?',
+    respuesta: 'Una página corta con tu foto, tus redes y botones a tu WhatsApp, tu tienda o lo que quieras. Es el link que pones en la bio.',
   },
   {
     pregunta: '¿Necesito saber de diseño o de código?',

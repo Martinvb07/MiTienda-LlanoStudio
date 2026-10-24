@@ -31,6 +31,8 @@ export type TipoBloque =
   | 'horario'
   | 'espaciador'
   | 'lienzo'
+  | 'perfil'
+  | 'enlaces'
 
 /**
  * Apariencia de una sección, igual para todos los tipos. La tienda la aplica
@@ -307,6 +309,39 @@ export interface PropsHorario {
   telefono?: string
 }
 
+/** Cabeza de los enlaces para tu bio: foto, nombre, una línea sobre ti y tus redes. */
+export interface PropsPerfil {
+  /** Vacío = el nombre del sitio. */
+  nombre?: string
+  bio?: string
+  /** Vacía = el logo del sitio; sin ninguno, las iniciales. */
+  fotoUrl?: string
+  forma?: 'circulo' | 'redondeada'
+  /** Íconos de las redes de Contacto y redes debajo de la bio. */
+  mostrarRedes?: boolean
+}
+
+/** Un botón de los enlaces para tu bio. */
+export interface EnlaceBio {
+  id: string
+  texto: string
+  /** Dirección web, @usuario, número de WhatsApp o correo: se arma el enlace solo. */
+  url: string
+  /** Clave de ICONOS_BLOQUE. */
+  icono?: string
+  /** Línea pequeña debajo del texto. */
+  descripcion?: string
+  /** Resalta el botón con un brillo que pasa: para lo más importante. */
+  destacado?: boolean
+}
+
+export interface PropsEnlaces {
+  titulo?: string
+  /** 'relleno' con el color de marca, 'contorno' sólo con borde, 'suave' con un fondo tenue. */
+  estilo?: 'relleno' | 'contorno' | 'suave'
+  items: EnlaceBio[]
+}
+
 export interface PropsEspaciador {
   alto?: 'chico' | 'medio' | 'grande'
   linea?: boolean
@@ -456,6 +491,8 @@ export type BloqueEquipo = BloqueBase<'equipo', PropsEquipo>
 export type BloqueHorario = BloqueBase<'horario', PropsHorario>
 export type BloqueEspaciador = BloqueBase<'espaciador', PropsEspaciador>
 export type BloqueLienzo = BloqueBase<'lienzo', PropsLienzo>
+export type BloquePerfil = BloqueBase<'perfil', PropsPerfil>
+export type BloqueEnlaces = BloqueBase<'enlaces', PropsEnlaces>
 
 export type Bloque =
   | BloqueAnuncio
@@ -481,6 +518,8 @@ export type Bloque =
   | BloqueHorario
   | BloqueEspaciador
   | BloqueLienzo
+  | BloquePerfil
+  | BloqueEnlaces
 
 /** Nombres y descripciones para el editor del panel. */
 export const ETIQUETAS_BLOQUE: Record<TipoBloque, string> = {
@@ -507,11 +546,14 @@ export const ETIQUETAS_BLOQUE: Record<TipoBloque, string> = {
   horario: 'Horario y contacto',
   espaciador: 'Espacio o línea',
   lienzo: 'Lienzo libre',
+  perfil: 'Perfil',
+  enlaces: 'Enlaces',
 }
 
 /** Grupos de la paleta de secciones del editor. */
 export const GRUPOS_BLOQUE: { titulo: string; tipos: TipoBloque[] }[] = [
   { titulo: 'Diseño libre', tipos: ['lienzo'] },
+  { titulo: 'Tu bio', tipos: ['perfil', 'enlaces'] },
   { titulo: 'Portada', tipos: ['hero', 'carrusel', 'anuncio', 'banner-doble'] },
   { titulo: 'Catálogo', tipos: ['grilla-productos', 'categorias'] },
   { titulo: 'Tu negocio', tipos: ['servicios', 'horario', 'equipo'] },
@@ -545,6 +587,8 @@ export const DESCRIPCIONES_BLOQUE: Record<TipoBloque, string> = {
   horario: 'Cuándo atiendes, dónde estás y botones para escribir, llamar o llegar.',
   espaciador: 'Aire entre secciones, con o sin línea.',
   lienzo: 'Un espacio en blanco: arrastra títulos, fotos y botones donde quieras y estíralos a tu gusto.',
+  perfil: 'Tu foto, tu nombre, una línea sobre ti y tus redes.',
+  enlaces: 'Botones grandes a tu WhatsApp, tus redes, tu tienda o lo que quieras.',
 }
 
 /** Props con las que nace cada tipo de bloque al añadirlo desde el editor. */
@@ -673,6 +717,15 @@ export const PROPS_INICIALES: { [T in TipoBloque]: Extract<Bloque, { tipo: T }>[
     nota: 'Domingos y festivos cerrado.',
   },
   espaciador: { alto: 'medio', linea: false },
+  perfil: { bio: 'Cuenta en una línea quién eres y qué haces.', forma: 'circulo', mostrarRedes: true },
+  enlaces: {
+    estilo: 'relleno',
+    items: [
+      { id: 'l1', texto: 'Escríbeme por WhatsApp', url: '', icono: 'whatsapp', destacado: true },
+      { id: 'l2', texto: 'Mi Instagram', url: '', icono: 'instagram' },
+      { id: 'l3', texto: 'Mi sitio web', url: '', icono: 'web' },
+    ],
+  },
   // Arranca como el banner de dos fotos con el título encima: se ve de una qué se puede hacer.
   lienzo: {
     alto: 560,

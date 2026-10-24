@@ -13,7 +13,7 @@ import { cn } from '@/utilidades/clases'
 import { PLANES, limitesDe, planIncluye, planMinimo } from '@/utilidades/planes'
 import { ajustesConPlantilla, type PlantillaTienda } from '@/utilidades/plantillas'
 import { bloquesDePlantilla, plantillasDe } from '@/utilidades/plantillasPagina'
-import { textosSitio, vendeEnLinea } from '@/utilidades/sitio'
+import { esBio, textosSitio, vendeEnLinea } from '@/utilidades/sitio'
 import { useSesion } from '../SesionPanel'
 import { Aviso, CURVA, Campo, CampoArea, CampoColor, Candado, Interruptor, PlanRequerido, Seccion, Segmentado } from '../ui/basicos'
 import { Selector } from '../ui/flotantes'
@@ -85,7 +85,8 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
   const [borrador, setBorrador] = useState<DatosTienda>(() => borradorDe(tienda))
   const [inicial, setInicial] = useState(() => JSON.stringify(borradorDe(tienda)))
   const [abierto, setAbierto] = useState<string | null>(null)
-  const [dispositivo, setDispositivo] = useState<Dispositivo>('escritorio')
+  // Los enlaces para tu bio se ven sobre todo en el celular: arrancan ahí.
+  const [dispositivo, setDispositivo] = useState<Dispositivo>(() => (esBio(tienda.tipo) ? 'movil' : 'escritorio'))
   const [pestana, setPestana] = useState<(typeof PESTANAS)[number]['valor']>('pagina')
   const [plantillaEditada, setPlantillaEditada] = useState<'portada' | 'producto'>('portada')
   const [productos, setProductos] = useState<Producto[]>([])
@@ -97,6 +98,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
   const limites = limitesDe(plan)
   // Una página informativa no ve lo de vender: ficha de producto ni ventas y envíos.
   const vende = vendeEnLinea(tienda.tipo)
+  const bio = esBio(tienda.tipo)
   const textos = textosSitio(tienda.tipo)
 
   // Aplica la plantilla que eligió en el sitio, si su plan la incluye. Queda
@@ -667,9 +669,34 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
 
           {pestana === 'pagina' && plantillaEditada === 'portada' && (
             <>
-              <Seccion titulo="Encabezado">
-                <CamposCabecera ajustes={borrador.ajustes} alCambiar={cambiarAjustes} categorias={categorias} limites={limites} />
-              </Seccion>
+              {bio ? (
+                <Seccion titulo="Fondo y marca">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[11.5px] text-sitio-suave">Fondo</span>
+                    <Segmentado
+                      opciones={[
+                        { valor: 'liso', etiqueta: 'Liso' },
+                        { valor: 'degradado', etiqueta: 'Degradado' },
+                        { valor: 'malla', etiqueta: 'Malla' },
+                      ]}
+                      valor={borrador.ajustes.fondoBio ?? 'liso'}
+                      alCambiar={(fondoBio) => cambiarAjustes({ fondoBio })}
+                      chico
+                    />
+                  </div>
+                  {limites.quitarMarca ? (
+                    <Interruptor activo={borrador.ajustes.ocultarMarca ?? false} alCambiar={(ocultarMarca) => cambiarAjustes({ ocultarMarca })}>
+                      Quitar “Hecho con Mi Sitio”
+                    </Interruptor>
+                  ) : (
+                    <Candado plan={planMinimo((plan) => plan.quitarMarca)}>Quitar “Hecho con Mi Sitio” del pie.</Candado>
+                  )}
+                </Seccion>
+              ) : (
+                <Seccion titulo="Encabezado">
+                  <CamposCabecera ajustes={borrador.ajustes} alCambiar={cambiarAjustes} categorias={categorias} limites={limites} />
+                </Seccion>
+              )}
 
               <Seccion titulo="Secciones" abierta abrirCon={abierto}>
                 <ListaBloques
@@ -684,7 +711,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
                   esquemas={esquemas}
                   alEditarLibre={(id) => void editarLibre([id])}
                 />
-                {convertibles > 0 && (
+                {convertibles > 0 && !bio && (
                   <div className="mt-1 flex flex-col gap-2 border-t border-sitio-borde pt-3">
                     <button
                       type="button"

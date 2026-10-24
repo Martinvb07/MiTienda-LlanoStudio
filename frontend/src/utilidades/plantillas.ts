@@ -55,7 +55,7 @@ export interface PlantillaTienda {
 }
 
 /** Lo de los ajustes que es diseño: al cambiar de plantilla se reemplaza; el contacto se conserva. */
-const CLAVES_DISENO = ['cabecera', 'buscador', 'colorBarra', 'menu', 'botonDestacado', 'paginaProducto'] as const
+const CLAVES_DISENO = ['cabecera', 'buscador', 'colorBarra', 'menu', 'botonDestacado', 'paginaProducto', 'fondoBio'] as const
 
 export function ajustesConPlantilla(actuales: AjustesTienda, plantilla: PlantillaTienda): AjustesTienda {
   const contacto: AjustesTienda = { ...actuales }

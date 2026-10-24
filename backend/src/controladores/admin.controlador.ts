@@ -53,6 +53,15 @@ export async function ingresarAdmin(req: Request, res: Response): Promise<void> 
   res.json({ token })
 }
 
+/** Botones de los enlaces para la bio guardados en un diseño (JSON libre, se lee con cuidado). */
+export function contarEnlaces(bloques: unknown): number {
+  if (!Array.isArray(bloques)) return 0
+  return bloques.reduce<number>((total, bloque) => {
+    const items = (bloque as { tipo?: unknown; props?: { items?: unknown } } | null)?.props?.items
+    return (bloque as { tipo?: unknown } | null)?.tipo === 'enlaces' && Array.isArray(items) ? total + items.length : total
+  }, 0)
+}
+
 /** Cifras de toda la plataforma. */
 export async function resumenAdmin(req: Request, res: Response): Promise<void> {
   const haceUnaSemana = new Date(Date.now() - 7 * 24 * 3600 * 1000)
@@ -68,9 +77,18 @@ export async function resumenAdmin(req: Request, res: Response): Promise<void> {
     prisma.tenant.count({ where: { creadoEn: { gte: haceUnaSemana }, ...deTipo } }),
     prisma.tenant.groupBy({ by: ['plan'], where: deTipo, _count: { _all: true } }),
   ])
+  // En los enlaces para la bio, lo que se cuenta son los botones, no los productos.
+  const enlaces =
+    tipo === 'enlaces'
+      ? (await prisma.tienda.findMany({ where: { tipo }, select: { configuracionBloques: true } })).reduce(
+          (total, tienda) => total + contarEnlaces(tienda.configuracionBloques),
+          0,
+        )
+      : undefined
 
   res.json({
     tiendas,
+    ...(enlaces === undefined ? {} : { enlaces }),
     publicadas,
     suspendidas,
     productos,
@@ -113,7 +131,16 @@ export async function listarTiendasAdmin(req: Request, res: Response): Promise<v
         take: 1,
         select: { nombre: true, email: true, ultimoAccesoEn: true },
       },
-      tienda: { select: { tipo: true, publicada: true, logoUrl: true, _count: { select: { productos: true } } } },
+      tienda: {
+        select: {
+          tipo: true,
+          publicada: true,
+          logoUrl: true,
+          _count: { select: { productos: true } },
+          // Sólo para contar los botones de los enlaces: el diseño de una tienda no hace falta.
+          configuracionBloques: tipo === 'enlaces',
+        },
+      },
     },
   })
 
@@ -125,6 +152,7 @@ export async function listarTiendasAdmin(req: Request, res: Response): Promise<v
       publicada: tienda?.publicada ?? false,
       logoUrl: tienda?.logoUrl ?? null,
       productos: tienda?._count.productos ?? 0,
+      ...(tipo === 'enlaces' ? { enlaces: contarEnlaces(tienda?.configuracionBloques) } : {}),
     })),
   })
 }
@@ -198,6 +226,6 @@ export async function guardarOfertaAdmin(req: Request, res: Response): Promise<v
     create: { plan: plan.data, tipo, ...datos },
     update: datos,
   })
-  registrarActividad(req, 'Editó la oferta de un plan', tipo === 'pagina' ? `${plan.data} (página)` : plan.data)
+  registrarActividad(req, 'Editó la oferta de un plan', tipo === 'tienda' ? plan.data : `${plan.data} (${tipo === 'pagina' ? 'página' : 'enlaces'})`)
   res.json({ planes: await listarOfertas(tipo) })
 }

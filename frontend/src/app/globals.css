@@ -657,3 +657,70 @@ html[data-hoja-abierta] .chat-soporte {
     font-size: calc(var(--tm) / 390 * 100cqw);
   }
 }
+
+/* ── Enlaces para tu bio ── */
+/* Los hijos entran escalonados al cargar, como las cabeceras del sitio. */
+@keyframes bio-subir {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+    filter: blur(6px);
+  }
+}
+.bio-entrada > * {
+  animation: bio-subir 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.bio-entrada > *:nth-child(2) { animation-delay: 0.06s; }
+.bio-entrada > *:nth-child(3) { animation-delay: 0.12s; }
+.bio-entrada > *:nth-child(4) { animation-delay: 0.18s; }
+.bio-entrada > *:nth-child(5) { animation-delay: 0.24s; }
+.bio-entrada > *:nth-child(6) { animation-delay: 0.3s; }
+.bio-entrada > *:nth-child(n + 7) { animation-delay: 0.36s; }
+
+/* El destacado: un brillo que cruza el botón cada pocos segundos. */
+@keyframes bio-brillo {
+  0%,
+  70% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(220%) skewX(-18deg);
+  }
+}
+.enlace-bio[data-destacado]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.45), transparent);
+  animation: bio-brillo 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Fondos de la bio: liso, degradado desde el color de marca o una malla de color. */
+[data-fondo-bio='degradado'] {
+  background:
+    radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--marca) 28%, transparent), transparent 70%),
+    var(--superficie);
+}
+[data-fondo-bio='malla'] {
+  background:
+    radial-gradient(60% 40% at 10% 10%, color-mix(in srgb, var(--marca) 30%, transparent), transparent 70%),
+    radial-gradient(50% 40% at 90% 30%, color-mix(in srgb, var(--marca) 18%, transparent), transparent 70%),
+    radial-gradient(70% 50% at 50% 100%, color-mix(in srgb, var(--tinta) 10%, transparent), transparent 70%),
+    var(--superficie);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bio-entrada > *,
+  .enlace-bio[data-destacado]::after {
+    animation: none;
+  }
+}
+
+/* En la columna angosta de la bio, las secciones en varias columnas pasan a una sola. */
+.bio-columna [class*='sm:grid-cols-'],
+.bio-columna [class*='md:grid-cols-'],
+.bio-columna [class*='lg:grid-cols-'] {
+  grid-template-columns: minmax(0, 1fr);
+}

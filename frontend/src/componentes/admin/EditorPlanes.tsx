@@ -31,7 +31,7 @@ export function EditorPlanes() {
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <h1 className="text-[clamp(34px,4.4vw,60px)] leading-none tracking-[-0.045em]">Planes y precios</h1>
         <p className="max-w-[46ch] text-[13px] text-white/45">
-          La tienda y la página tienen precios propios; lo que guardes se ve en precios en menos de un minuto. Los límites de cada plan se
+          La tienda, la página y los enlaces tienen precios propios; lo que guardes se ve en precios en menos de un minuto. Los límites de cada plan se
           ajustan en el código.
         </p>
       </div>
@@ -39,8 +39,9 @@ export function EditorPlanes() {
       <div className="mt-8 max-w-[360px]">
         <Segmentado
           opciones={[
-            { valor: 'tienda', etiqueta: 'Tienda en línea' },
-            { valor: 'pagina', etiqueta: 'Página para negocio' },
+            { valor: 'tienda', etiqueta: 'Tienda' },
+            { valor: 'pagina', etiqueta: 'Página' },
+            { valor: 'enlaces', etiqueta: 'Enlaces' },
           ]}
           valor={tipo}
           alCambiar={setTipo}

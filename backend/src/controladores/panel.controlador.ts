@@ -30,8 +30,8 @@ export const esquemaRegistro = z.object({
   ref: z.string().trim().toUpperCase().max(20).optional(),
   /** De dónde llegó (utm_source u otro), para el embudo del admin. */
   origen: z.string().trim().toLowerCase().max(60).optional(),
-  /** Qué arma: tienda (por defecto) o página informativa. Enlaces todavía no. */
-  tipo: z.enum(['tienda', 'pagina']).default('tienda'),
+  /** Qué arma: tienda (por defecto), página informativa o enlaces para la bio. */
+  tipo: z.enum(['tienda', 'pagina', 'enlaces']).default('tienda'),
 })
 
 export const esquemaIngreso = z.object({
@@ -163,6 +163,9 @@ const esquemaAjustes = z.object({
       barraFija: z.boolean().optional(),
     })
     .optional(),
+  // Enlaces para tu bio
+  fondoBio: z.enum(['liso', 'degradado', 'malla']).optional(),
+  ocultarMarca: z.boolean().optional(),
 })
 
 export const esquemaTienda = z.object({
@@ -235,10 +238,32 @@ export function firmarSesion(sesion: SesionPanel, duracion: jwt.SignOptions['exp
 
 /**
  * Lo que trae un sitio recién creado. La página informativa arranca con
- * portada, servicios y contacto, todo dentro del plan Gratis; el panel le
- * ofrece después las plantillas por tipo de negocio.
+ * portada, servicios y contacto; los enlaces para la bio, con el perfil y
+ * tres botones. Todo dentro del plan Gratis; el panel le ofrece después las
+ * plantillas de su tipo.
  */
-export function bloquesIniciales(nombreTienda: string, tipo: 'tienda' | 'pagina' = 'tienda') {
+export function bloquesIniciales(nombreTienda: string, tipo: 'tienda' | 'pagina' | 'enlaces' = 'tienda') {
+  if (tipo === 'enlaces') {
+    return [
+      {
+        id: 'perfil-inicial',
+        tipo: 'perfil',
+        props: { bio: 'Cuenta en una línea quién eres y qué haces.', forma: 'circulo', mostrarRedes: true },
+      },
+      {
+        id: 'enlaces-inicial',
+        tipo: 'enlaces',
+        props: {
+          estilo: 'relleno',
+          items: [
+            { id: 'l1', texto: 'Escríbeme por WhatsApp', url: '', icono: 'whatsapp', destacado: true },
+            { id: 'l2', texto: 'Mi Instagram', url: '', icono: 'instagram' },
+            { id: 'l3', texto: 'Mi sitio web', url: '', icono: 'web' },
+          ],
+        },
+      },
+    ]
+  }
   if (tipo === 'pagina') {
     return [
       {

@@ -27,10 +27,10 @@ import { confirmar } from '../panel/ui/confirmar'
 import { SALIDA } from './ui'
 
 /** Una pestaña por producto, con cómo se llama cada cuenta en ese producto. */
-const PRODUCTOS_ADMIN: { tipo: TipoSitioAdmin; titulo: string; una: string; Icono: typeof Store }[] = [
-  { tipo: 'tienda', titulo: 'Tiendas', una: 'tienda', Icono: Store },
-  { tipo: 'pagina', titulo: 'Páginas', una: 'página', Icono: LayoutTemplate },
-  { tipo: 'enlaces', titulo: 'Enlaces', una: 'enlace', Icono: Link2 },
+const PRODUCTOS_ADMIN: { tipo: TipoSitioAdmin; titulo: string; ninguna: string; Icono: typeof Store }[] = [
+  { tipo: 'tienda', titulo: 'Tiendas', ninguna: 'Ninguna tienda', Icono: Store },
+  { tipo: 'pagina', titulo: 'Páginas', ninguna: 'Ninguna página', Icono: LayoutTemplate },
+  { tipo: 'enlaces', titulo: 'Enlaces', ninguna: 'Ninguna bio', Icono: Link2 },
 ]
 
 const OPCIONES_PLAN = ORDEN_PLANES.map((plan) => ({ valor: plan, etiqueta: PLANES[plan].nombre }))
@@ -114,7 +114,11 @@ export function SeccionTiendas({
     { valor: resumen?.tiendas, etiqueta: producto.titulo },
     { valor: resumen?.publicadas, etiqueta: 'Publicadas' },
     { valor: resumen?.nuevasEstaSemana, etiqueta: 'Nuevas esta semana' },
-    tipo === 'tienda' ? { valor: resumen?.productos, etiqueta: 'Productos' } : { valor: resumen?.suspendidas, etiqueta: 'Suspendidas' },
+    tipo === 'tienda'
+      ? { valor: resumen?.productos, etiqueta: 'Productos' }
+      : tipo === 'enlaces'
+        ? { valor: resumen?.enlaces, etiqueta: 'Botones en total' }
+        : { valor: resumen?.suspendidas, etiqueta: 'Suspendidas' },
   ]
 
   return (
@@ -231,11 +235,7 @@ export function SeccionTiendas({
           <div className="brillo h-48 rounded-[10px]" />
         ) : visibles.length === 0 ? (
           <p className="py-16 text-center text-sm text-white/45">
-            {tipo === 'enlaces'
-              ? 'Enlaces para tu bio todavía no está disponible.'
-              : buscar
-                ? `Ninguna ${producto.una} coincide con la búsqueda.`
-                : `Todavía no hay ${producto.titulo.toLowerCase()}.`}
+            {buscar ? `${producto.ninguna} coincide con la búsqueda.` : `Todavía no hay ${producto.titulo.toLowerCase()}.`}
           </p>
         ) : (
           <ul className="border-b border-white/10">
@@ -284,7 +284,9 @@ export function SeccionTiendas({
                     <span className="block truncate text-[13.5px]">{tienda.propietario?.nombre ?? '—'}</span>
                     <span className="block truncate text-[12px] text-white/40">{tienda.propietario?.email}</span>
                   </div>
-                  <span className="hidden text-[13px] text-white/60 md:block">{tienda.tipo === 'tienda' ? `${tienda.productos} prod.` : '—'}</span>
+                  <span className="hidden text-[13px] text-white/60 md:block">
+                    {tienda.tipo === 'tienda' ? `${tienda.productos} prod.` : tienda.enlaces !== undefined ? `${tienda.enlaces} enlaces` : '—'}
+                  </span>
                   <span className="hidden text-[12px] md:block">
                     <span
                       aria-hidden="true"

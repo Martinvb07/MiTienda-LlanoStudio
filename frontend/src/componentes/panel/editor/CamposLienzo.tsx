@@ -2,18 +2,41 @@
 
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowDown, ArrowUp, Copy, Maximize2, Minimize2, Monitor, Plus, Smartphone, Trash2, Wand2, X } from 'lucide-react'
+import {
+  AlignCenterHorizontal,
+  AlignCenterVertical,
+  AlignEndHorizontal,
+  AlignEndVertical,
+  AlignStartHorizontal,
+  AlignStartVertical,
+  ArrowDown,
+  ArrowUp,
+  Copy,
+  Layers,
+  Maximize2,
+  Minimize2,
+  Monitor,
+  Plus,
+  Smartphone,
+  Trash2,
+  Wand2,
+  X,
+} from 'lucide-react'
 import type { ElementoLienzo, OpcionesTarjeta, PropsLienzo, RedSocial, TipoElementoLienzo } from '@/tipos/bloques'
 import { ICONOS_LIENZO } from '@/componentes/tienda/bloques/PiezasLienzo'
 import { cn } from '@/utilidades/clases'
 import {
   TAMANO_INICIAL,
   acomodarParaCelular,
+  alinearVarios,
   cajaVisible,
   cambiarCapa,
+  cambiarCapaVarios,
   conCaja,
   duplicarElemento,
+  duplicarVarios,
   escalarElemento,
+  type Alineacion,
 } from '@/utilidades/lienzo'
 import { tamanoMovil } from '@/componentes/tienda/bloques/Lienzo'
 import { CURVA, Campo, CampoArea, CampoColor, Interruptor, Segmentado } from '../ui/basicos'
@@ -121,8 +144,9 @@ export function ModalPieza({
   alError,
   alSubiendo,
 }: Props) {
-  const { elegido, elegir, movil } = useLienzo()
+  const { elegido, grupo, elegir, elegirVarias, movil } = useLienzo()
   const actual = elegido?.bloque === bloqueId ? props.elementos.find((pieza) => pieza.id === elegido.elemento) : undefined
+  const varias = actual && grupo.length > 1 ? props.elementos.filter((pieza) => grupo.includes(pieza.id)) : []
   const cambiarPieza = (id: string, cambios: Partial<ElementoLienzo>) =>
     alCambiar({ elementos: props.elementos.map((pieza) => (pieza.id === id ? { ...pieza, ...cambios } : pieza)) })
 
@@ -148,10 +172,10 @@ export function ModalPieza({
         >
           <div className="flex items-center gap-2 border-b border-sitio-borde px-3.5 py-2.5">
             {(() => {
-              const Icono = iconoPieza(actual.tipo)
+              const Icono = varias.length > 1 ? Layers : iconoPieza(actual.tipo)
               return <Icono aria-hidden="true" className="h-4 w-4 text-sitio-suave" />
             })()}
-            <span className="flex-1 truncate text-[13px] text-white">{nombrePieza(actual)}</span>
+            <span className="flex-1 truncate text-[13px] text-white">{varias.length > 1 ? `${varias.length} piezas` : nombrePieza(actual)}</span>
             <button
               type="button"
               onClick={() => elegir(bloqueId, null)}
@@ -162,6 +186,26 @@ export function ModalPieza({
             </button>
           </div>
           <div className="min-h-0 overflow-y-auto overscroll-contain p-3">
+            {varias.length > 1 ? (
+              <CamposVarias
+                piezas={varias}
+                movil={movil}
+                alCambiar={(cambio) =>
+                  alCambiar({ elementos: props.elementos.map((pieza) => (grupo.includes(pieza.id) ? cambio(pieza) : pieza)) })
+                }
+                alAlinear={(modo) => alCambiar({ elementos: alinearVarios(props.elementos, grupo, modo, movil) })}
+                alCapa={(paso) => alCambiar({ elementos: cambiarCapaVarios(props.elementos, grupo, paso) })}
+                alDuplicar={() => {
+                  const { elementos, nuevos } = duplicarVarios(props.elementos, grupo)
+                  alCambiar({ elementos })
+                  elegirVarias(bloqueId, nuevos)
+                }}
+                alQuitar={() => {
+                  alCambiar({ elementos: props.elementos.filter((pieza) => !grupo.includes(pieza.id)) })
+                  elegir(bloqueId, null)
+                }}
+              />
+            ) : (
             <CamposPieza
               key={actual.id}
               pieza={actual}
@@ -180,10 +224,122 @@ export function ModalPieza({
               alError={alError}
               alSubiendo={alSubiendo}
             />
+            )}
           </div>
         </motion.div>
       )}
     </AnimatePresence>
+  )
+}
+
+const ALINEAR: { modo: Alineacion; etiqueta: string; Icono: typeof X }[] = [
+  { modo: 'izquierda', etiqueta: 'Alinear a la izquierda', Icono: AlignStartVertical },
+  { modo: 'centro', etiqueta: 'Centrar en horizontal', Icono: AlignCenterVertical },
+  { modo: 'derecha', etiqueta: 'Alinear a la derecha', Icono: AlignEndVertical },
+  { modo: 'arriba', etiqueta: 'Alinear arriba', Icono: AlignStartHorizontal },
+  { modo: 'medio', etiqueta: 'Centrar en vertical', Icono: AlignCenterHorizontal },
+  { modo: 'abajo', etiqueta: 'Alinear abajo', Icono: AlignEndHorizontal },
+]
+
+/**
+ * Varias piezas elegidas con Shift + clic: capas, duplicar y borrar a la vez,
+ * alinearlas entre sí, cambiarles el tamaño y lo que comparten (color de la
+ * letra, color de fondo, opacidad).
+ */
+function CamposVarias({
+  piezas,
+  movil,
+  alCambiar,
+  alAlinear,
+  alCapa,
+  alDuplicar,
+  alQuitar,
+}: {
+  piezas: ElementoLienzo[]
+  movil: boolean
+  alCambiar: (cambio: (pieza: ElementoLienzo) => ElementoLienzo) => void
+  alAlinear: (modo: Alineacion) => void
+  alCapa: (paso: 1 | -1) => void
+  alDuplicar: () => void
+  alQuitar: () => void
+}) {
+  const boton = 'grid h-8 flex-1 place-items-center rounded-lg border border-sitio-borde text-sitio-suave transition-colors hover:border-white/30 hover:text-white'
+  const conLetra = piezas.filter((pieza) => CON_LETRA.includes(pieza.tipo))
+  const conFondo = piezas.filter((pieza) => pieza.tipo === 'forma' || (pieza.tipo === 'boton' && !pieza.contorno))
+  const opacidad = piezas[0]?.opacidad ?? 100
+
+  return (
+    <div className="flex flex-col gap-3 rounded-[12px] border border-sitio-azul/40 bg-white/[0.02] p-3">
+      <div className="flex gap-1">
+        <button type="button" title="Traer adelante" onClick={() => alCapa(1)} className={boton}>
+          <ArrowUp aria-hidden="true" className="h-3.5 w-3.5" />
+        </button>
+        <button type="button" title="Enviar atrás" onClick={() => alCapa(-1)} className={boton}>
+          <ArrowDown aria-hidden="true" className="h-3.5 w-3.5" />
+        </button>
+        <button type="button" title="Duplicar todas" onClick={alDuplicar} className={boton}>
+          <Copy aria-hidden="true" className="h-3.5 w-3.5" />
+        </button>
+        <button type="button" title="Eliminar todas" onClick={alQuitar} className={cn(boton, 'hover:!border-red-400/60 hover:!text-red-300')}>
+          <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[11.5px] text-sitio-suave">Alinear entre sí {movil ? '(celular)' : ''}</span>
+        <div className="flex gap-1">
+          {ALINEAR.map(({ modo, etiqueta, Icono }) => (
+            <button key={modo} type="button" title={etiqueta} aria-label={etiqueta} onClick={() => alAlinear(modo)} className={boton}>
+              <Icono aria-hidden="true" className="h-3.5 w-3.5" />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        <span className="flex-1 text-[11.5px] text-sitio-suave">Tamaño de todas</span>
+        <button type="button" title="Achicar" onClick={() => alCambiar((pieza) => escalarElemento(pieza, 0.9, movil))} className={cn(boton, 'flex-none px-3')}>
+          <Minimize2 aria-hidden="true" className="h-3.5 w-3.5" />
+        </button>
+        <button type="button" title="Agrandar" onClick={() => alCambiar((pieza) => escalarElemento(pieza, 1.1, movil))} className={cn(boton, 'flex-none px-3')}>
+          <Maximize2 aria-hidden="true" className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
+      {conLetra.length > 0 && (
+        <CampoColor
+          etiqueta={`Color del texto (${conLetra.length})`}
+          valor={conLetra[0]!.color ?? '#111111'}
+          alCambiar={(color) => alCambiar((pieza) => (CON_LETRA.includes(pieza.tipo) ? { ...pieza, color } : pieza))}
+        />
+      )}
+      {conFondo.length > 0 && (
+        <CampoColor
+          etiqueta={`Color de fondo (${conFondo.length})`}
+          valor={conFondo[0]!.fondo ?? '#111111'}
+          alCambiar={(fondo) => alCambiar((pieza) => (conFondo.some((otra) => otra.id === pieza.id) ? { ...pieza, fondo } : pieza))}
+        />
+      )}
+      <label className="flex flex-col gap-1.5">
+        <span className="flex justify-between text-[11.5px] text-sitio-suave">
+          Opacidad <span className="tabular-nums text-sitio-tenue">{opacidad}%</span>
+        </span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={opacidad}
+          onChange={(evento) => {
+            const valor = Number(evento.target.value)
+            alCambiar((pieza) => ({ ...pieza, opacidad: valor }))
+          }}
+          className="accent-white"
+        />
+      </label>
+      <p className="text-[11.5px] leading-relaxed text-sitio-tenue">
+        Shift + clic suma o quita piezas. Arrástralas juntas o muévelas con las flechas; Supr las borra.
+      </p>
+    </div>
   )
 }
 

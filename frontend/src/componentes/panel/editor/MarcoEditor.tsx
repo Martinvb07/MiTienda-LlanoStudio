@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowLeft, Monitor, Smartphone, Check } from 'lucide-react'
+import { ArrowLeft, Monitor, PanelLeftClose, PanelLeftOpen, Smartphone, Check } from 'lucide-react'
 import { cn } from '@/utilidades/clases'
 import { BotonPanel, CURVA, Etiqueta, Segmentado } from '../ui/basicos'
 import type { Dispositivo } from './VistaPrevia'
@@ -51,6 +51,36 @@ interface Props {
  */
 export function MarcoEditor(props: Props) {
   const [pestana, setPestana] = useState<'editar' | 'vista'>('editar')
+  // En pantallas grandes la columna de campos se puede contraer para ver la
+  // página más grande; se recuerda en este navegador.
+  const [contraido, setContraido] = useState(() => {
+    try {
+      return typeof window !== 'undefined' && window.localStorage.getItem('editor-contraido') === '1'
+    } catch {
+      return false
+    }
+  })
+  function alternarLateral() {
+    setContraido((actual) => {
+      try {
+        window.localStorage.setItem('editor-contraido', actual ? '0' : '1')
+      } catch {
+        // Sin almacenamiento, sólo dura mientras esté abierto.
+      }
+      return !actual
+    })
+  }
+
+  useEffect(() => {
+    const alTeclear = (evento: KeyboardEvent) => {
+      if ((evento.metaKey || evento.ctrlKey) && evento.key === '\\') {
+        evento.preventDefault()
+        alternarLateral()
+      }
+    }
+    window.addEventListener('keydown', alTeclear)
+    return () => window.removeEventListener('keydown', alTeclear)
+  }, [])
 
   // Bloquea el scroll de la página de fondo mientras el editor está abierto.
   useEffect(() => {
@@ -78,6 +108,15 @@ export function MarcoEditor(props: Props) {
           <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">{props.volver}</span>
         </BotonPanel>
+        <button
+          type="button"
+          onClick={alternarLateral}
+          aria-label={contraido ? 'Mostrar el panel de edición' : 'Contraer el panel de edición'}
+          title={`${contraido ? 'Mostrar' : 'Contraer'} el panel (Ctrl + \\)`}
+          className="hidden h-9 w-9 shrink-0 place-items-center rounded-lg text-sitio-suave transition-colors hover:bg-white/[0.07] hover:text-white lg:grid"
+        >
+          {contraido ? <PanelLeftOpen aria-hidden="true" className="h-4 w-4" /> : <PanelLeftClose aria-hidden="true" className="h-4 w-4" />}
+        </button>
 
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
           <strong className="truncate text-[14.5px] font-medium">{props.titulo}</strong>
@@ -152,14 +191,21 @@ export function MarcoEditor(props: Props) {
         ))}
       </div>
 
-      <div className="grid min-h-0 flex-1 lg:grid-cols-[380px_1fr]">
+      <div
+        className={cn(
+          'grid min-h-0 flex-1 transition-[grid-template-columns] duration-500 ease-salida',
+          contraido ? 'lg:grid-cols-[0px_1fr]' : 'lg:grid-cols-[380px_1fr]',
+        )}
+      >
         <aside
+          aria-hidden={contraido || undefined}
           className={cn(
-            'overflow-y-auto border-sitio-borde bg-sitio-lateral px-3.5 pt-3.5 pb-16 lg:block lg:border-r',
+            'overflow-y-auto border-sitio-borde bg-sitio-lateral pt-3.5 pb-16 lg:block lg:border-r',
             pestana === 'vista' && 'hidden',
+            contraido ? 'lg:invisible lg:overflow-hidden lg:border-r-0 lg:px-0' : 'px-3.5',
           )}
         >
-          {props.lateral}
+          <div className="lg:w-[351px]">{props.lateral}</div>
         </aside>
         <div className={cn('min-h-0 lg:grid', pestana === 'editar' ? 'hidden' : 'grid')}>{props.vista}</div>
       </div>

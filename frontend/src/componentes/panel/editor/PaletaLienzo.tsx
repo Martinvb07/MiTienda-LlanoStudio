@@ -27,7 +27,10 @@ interface Props {
 }
 
 const boton =
-  'group flex cursor-grab flex-col items-center gap-1 rounded-lg px-1 py-2 text-center text-[10px] leading-tight text-sitio-suave transition-colors hover:bg-white/[0.07] hover:text-white active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40'
+  'group flex cursor-grab flex-col items-center gap-1.5 rounded-lg px-1 py-2.5 text-center text-[11px] leading-tight text-sitio-suave transition-colors hover:bg-white/[0.07] hover:text-white active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40'
+
+/** Ancho de la columna: dos botones por fila, con el nombre entero a la vista. */
+const ANCHO = 184
 
 /**
  * Columna de la derecha del editor: secciones y piezas para arrastrar a la
@@ -43,11 +46,11 @@ export function PaletaLienzo({ alAgregarPieza, alAgregarSeccion, alUsarDiseno, c
     <motion.aside
       aria-label="Agregar"
       initial={{ width: 0, opacity: 0 }}
-      animate={{ width: 92, opacity: 1 }}
+      animate={{ width: ANCHO, opacity: 1 }}
       transition={{ duration: 0.45, ease: CURVA }}
       className="min-h-0 overflow-hidden border-l border-sitio-borde bg-sitio-lateral"
     >
-      <div className="flex h-full w-[92px] flex-col">
+      <div className="flex h-full flex-col" style={{ width: ANCHO }}>
         <div className="grid grid-cols-2 gap-0.5 border-b border-sitio-borde p-1.5">
           {([
             { valor: 'secciones', Icono: LayoutTemplate, titulo: 'Secciones' },
@@ -56,24 +59,24 @@ export function PaletaLienzo({ alAgregarPieza, alAgregarSeccion, alUsarDiseno, c
             <button
               key={valor}
               type="button"
-              title={titulo}
               aria-pressed={pestana === valor}
               onClick={() => setPestana(valor)}
               className={cn(
-                'grid h-8 place-items-center rounded-md transition-colors',
+                'flex h-8 items-center justify-center gap-1.5 rounded-md text-[11.5px] transition-colors',
                 pestana === valor ? 'bg-white/[0.09] text-white' : 'text-sitio-tenue hover:text-white',
               )}
             >
-              <Icono aria-hidden="true" className="h-4 w-4" />
+              <Icono aria-hidden="true" className="h-3.5 w-3.5" />
+              {titulo}
             </button>
           ))}
         </div>
-        <p className="px-2 pt-2 text-center text-[9.5px] leading-snug text-sitio-tenue">Arrastra a la página o toca</p>
+        <p className="px-2 pt-2.5 text-center text-[10.5px] leading-snug text-sitio-tenue">Arrastra a la página o toca para agregar</p>
         <div className="flex-1 overflow-y-auto overscroll-contain px-1.5 pb-6">
           {pestana === 'secciones'
             ? grupos.map((grupo) => (
-                <div key={grupo.titulo} className="flex flex-col gap-0.5 border-t border-sitio-borde py-2 first-of-type:border-t-0">
-                  <span className="text-center text-[9.5px] tracking-[0.1em] text-sitio-tenue uppercase">{grupo.titulo}</span>
+                <div key={grupo.titulo} className="grid grid-cols-2 gap-0.5 border-t border-sitio-borde py-2.5 first-of-type:border-t-0">
+                  <span className="col-span-2 pb-1 text-center text-[10px] tracking-[0.12em] text-sitio-tenue uppercase">{grupo.titulo}</span>
                   {grupo.tipos.map((tipo) => {
                     const Icono = iconoBloque(tipo)
                     const incluida = bloquesDelPlan.includes(tipo)
@@ -91,7 +94,7 @@ export function PaletaLienzo({ alAgregarPieza, alAgregarSeccion, alUsarDiseno, c
                         onClick={() => alAgregarSeccion(tipo)}
                         className={boton}
                       >
-                        {incluida ? <Icono aria-hidden="true" className="h-[18px] w-[18px]" strokeWidth={1.6} /> : <Lock aria-hidden="true" className="h-4 w-4" />}
+                        {incluida ? <Icono aria-hidden="true" className="h-5 w-5" strokeWidth={1.6} /> : <Lock aria-hidden="true" className="h-4 w-4" />}
                         {ETIQUETAS_BLOQUE[tipo]}
                       </button>
                     )
@@ -100,10 +103,10 @@ export function PaletaLienzo({ alAgregarPieza, alAgregarSeccion, alUsarDiseno, c
               ))
             : (
               <>
-                {!puedeLibre && <p className="py-3 text-center text-[10px] leading-snug text-sitio-tenue">Las piezas sueltas son del plan Negocio.</p>}
+                {!puedeLibre && <p className="py-3 text-center text-[11px] leading-snug text-sitio-tenue">Las piezas sueltas son del plan Negocio.</p>}
                 {GRUPOS_PIEZAS.map((grupo) => (
-                  <div key={grupo.titulo} className="flex flex-col gap-0.5 border-t border-sitio-borde py-2 first-of-type:border-t-0">
-                    <span className="text-center text-[9.5px] tracking-[0.1em] text-sitio-tenue uppercase">{grupo.titulo}</span>
+                  <div key={grupo.titulo} className="grid grid-cols-2 gap-0.5 border-t border-sitio-borde py-2.5 first-of-type:border-t-0">
+                    <span className="col-span-2 pb-1 text-center text-[10px] tracking-[0.12em] text-sitio-tenue uppercase">{grupo.titulo}</span>
                     {grupo.piezas.map(({ tipo, etiqueta, Icono, detalle }) => (
                       <button
                         key={tipo}
@@ -118,7 +121,7 @@ export function PaletaLienzo({ alAgregarPieza, alAgregarSeccion, alUsarDiseno, c
                         onClick={() => alAgregarPieza(tipo)}
                         className={boton}
                       >
-                        <Icono aria-hidden="true" className="h-[18px] w-[18px] transition-transform duration-300 group-hover:scale-110" strokeWidth={1.6} />
+                        <Icono aria-hidden="true" className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.6} />
                         {etiqueta}
                       </button>
                     ))}
@@ -126,13 +129,13 @@ export function PaletaLienzo({ alAgregarPieza, alAgregarSeccion, alUsarDiseno, c
                 ))}
                 {conLienzo && alUsarDiseno && (
                   <div className="flex flex-col gap-1 border-t border-sitio-borde py-2">
-                    <span className="text-center text-[9.5px] tracking-[0.1em] text-sitio-tenue uppercase">Diseños</span>
+                    <span className="text-center text-[10px] tracking-[0.12em] text-sitio-tenue uppercase">Diseños</span>
                     {DISENOS_LIENZO.map((diseno) => (
                       <button
                         key={diseno.clave}
                         type="button"
                         onClick={() => alUsarDiseno(diseno.clave)}
-                        className="rounded-md px-1.5 py-1.5 text-center text-[10px] leading-tight text-sitio-suave transition-colors hover:bg-white/[0.07] hover:text-white"
+                        className="rounded-md px-1.5 py-1.5 text-center text-[11px] leading-tight text-sitio-suave transition-colors hover:bg-white/[0.07] hover:text-white"
                       >
                         {diseno.nombre}
                       </button>

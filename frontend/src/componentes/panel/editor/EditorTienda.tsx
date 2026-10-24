@@ -24,7 +24,7 @@ import { CamposTema } from './CamposTema'
 import { CamposVentas } from './CamposVentas'
 import { ListaBloques, posicionNueva } from './ListaBloques'
 import { ContextoEditorLienzo } from './ContextoLienzo'
-import { DISENOS_LIENZO, agregarAlLienzo, cajaVisible, cambiarCapa, conCaja, duplicarElemento, nuevoElemento } from '@/utilidades/lienzo'
+import { DISENOS_LIENZO, agregarAlLienzo, cajaVisible, cambiarCapa, cambiarCapaVarios, conCaja, duplicarElemento, duplicarVarios, nuevoElemento } from '@/utilidades/lienzo'
 import { PaletaLienzo } from './PaletaLienzo'
 import { ModalPieza } from './CamposLienzo'
 import { aLienzo, avisoConversion, esConvertible } from '@/utilidades/editarLibre'
@@ -291,6 +291,13 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
 
   // ── Lienzo libre: lo que se hace con el mouse en la vista previa ──
   const [lienzoElegido, setLienzoElegido] = useState<{ bloque: string; elemento: string } | null>(null)
+  // Varias piezas elegidas con Shift + clic, del mismo lienzo; vacío = sólo la elegida.
+  const [lienzoGrupo, setLienzoGrupo] = useState<string[]>([])
+  /** Elige una sola pieza (o ninguna): el grupo se suelta. */
+  const elegirPieza = useCallback((valor: { bloque: string; elemento: string } | null) => {
+    setLienzoElegido(valor)
+    setLienzoGrupo([])
+  }, [])
 
   const cambiarLienzo = useCallback(
     (bloqueId: string, cambio: (props: PropsLienzo) => PropsLienzo) => {
@@ -306,9 +313,12 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
   const alLienzo = useCallback(
     (mensaje: MensajeLienzo) => {
       const { bloque, elemento, movil } = mensaje
+      // Con varias elegidas, las acciones van para todas.
+      const varias = mensaje.elementos && mensaje.elementos.length > 1 ? mensaje.elementos : null
       switch (mensaje.accion) {
         case 'elegir':
-          setLienzoElegido(elemento ? { bloque, elemento } : null)
+          elegirPieza(elemento ? { bloque, elemento } : null)
+          if (varias) setLienzoGrupo(varias)
           if (elemento) {
             setPestana('pagina')
             setPlantillaEditada('portada')
@@ -316,6 +326,14 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
           }
           return
         case 'mover':
+          if (mensaje.cajas) {
+            const cajas = mensaje.cajas
+            cambiarLienzo(bloque, (props) => ({
+              ...props,
+              elementos: props.elementos.map((pieza) => (cajas[pieza.id] ? conCaja(pieza, cajas[pieza.id]!, movil) : pieza)),
+            }))
+            return
+          }
           if (!elemento || !mensaje.caja) return
           cambiarLienzo(bloque, (props) => ({
             ...props,
@@ -331,10 +349,26 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
           if (!elemento) return
           cambiarLienzo(bloque, (props) => ({
             ...props,
-            elementos: cambiarCapa(props.elementos, elemento, mensaje.accion === 'adelante' ? 1 : -1),
+            elementos: varias
+              ? cambiarCapaVarios(props.elementos, varias, mensaje.accion === 'adelante' ? 1 : -1)
+              : cambiarCapa(props.elementos, elemento, mensaje.accion === 'adelante' ? 1 : -1),
           }))
           return
         case 'duplicar': {
+          if (varias) {
+            let nuevos: string[] = []
+            cambiarLienzo(bloque, (props) => {
+              const resultado = duplicarVarios(props.elementos, varias)
+              nuevos = resultado.nuevos
+              return { ...props, elementos: resultado.elementos }
+            })
+            // Quedan elegidas las copias, para moverlas de una.
+            if (nuevos[0]) {
+              setLienzoElegido({ bloque, elemento: nuevos[0] })
+              setLienzoGrupo(nuevos.length > 1 ? nuevos : [])
+            }
+            return
+          }
           if (!elemento) return
           let nuevo: string | undefined
           cambiarLienzo(bloque, (props) => {
@@ -342,17 +376,20 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
             nuevo = resultado.nuevo
             return { ...props, elementos: resultado.elementos }
           })
-          if (nuevo) setLienzoElegido({ bloque, elemento: nuevo })
+          if (nuevo) elegirPieza({ bloque, elemento: nuevo })
           return
         }
         case 'eliminar':
           if (!elemento) return
-          cambiarLienzo(bloque, (props) => ({ ...props, elementos: props.elementos.filter((pieza) => pieza.id !== elemento) }))
-          setLienzoElegido(null)
+          cambiarLienzo(bloque, (props) => ({
+            ...props,
+            elementos: props.elementos.filter((pieza) => (varias ? !varias.includes(pieza.id) : pieza.id !== elemento)),
+          }))
+          elegirPieza(null)
           return
       }
     },
-    [cambiarLienzo],
+    [cambiarLienzo, elegirPieza],
   )
 
   // ── Editar libre: una sección (o toda la página) pasa a Lienzo libre ──
@@ -410,7 +447,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     setPlantillaEditada('portada')
     setAbierto(primero?.id ?? null)
     const pieza = primero?.props.elementos.find((elemento) => elemento.tipo !== 'imagen' && elemento.tipo !== 'forma') ?? primero?.props.elementos[0]
-    setLienzoElegido(primero && pieza ? { bloque: primero.id, elemento: pieza.id } : null)
+    elegirPieza(primero && pieza ? { bloque: primero.id, elemento: pieza.id } : null)
   }
   const convertibles = borrador.configuracionBloques.filter((bloque) => esConvertible(bloque.tipo)).length
 
@@ -453,7 +490,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       const nuevo = agregarSeccion('lienzo', siguiente?.id ?? null, (bloque) =>
         bloque.tipo === 'lienzo' ? { ...bloque, props: agregarAlLienzo({ ...bloque.props, elementos: [] }, pieza) } : bloque,
       )
-      if (nuevo) setLienzoElegido({ bloque: nuevo.id, elemento: pieza.id })
+      if (nuevo) elegirPieza({ bloque: nuevo.id, elemento: pieza.id })
       return
     }
     const id = destino.id
@@ -479,7 +516,7 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
         : { ...props, altoMovil: con.altoMovil, elementos: [...elementos, puesta] }
     })
     ultimoCambio.current = 0
-    setLienzoElegido({ bloque: id, elemento: pieza.id })
+    elegirPieza({ bloque: id, elemento: pieza.id })
   }
 
   /** Lo que se suelta desde la paleta dentro de la vista previa. */
@@ -511,13 +548,18 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
     ultimoCambio.current = 0
     cambiarLienzo(id, (props) => ({ ...props, ...diseno.armar() }))
     ultimoCambio.current = 0
-    setLienzoElegido(null)
+    elegirPieza(null)
   }
 
   // ── La pieza elegida se edita en un modal sobre la vista previa ──
   const contextoLienzo = {
     elegido: lienzoElegido,
-    elegir: (bloque: string, elemento: string | null) => setLienzoElegido(elemento ? { bloque, elemento } : null),
+    grupo: lienzoGrupo,
+    elegir: (bloque: string, elemento: string | null) => elegirPieza(elemento ? { bloque, elemento } : null),
+    elegirVarias: (bloque: string, ids: string[]) => {
+      setLienzoElegido(ids[0] ? { bloque, elemento: ids[0] } : null)
+      setLienzoGrupo(ids.length > 1 ? ids : [])
+    },
     movil: dispositivo === 'movil',
     productos,
     categorias,
@@ -549,8 +591,9 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
       enfocar: abierto,
       editable: true,
       lienzoElegido,
+      lienzoGrupo,
     }),
-    [borrador, productos, abierto, tienda.moneda, plan, plantillaEditada, lienzoElegido, tienda.tipo],
+    [borrador, productos, abierto, tienda.moneda, plan, plantillaEditada, lienzoElegido, lienzoGrupo, tienda.tipo],
   )
 
   const estiloActivo = ESTILOS_PREDEFINIDOS.find(

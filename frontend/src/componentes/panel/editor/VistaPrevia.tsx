@@ -139,7 +139,13 @@ export function VistaPrevia({
               height: TELEFONO.alto * escalaTelefono + 20,
             }}
           >
-            <div className="absolute top-2.5 left-2.5 overflow-hidden rounded-[34px]">
+            {/* La pantalla mide lo mismo que el iframe ya escalado: la escala no cambia
+                el tamaño en el layout, y sin esto el recorte redondo quedaba más grande
+                que el teléfono (se veía la barra de scroll y el borde de abajo recto). */}
+            <div
+              className="absolute top-2.5 left-2.5 overflow-hidden rounded-[34px] bg-white"
+              style={{ width: TELEFONO.ancho * escalaTelefono, height: TELEFONO.alto * escalaTelefono }}
+            >
               {iframe({
                 width: TELEFONO.ancho,
                 height: TELEFONO.alto,

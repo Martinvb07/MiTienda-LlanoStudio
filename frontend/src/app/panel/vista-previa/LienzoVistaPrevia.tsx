@@ -63,6 +63,8 @@ export function LienzoVistaPrevia() {
       className="min-h-screen bg-superficie font-sans text-tinta"
     >
       <FuentesTema tema={tienda.tema} />
+      {/* Dentro del teléfono de la vista previa no se ve la barra de scroll, como en un celular. */}
+      <style>{`@media (max-width:640px){html{scrollbar-width:none}html::-webkit-scrollbar{display:none}}`}</style>
       {/* Carrito de mentira para la vista previa: así el botón Agregar y las
           animaciones de compra se pueden probar mientras se edita. */}
       <ProveedorCarrito
@@ -103,7 +105,7 @@ export function LienzoVistaPrevia() {
         {datos.editable && datos.vista !== 'producto' && (
           <BarraSeccion bloques={bloques.filter((bloque) => bloque.visible !== false)} plan={tienda.plan} />
         )}
-        {datos.editable && datos.vista !== 'producto' && <EditorLienzo externo={datos.lienzoElegido ?? null} />}
+        {datos.editable && datos.vista !== 'producto' && <EditorLienzo externo={datos.lienzoElegido ?? null} grupoExterno={datos.lienzoGrupo} />}
         {datos.editable && datos.vista !== 'producto' && <SoltarEnVista />}
         {ajustes.whatsappFlotante && ajustes.whatsapp && (
           <BotonWhatsapp numero={ajustes.whatsapp} tienda={tienda.nombre} />

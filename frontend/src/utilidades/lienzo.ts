@@ -97,6 +97,66 @@ export function duplicarElemento(elementos: ElementoLienzo[], id: string): { ele
   return { elementos: lista, nuevo: copia.id }
 }
 
+// ── Varias piezas a la vez (Shift + clic) ──
+
+/** Duplica varias piezas juntas; las copias quedan elegidas en su lugar. */
+export function duplicarVarios(elementos: ElementoLienzo[], ids: string[]): { elementos: ElementoLienzo[]; nuevos: string[] } {
+  let lista = elementos
+  const nuevos: string[] = []
+  for (const id of ids) {
+    const resultado = duplicarElemento(lista, id)
+    lista = resultado.elementos
+    if (resultado.nuevo) nuevos.push(resultado.nuevo)
+  }
+  return { elementos: lista, nuevos }
+}
+
+/**
+ * Sube (+1) o baja (-1) una capa todas las piezas elegidas, sin que se salten
+ * entre ellas: se recorren desde el lado hacia el que se mueven.
+ */
+export function cambiarCapaVarios(elementos: ElementoLienzo[], ids: string[], paso: 1 | -1): ElementoLienzo[] {
+  const elegidas = new Set(ids)
+  const copia = [...elementos]
+  const indices = copia.map((pieza, indice) => (elegidas.has(pieza.id) ? indice : -1)).filter((indice) => indice >= 0)
+  if (paso === 1) indices.reverse()
+  for (const indice of indices) {
+    const destino = indice + paso
+    if (destino < 0 || destino >= copia.length || elegidas.has(copia[destino]!.id)) continue
+    ;[copia[indice], copia[destino]] = [copia[destino]!, copia[indice]!]
+  }
+  return copia
+}
+
+export type Alineacion = 'izquierda' | 'centro' | 'derecha' | 'arriba' | 'medio' | 'abajo'
+
+/** Alinea las piezas elegidas entre sí, contra la caja que las abarca a todas. */
+export function alinearVarios(elementos: ElementoLienzo[], ids: string[], modo: Alineacion, movil: boolean): ElementoLienzo[] {
+  const cajas = elementos.filter((pieza) => ids.includes(pieza.id)).map((pieza) => cajaVisible(pieza, movil))
+  if (cajas.length < 2) return elementos
+  const izquierda = Math.min(...cajas.map((caja) => caja.x))
+  const derecha = Math.max(...cajas.map((caja) => caja.x + caja.w))
+  const arriba = Math.min(...cajas.map((caja) => caja.y))
+  const abajo = Math.max(...cajas.map((caja) => caja.y + caja.h))
+  return elementos.map((pieza) => {
+    if (!ids.includes(pieza.id)) return pieza
+    const caja = cajaVisible(pieza, movil)
+    const nueva: Partial<CajaLienzo> =
+      modo === 'izquierda'
+        ? { x: izquierda }
+        : modo === 'derecha'
+          ? { x: derecha - caja.w }
+          : modo === 'centro'
+            ? { x: (izquierda + derecha) / 2 - caja.w / 2 }
+            : modo === 'arriba'
+              ? { y: arriba }
+              : modo === 'abajo'
+                ? { y: abajo - caja.h }
+                : { y: (arriba + abajo) / 2 - caja.h / 2 }
+    return conCaja(pieza, nueva, movil)
+  })
+}
+
 /**
  * Acomodo automático para el celular: las piezas quedan una debajo de otra,
  * en el orden en que se leen en el computador. Las fotos guardan su

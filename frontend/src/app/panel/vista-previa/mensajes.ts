@@ -18,6 +18,8 @@ export interface MensajeVistaPrevia {
     editable?: boolean
     /** Pieza del lienzo libre elegida en el editor: se marca con sus asas. */
     lienzoElegido?: { bloque: string; elemento: string } | null
+    /** Varias piezas elegidas con Shift + clic (del mismo lienzo que lienzoElegido). */
+    lienzoGrupo?: string[]
   }
 }
 
@@ -37,13 +39,19 @@ export type AccionLienzo = 'elegir' | 'mover' | 'alto' | 'adelante' | 'atras' | 
  * Lo que el iframe le pide al editor al tocar el lienzo libre: elegir una
  * pieza, moverla o estirarla (caja nueva en %), cambiar el alto del lienzo…
  * `movil` dice si se estaba acomodando la versión de celular.
+ *
+ * Con varias piezas elegidas (Shift + clic), `elementos` trae todas: elegir,
+ * duplicar, eliminar y cambiar de capa se aplican al grupo, y mover trae la
+ * caja nueva de cada una en `cajas`.
  */
 export interface MensajeLienzo {
   tipo: 'mt-lienzo'
   bloque: string
   elemento: string | null
   accion: AccionLienzo
+  elementos?: string[]
   caja?: CajaLienzo
+  cajas?: Record<string, CajaLienzo>
   /** Alto nuevo del lienzo, en px sobre 1200 (o 390 en el celular). */
   alto?: number
   movil: boolean

@@ -33,6 +33,7 @@ const BLOQUES_BIO: ReadonlySet<TipoBloque> = new Set([
   'llamado',
   'servicios',
   'horario',
+  'reservas',
   'preguntas',
   'testimonios',
   'cuenta-regresiva',

@@ -61,6 +61,8 @@ export interface LimitesPlan {
    * hasta la bolsa.
    */
   experienciaCompra: ExperienciaCompra
+  /** Citas que se pueden agendar en línea al mes; null = sin límite. */
+  citasMes: number | null
 }
 
 export type ExperienciaCompra = 'basica' | 'avanzada' | 'completa'
@@ -89,7 +91,7 @@ export function nivelIncluye(actual: NivelEstilo, requerido: NivelEstilo) {
  * Lo básico de una página de negocio: qué ofrece, cuándo atiende y cómo
  * contactarlo. Va desde Gratis, en tienda y en página.
  */
-const BLOQUES_NEGOCIO_BASICO: readonly TipoBloque[] = ['servicios', 'horario']
+const BLOQUES_NEGOCIO_BASICO: readonly TipoBloque[] = ['servicios', 'horario', 'reservas']
 
 /** Lo de los enlaces para tu bio: el perfil y los botones. Va desde Gratis. */
 const BLOQUES_BIO: readonly TipoBloque[] = ['perfil', 'enlaces']
@@ -149,6 +151,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     dominioPropio: false,
     experienciaCompra: 'basica',
     exportarPedidos: false,
+    citasMes: 30,
   },
   EMPRENDE: {
     nombre: 'Emprende',
@@ -180,6 +183,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     dominioPropio: false,
     experienciaCompra: 'avanzada',
     exportarPedidos: true,
+    citasMes: 150,
   },
   NEGOCIO: {
     nombre: 'Negocio',
@@ -211,6 +215,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     dominioPropio: true,
     experienciaCompra: 'completa',
     exportarPedidos: true,
+    citasMes: null,
   },
   PRO: {
     nombre: 'Pro',
@@ -242,6 +247,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     dominioPropio: true,
     experienciaCompra: 'completa',
     exportarPedidos: true,
+    citasMes: null,
   },
 }
 

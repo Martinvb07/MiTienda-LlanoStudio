@@ -9,15 +9,30 @@ interface Props extends PropsServicios {
   /** WhatsApp del negocio: sin él, los servicios no llevan botón. */
   whatsapp?: string
   negocio?: string
+  /** El sitio tiene la sección de reservas: el botón lleva allá en vez de a WhatsApp. */
+  aReservas?: boolean
 }
 
-function BotonAgendar({ servicio, texto, whatsapp, negocio, chico }: { servicio: ServicioNegocio; texto: string; whatsapp: string; negocio?: string; chico?: boolean }) {
+function BotonAgendar({
+  servicio,
+  texto,
+  whatsapp,
+  negocio,
+  chico,
+  aReservas,
+}: {
+  servicio: ServicioNegocio
+  texto: string
+  whatsapp?: string
+  negocio?: string
+  chico?: boolean
+  aReservas?: boolean
+}) {
   const mensaje = `Hola${negocio ? ` ${negocio}` : ''}, me interesa: ${servicio.nombre}`
   return (
     <a
-      href={enlaceWhatsapp(whatsapp, mensaje)}
-      target="_blank"
-      rel="noopener noreferrer"
+      href={aReservas ? '#reservas' : enlaceWhatsapp(whatsapp!, mensaje)}
+      {...(aReservas ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
       className={`boton-tienda inline-flex shrink-0 items-center justify-center rounded-(--radius-marca) bg-marca font-medium text-marca-contraste transition hover:opacity-90 ${
         chico ? 'px-4 py-2 text-sm' : 'px-5 py-2.5 text-sm'
       }`}
@@ -47,9 +62,9 @@ function Detalle({ servicio }: { servicio: ServicioNegocio }) {
  * un botón que abre WhatsApp con su nombre ya escrito, para agendar.
  * En lista se lee como una carta: nombre a la izquierda, precio a la derecha.
  */
-export function Servicios({ titulo, subtitulo, disposicion = 'tarjetas', textoBoton, items, whatsapp, negocio }: Props) {
+export function Servicios({ titulo, subtitulo, disposicion = 'tarjetas', textoBoton, items, whatsapp, negocio, aReservas }: Props) {
   if (items.length === 0) return null
-  const boton = Boolean(textoBoton && whatsapp)
+  const boton = Boolean(textoBoton && (whatsapp || aReservas))
 
   if (disposicion === 'lista') {
     return (
@@ -76,7 +91,7 @@ export function Servicios({ titulo, subtitulo, disposicion = 'tarjetas', textoBo
                   </p>
                 )}
               </div>
-              {boton && <BotonAgendar servicio={servicio} texto={textoBoton!} whatsapp={whatsapp!} negocio={negocio} chico />}
+              {boton && <BotonAgendar servicio={servicio} texto={textoBoton!} whatsapp={whatsapp} negocio={negocio} aReservas={aReservas} chico />}
             </li>
           ))}
         </ul>
@@ -107,7 +122,7 @@ export function Servicios({ titulo, subtitulo, disposicion = 'tarjetas', textoBo
               {servicio.descripcion && <p className="mt-2 flex-1 leading-relaxed text-tinta/70">{servicio.descripcion}</p>}
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                 <Detalle servicio={servicio} />
-                {boton && <BotonAgendar servicio={servicio} texto={textoBoton!} whatsapp={whatsapp!} negocio={negocio} />}
+                {boton && <BotonAgendar servicio={servicio} texto={textoBoton!} whatsapp={whatsapp} negocio={negocio} aReservas={aReservas} />}
               </div>
             </div>
           </article>

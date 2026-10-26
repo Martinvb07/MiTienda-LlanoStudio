@@ -24,6 +24,7 @@ import { Espaciador } from './bloques/Espaciador'
 import { Servicios } from './bloques/Servicios'
 import { Equipo } from './bloques/Equipo'
 import { Horario } from './bloques/Horario'
+import { Reservas } from './bloques/Reservas'
 import { Perfil } from './bloques/Perfil'
 import { Enlaces } from './bloques/Enlaces'
 import { EnvolturaSeccion } from './EnvolturaSeccion'
@@ -60,9 +61,11 @@ interface Contexto {
   nombreTienda?: string
   logoUrl?: string | null
   editando?: boolean
+  /** Hay una sección de reservas: "Agendar" en los servicios lleva allá. */
+  conReservas?: boolean
 }
 
-function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda, logoUrl, editando }: Contexto) {
+function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda, logoUrl, editando, conReservas }: Contexto) {
   switch (bloque.tipo) {
     case 'anuncio':
       return <Anuncio {...bloque.props} />
@@ -101,7 +104,7 @@ function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categ
     case 'mapa':
       return <Mapa {...bloque.props} direccion={bloque.props.direccion || ajustes.direccion || ''} />
     case 'servicios':
-      return <Servicios {...bloque.props} whatsapp={ajustes.whatsapp} negocio={nombreTienda} />
+      return <Servicios {...bloque.props} whatsapp={ajustes.whatsapp} negocio={nombreTienda} aReservas={conReservas} />
     case 'equipo':
       return <Equipo {...bloque.props} />
     case 'horario':
@@ -114,6 +117,8 @@ function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categ
           negocio={nombreTienda}
         />
       )
+    case 'reservas':
+      return <Reservas {...bloque.props} whatsapp={ajustes.whatsapp} negocio={nombreTienda} editando={editando} />
     case 'espaciador':
       return <Espaciador {...bloque.props} />
     case 'perfil':
@@ -128,7 +133,7 @@ function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categ
 }
 
 /** Ancla con la que la primera sección de cada tipo se deja enlazar desde el menú o un botón. */
-const ANCLAS: Partial<Record<Bloque['tipo'], string>> = { servicios: 'servicios', equipo: 'equipo', horario: 'contacto' }
+const ANCLAS: Partial<Record<Bloque['tipo'], string>> = { servicios: 'servicios', equipo: 'equipo', horario: 'contacto', reservas: 'reservas' }
 
 function conAnclas(bloques: Bloque[]): Bloque[] {
   const usadas = new Set(bloques.map((bloque) => bloque.estilo?.ancla).filter(Boolean))
@@ -166,8 +171,9 @@ export function RenderizadorBloques({
 }: Props) {
   const categorias = categoriasDe(productos)
   const esquemas = tema ? (tema.esquemas ?? esquemasIniciales(tema)) : undefined
-  const contexto: Contexto = { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda, logoUrl, editando }
   const visibles = conAnclas(bloquesVisiblesPara(tipo, bloques).filter((bloque) => bloque.visible !== false))
+  const conReservas = visibles.some((bloque) => bloque.tipo === 'reservas')
+  const contexto: Contexto = { productos, moneda, quitarMarca, ajustes, categorias, nombreTienda, logoUrl, editando, conReservas }
   // Las barras de anuncio van arriba del encabezado, también si se pasaron a libre.
   const anunciosIniciales = visibles.findIndex((bloque) => bloque.tipo !== 'anuncio' && origenLienzo(bloque) !== 'anuncio')
   const corte = anunciosIniciales === -1 ? visibles.length : anunciosIniciales

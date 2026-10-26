@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import {
   ArrowUpRight,
   BarChart3,
+  CalendarDays,
   CreditCard,
   LayoutGrid,
   House,
@@ -56,6 +57,7 @@ const GRUPOS: { titulo: string; enlaces: Enlace[] }[] = [
     titulo: 'Ventas',
     enlaces: [
       { href: '/panel/pedidos', etiqueta: 'Pedidos', corta: 'Pedidos', Icono: Receipt },
+      { href: '/panel/agenda', etiqueta: 'Agenda', corta: 'Agenda', Icono: CalendarDays, movil: false },
       { href: '/panel/descuentos', etiqueta: 'Descuentos', corta: 'Cupones', Icono: Ticket, movil: false },
       { href: '/panel/estadisticas', etiqueta: 'Estadísticas', corta: 'Datos', Icono: BarChart3, movil: false },
     ],

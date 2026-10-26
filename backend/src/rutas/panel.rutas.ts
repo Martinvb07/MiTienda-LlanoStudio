@@ -69,6 +69,14 @@ import {
 } from '../controladores/suscripcion.controlador.js'
 import { marcarNovedadesVistas, obtenerComunicados } from '../controladores/comunicados.controlador.js'
 import { esquemaPasarela, guardarPasarela, listarPasarelas } from '../controladores/pasarelas.controlador.js'
+import {
+  actualizarCitaPanel,
+  crearCitaPanel,
+  esquemaActualizarCita,
+  esquemaCitaPanel,
+  esquemaRangoCitas,
+  listarCitasPanel,
+} from '../controladores/reservas.controlador.js'
 
 const enrutador = Router()
 
@@ -132,6 +140,10 @@ enrutador.delete('/equipo/:id', gestion, quitarMiembro)
 
 enrutador.get('/pedidos', listarPedidosPanel)
 enrutador.patch('/pedidos/:id', validar(esquemaActualizarPedido), actualizarPedidoPanel)
+
+enrutador.get('/citas', validar(esquemaRangoCitas, 'query'), listarCitasPanel)
+enrutador.post('/citas', validar(esquemaCitaPanel), crearCitaPanel)
+enrutador.patch('/citas/:id', validar(esquemaActualizarCita), actualizarCitaPanel)
 
 // La imagen llega como cuerpo binario: sin multipart no hace falta otra dependencia.
 enrutador.post(

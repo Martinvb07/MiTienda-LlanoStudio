@@ -6,6 +6,7 @@ import { cerrarColas } from './colas/index.js'
 import { registro } from './utilidades/registro.js'
 import { aplicarVencimientos } from './servicios/suscripciones.servicio.js'
 import { revisarCorreosProgramados } from './servicios/correos.servicio.js'
+import { enviarRecordatoriosCitas } from './controladores/reservas.controlador.js'
 import { cerrarTiempoReal, iniciarTiempoReal } from './servicios/soporte.servicio.js'
 import { verificarDominiosPendientes } from './controladores/dominios.controlador.js'
 
@@ -24,6 +25,7 @@ const servidor = app.listen(entorno.PUERTO, entorno.HOST, () => {
 const revisionVencimientos = setInterval(() => {
   aplicarVencimientos().catch((error: unknown) => registro.error({ err: error }, 'No se pudieron revisar vencimientos'))
   revisarCorreosProgramados().catch((error: unknown) => registro.error({ err: error }, 'No se pudieron enviar los correos programados'))
+  enviarRecordatoriosCitas().catch((error: unknown) => registro.error({ err: error }, 'No se pudieron enviar los recordatorios de citas'))
   verificarDominiosPendientes().catch((error: unknown) => registro.error({ err: error }, 'No se pudieron revisar los dominios propios'))
 }, 60 * 60 * 1000)
 revisionVencimientos.unref()

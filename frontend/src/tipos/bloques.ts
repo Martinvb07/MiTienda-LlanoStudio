@@ -29,6 +29,7 @@ export type TipoBloque =
   | 'servicios'
   | 'equipo'
   | 'horario'
+  | 'reservas'
   | 'espaciador'
   | 'lienzo'
   | 'perfil'
@@ -309,6 +310,49 @@ export interface PropsHorario {
   telefono?: string
 }
 
+/** Un servicio que se agenda en línea; la duración define cuánto ocupa el turno. */
+export interface ServicioReserva {
+  id: string
+  nombre: string
+  /** Minutos. */
+  duracion: number
+  precio?: string
+}
+
+/** Un día de la semana en las reservas: 0 = domingo … 6 = sábado. */
+export interface DiaReserva {
+  dia: number
+  activo: boolean
+  /** "08:00" */
+  desde: string
+  hasta: string
+}
+
+/**
+ * Reservas en línea: el cliente elige servicio, día y hora libre. La API lee
+ * esta misma configuración para calcular los turnos y evitar cruces.
+ */
+export interface PropsReservas {
+  titulo?: string
+  subtitulo?: string
+  servicios: ServicioReserva[]
+  dias: DiaReserva[]
+  /** Cada cuántos minutos arranca un turno. */
+  intervalo: number
+  /** Citas a la misma hora (sillas, consultorios, profesionales). */
+  capacidad: number
+  /** Hasta cuántos días hacia adelante se puede agendar. */
+  diasAdelante: number
+  /** Horas mínimas entre ahora y la cita. */
+  anticipacion: number
+  /** Pedir correo para mandar la confirmación y el recordatorio. */
+  pedirCorreo: boolean
+  /** Fechas cerradas: festivos, vacaciones ("2026-12-25"). */
+  cerrado?: string[]
+  /** Lo que se le dice al cliente después de agendar. */
+  mensajeFinal?: string
+}
+
 /** Cabeza de los enlaces para tu bio: foto, nombre, una línea sobre ti y tus redes. */
 export interface PropsPerfil {
   /** Vacío = el nombre del sitio. */
@@ -489,6 +533,7 @@ export type BloqueMapa = BloqueBase<'mapa', PropsMapa>
 export type BloqueServicios = BloqueBase<'servicios', PropsServicios>
 export type BloqueEquipo = BloqueBase<'equipo', PropsEquipo>
 export type BloqueHorario = BloqueBase<'horario', PropsHorario>
+export type BloqueReservas = BloqueBase<'reservas', PropsReservas>
 export type BloqueEspaciador = BloqueBase<'espaciador', PropsEspaciador>
 export type BloqueLienzo = BloqueBase<'lienzo', PropsLienzo>
 export type BloquePerfil = BloqueBase<'perfil', PropsPerfil>
@@ -516,6 +561,7 @@ export type Bloque =
   | BloqueServicios
   | BloqueEquipo
   | BloqueHorario
+  | BloqueReservas
   | BloqueEspaciador
   | BloqueLienzo
   | BloquePerfil
@@ -544,6 +590,7 @@ export const ETIQUETAS_BLOQUE: Record<TipoBloque, string> = {
   servicios: 'Servicios',
   equipo: 'Equipo',
   horario: 'Horario y contacto',
+  reservas: 'Reservas',
   espaciador: 'Espacio o línea',
   lienzo: 'Lienzo libre',
   perfil: 'Perfil',
@@ -556,7 +603,7 @@ export const GRUPOS_BLOQUE: { titulo: string; tipos: TipoBloque[] }[] = [
   { titulo: 'Tu bio', tipos: ['perfil', 'enlaces'] },
   { titulo: 'Portada', tipos: ['hero', 'carrusel', 'anuncio', 'banner-doble'] },
   { titulo: 'Catálogo', tipos: ['grilla-productos', 'categorias'] },
-  { titulo: 'Tu negocio', tipos: ['servicios', 'horario', 'equipo'] },
+  { titulo: 'Tu negocio', tipos: ['servicios', 'reservas', 'horario', 'equipo'] },
   { titulo: 'Contenido', tipos: ['texto', 'imagen-texto', 'columnas', 'galeria', 'video'] },
   { titulo: 'Confianza', tipos: ['testimonios', 'preguntas', 'logos', 'mapa'] },
   { titulo: 'Ventas', tipos: ['llamado', 'cuenta-regresiva'] },
@@ -585,6 +632,7 @@ export const DESCRIPCIONES_BLOQUE: Record<TipoBloque, string> = {
   servicios: 'Lo que ofreces, con precio y duración, y un botón para agendar por WhatsApp.',
   equipo: 'Quiénes atienden, con foto y cargo.',
   horario: 'Cuándo atiendes, dónde estás y botones para escribir, llamar o llegar.',
+  reservas: 'Tus clientes eligen servicio, día y hora libre, y la cita llega a tu agenda.',
   espaciador: 'Aire entre secciones, con o sin línea.',
   lienzo: 'Un espacio en blanco: arrastra títulos, fotos y botones donde quieras y estíralos a tu gusto.',
   perfil: 'Tu foto, tu nombre, una línea sobre ti y tus redes.',
@@ -715,6 +763,25 @@ export const PROPS_INICIALES: { [T in TipoBloque]: Extract<Bloque, { tipo: T }>[
       { id: 'h2', dia: 'Sábados', horas: '9:00 a. m. a 1:00 p. m.' },
     ],
     nota: 'Domingos y festivos cerrado.',
+  },
+  reservas: {
+    titulo: 'Agenda tu cita',
+    subtitulo: 'Elige el servicio, el día y la hora que te sirvan.',
+    servicios: [
+      { id: 'r1', nombre: 'Consulta', duracion: 45, precio: '$80.000' },
+      { id: 'r2', nombre: 'Valoración', duracion: 30, precio: 'Sin costo' },
+    ],
+    dias: [0, 1, 2, 3, 4, 5, 6].map((dia) => ({
+      dia,
+      activo: dia >= 1 && dia <= 6,
+      desde: dia === 6 ? '09:00' : '08:00',
+      hasta: dia === 6 ? '13:00' : '18:00',
+    })),
+    intervalo: 30,
+    capacidad: 1,
+    diasAdelante: 30,
+    anticipacion: 2,
+    pedirCorreo: true,
   },
   espaciador: { alto: 'medio', linea: false },
   perfil: { bio: 'Cuenta en una línea quién eres y qué haces.', forma: 'circulo', mostrarRedes: true },

@@ -18,6 +18,7 @@ import { CLASES_ENTRADA, Campo, CampoArea, Candado, Interruptor, Segmentado } fr
 import { CamposLienzo } from './CamposLienzo'
 import { CamposEquipo, CamposHorario, CamposServicios } from './CamposNegocio'
 import { CamposEnlaces, CamposPerfil } from './CamposBio'
+import { CamposReservas } from './CamposReservas'
 import { ZonaImagen } from '../ui/imagenes'
 import { ICONOS_BLOQUE, claveIcono } from '@/componentes/comunes/IconoBloque'
 import { cn } from '@/utilidades/clases'
@@ -859,6 +860,9 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
     case 'horario':
       return <CamposHorario bloque={bloque} alCambiar={alCambiar} limites={limites} {...subida} />
 
+    case 'reservas':
+      return <CamposReservas bloque={bloque} alCambiar={alCambiar} limites={limites} />
+
     case 'perfil':
       return <CamposPerfil bloque={bloque} alCambiar={alCambiar} limites={limites} {...subida} />
 
@@ -941,6 +945,8 @@ export function resumenBloque(bloque: Bloque): string {
       return bloque.props.titulo || `${bloque.props.items.length} personas`
     case 'horario':
       return bloque.props.dias.map((fila) => fila.dia).filter(Boolean).join(' · ')
+    case 'reservas':
+      return bloque.props.titulo || `${bloque.props.servicios.length} servicios para agendar`
     case 'espaciador':
       return bloque.props.linea ? 'Con línea' : 'Espacio'
     case 'perfil':

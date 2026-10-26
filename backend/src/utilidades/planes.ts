@@ -30,13 +30,15 @@ export interface LimitesPlan {
   dominioPropio: boolean
   /** Páginas aparte de la de inicio (/servicios…) en la página para tu negocio. */
   paginasExtra: number
+  /** Citas que se pueden agendar en línea al mes; null = sin límite. */
+  citasMes: number | null
 }
 
 /**
  * Lo básico de una página de negocio: qué ofrece, cuándo atiende y cómo
  * contactarlo. Va desde Gratis, en tienda y en página.
  */
-const BLOQUES_NEGOCIO_BASICO = ['servicios', 'horario'] as const
+const BLOQUES_NEGOCIO_BASICO = ['servicios', 'horario', 'reservas'] as const
 
 /** Lo de los enlaces para tu bio: el perfil y los botones. Va desde Gratis. */
 const BLOQUES_BIO = ['perfil', 'enlaces'] as const
@@ -83,6 +85,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     usuarios: 1,
     dominioPropio: false,
     paginasExtra: 0,
+    citasMes: 30,
   },
   EMPRENDE: {
     nombre: 'Emprende',
@@ -101,6 +104,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     usuarios: 2,
     dominioPropio: false,
     paginasExtra: 0,
+    citasMes: 150,
   },
   NEGOCIO: {
     nombre: 'Negocio',
@@ -119,6 +123,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     usuarios: 5,
     dominioPropio: true,
     paginasExtra: 5,
+    citasMes: null,
   },
   PRO: {
     nombre: 'Pro',
@@ -137,6 +142,7 @@ export const PLANES: Record<Plan, LimitesPlan> = {
     usuarios: 15,
     dominioPropio: true,
     paginasExtra: 15,
+    citasMes: null,
   },
 }
 
@@ -165,6 +171,7 @@ export const ETIQUETAS_BLOQUE_PLAN: Record<string, string> = {
   servicios: 'Servicios',
   equipo: 'Equipo',
   horario: 'Horario y contacto',
+  reservas: 'Reservas',
   perfil: 'Perfil',
   enlaces: 'Enlaces',
 }
@@ -186,7 +193,7 @@ export const TEMAS_PREDEFINIDOS: Record<string, Record<string, string>> = {
 }
 
 /** Direcciones que ya usa el sitio: una página extra no puede llamarse así. */
-export const RUTAS_RESERVADAS: ReadonlySet<string> = new Set(['buscar', 'carrito', 'categoria', 'pago', 'productos', 'panel', 'api'])
+export const RUTAS_RESERVADAS: ReadonlySet<string> = new Set(['buscar', 'carrito', 'categoria', 'pago', 'productos', 'panel', 'api', 'cita'])
 
 /** Error 403 con el código que el panel reconoce para ofrecer subir de plan. */
 export function fueraDelPlan(mensaje: string) {

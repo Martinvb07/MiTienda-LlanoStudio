@@ -4,6 +4,7 @@ import { refrescarTienda } from '@/app/panel/acciones'
 import { normalizarBloques } from '@/tipos/bloques'
 import type { Cupon, DatosCupon, EstadoPedido, Pedido } from '@/tipos/pedidos'
 import type { ProductoPanel, Tienda, TipoSitio } from '@/tipos/tienda'
+import type { AgendaPanel, Cita, DatosCitaPanel, EstadoCita } from '@/tipos/citas'
 
 /**
  * Cliente del panel en el navegador. Habla con la API por el mismo origen:
@@ -50,7 +51,7 @@ export function cerrarSesion() {
 }
 
 /** Lo que se guarda aquí no cambia la tienda pública: no hace falta refrescarla. */
-const SIN_TIENDA = /^\/(ingreso|registro|recuperar|cuenta|novedades|soporte)/
+const SIN_TIENDA = /^\/(ingreso|registro|recuperar|cuenta|novedades|soporte|citas)/
 
 let esperaRefresco: ReturnType<typeof setTimeout> | undefined
 
@@ -312,6 +313,19 @@ export const verificarDominio = (id: string) =>
   pedir<{ dominio: DominioPropio }>(`/dominios/${id}/verificar`, { method: 'POST' }).then((respuesta) => respuesta.dominio)
 
 export const quitarDominio = (id: string) => pedir<void>(`/dominios/${id}`, { method: 'DELETE' })
+
+// ── Agenda ──
+
+export const listarCitas = (desde?: string, hasta?: string) => {
+  const parametros = new URLSearchParams({ ...(desde ? { desde } : {}), ...(hasta ? { hasta } : {}) })
+  return pedir<AgendaPanel>(`/citas${parametros.size ? `?${parametros}` : ''}`)
+}
+
+export const crearCita = (datos: DatosCitaPanel) =>
+  pedir<{ cita: Cita }>('/citas', { method: 'POST', body: JSON.stringify(datos) }).then((respuesta) => respuesta.cita)
+
+export const actualizarCita = (id: string, cambios: { estado?: EstadoCita; notaInterna?: string | null }) =>
+  pedir<{ cita: Cita }>(`/citas/${id}`, { method: 'PATCH', body: JSON.stringify(cambios) }).then((respuesta) => respuesta.cita)
 
 // ── Cupones ──
 

@@ -198,6 +198,7 @@ model Tienda {
   cupones   Cupon[]
   visitas   VisitaDiaria[]
   pasarelas PasarelaTienda[]
+  citas     Cita[]
 
   @@map("tiendas")
 }
@@ -740,4 +741,54 @@ model PasarelaTienda {
 
   @@unique([tiendaId, proveedor])
   @@map("pasarelas_tienda")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reservas
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum EstadoCita {
+  PENDIENTE
+  CONFIRMADA
+  COMPLETADA
+  CANCELADA
+  NO_ASISTIO
+}
+
+/// Una cita agendada desde la sección de reservas del sitio. Los servicios,
+/// los días y los cupos se configuran en esa sección (configuracionBloques);
+/// aquí se guarda una instantánea del servicio para el histórico.
+model Cita {
+  id       String @id @default(cuid())
+  tiendaId String
+
+  servicioId String
+  servicio   String
+  /// Minutos.
+  duracion   Int
+  precio     String?
+  inicio     DateTime
+  fin        DateTime
+
+  clienteNombre   String
+  clienteTelefono String
+  clienteEmail    String?
+  notas           String?
+  /// Nota de la dueña; el cliente no la ve.
+  notaInterna     String?
+
+  estado              EstadoCita @default(PENDIENTE)
+  /// Ya se mandó el recordatorio del día antes.
+  recordatorioEnviado Boolean    @default(false)
+  /// Para que el cliente cancele desde el enlace del correo.
+  codigo              String     @unique
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  tienda Tienda @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+
+  @@index([tiendaId, inicio])
+  @@index([tiendaId, estado])
+  @@map("citas")
 }

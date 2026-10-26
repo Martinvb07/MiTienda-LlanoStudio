@@ -8,6 +8,7 @@ import rutasVisitas from './visitas.rutas.js'
 import rutasReservas from './reservas.rutas.js'
 import rutasMensajes from './contacto.publico.rutas.js'
 import rutasResenas from './resenas.rutas.js'
+import rutasCarritos from './carritos.rutas.js'
 import rutasPanel from './panel.rutas.js'
 import rutasAdmin from './admin.rutas.js'
 import rutasPlanes from './planes.rutas.js'
@@ -45,5 +46,6 @@ enrutador.use('/visitas', rutasVisitas)
 enrutador.use('/reservas', rutasReservas)
 enrutador.use('/mensajes', rutasMensajes)
 enrutador.use('/resenas', rutasResenas)
+enrutador.use('/carritos', rutasCarritos)
 
 export default enrutador

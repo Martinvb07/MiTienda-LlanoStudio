@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { Bell, CalendarDays, Inbox, Megaphone, PackageX, Receipt, Sparkles, Star, Ticket, TriangleAlert, X } from 'lucide-react'
+import { Bell, CalendarDays, Inbox, Megaphone, PackageX, Receipt, ShoppingCart, Sparkles, Star, Ticket, TriangleAlert, X } from 'lucide-react'
 import { marcarNovedadesVistas, obtenerAvisos, obtenerComunicados, type Avisos, type Comunicados } from '@/servicios/panel'
 import { formatearPrecio } from '@/utilidades/formato'
 import { cn } from '@/utilidades/clases'
@@ -95,6 +95,7 @@ export function ProveedorAvisos({ children }: { children: ReactNode }) {
     (avisos?.mensajesNuevos ? 1 : 0) +
     (avisos?.citasPorConfirmar ? 1 : 0) +
     (avisos?.resenasPendientes ? 1 : 0) +
+    (avisos?.carritosAbandonados ? 1 : 0) +
     anunciosNuevos +
     (comunicados?.novedadesSinVer ? 1 : 0)
 
@@ -301,6 +302,21 @@ export function CampanaAvisos({ abajo = false }: { abajo?: boolean }) {
               <>
                 <strong className="font-medium text-white">{avisos.resenasPendientes}</strong>{' '}
                 {avisos.resenasPendientes === 1 ? 'opinión por aprobar' : 'opiniones por aprobar'}
+              </>
+            ),
+          },
+        ]
+      : []),
+    ...(avisos?.carritosAbandonados
+      ? [
+          {
+            clave: 'carritos',
+            href: '/panel/clientes',
+            icono: <ShoppingCart aria-hidden="true" className="h-4 w-4 text-sitio-ambar" />,
+            texto: (
+              <>
+                <strong className="font-medium text-white">{avisos.carritosAbandonados}</strong>{' '}
+                {avisos.carritosAbandonados === 1 ? 'carrito abandonado' : 'carritos abandonados'} sin contactar
               </>
             ),
           },

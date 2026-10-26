@@ -6,6 +6,8 @@ import { ErrorHttp, noEncontrado, solicitudInvalida } from '../utilidades/errore
 import { evaluarCupon } from './cupones.controlador.js'
 import { armarCheckout, leerSecretos, nuevaReferenciaPago } from '../servicios/pasarelas.servicio.js'
 import { calcularEnvio, type AjustesEnvio } from '../utilidades/envios.js'
+import { marcarCarritosRecuperados } from './clientes.controlador.js'
+import { registro } from '../utilidades/registro.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Esquemas
@@ -323,6 +325,10 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
           select: camposPedido,
         })
       })
+
+      marcarCarritosRecuperados(tiendaId, pedido.clienteEmail, pedido.clienteTelefono).catch((error: unknown) =>
+        registro.error({ err: error }, 'No se pudo marcar el carrito como recuperado'),
+      )
 
       // Pago en línea: se registra el intento y se arma el checkout de la pasarela.
       let checkout = null

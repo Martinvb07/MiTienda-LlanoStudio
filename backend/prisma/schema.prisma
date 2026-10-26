@@ -201,6 +201,7 @@ model Tienda {
   citas     Cita[]
   mensajes  MensajeContacto[]
   resenas   Resena[]
+  carritos  CarritoAbandonado[]
 
   @@map("tiendas")
 }
@@ -864,4 +865,44 @@ model Resena {
   @@index([tiendaId, estado])
   @@index([productoId, estado])
   @@map("resenas")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Carritos abandonados
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum EstadoCarrito {
+  ABIERTO
+  RECUPERADO
+  DESCARTADO
+}
+
+/// Un carrito de quien llegó a escribir su correo o celular en el checkout y
+/// no terminó. Si después compra con ese correo o celular, queda RECUPERADO.
+model CarritoAbandonado {
+  id       String @id @default(cuid())
+  tiendaId String
+  /// Identificador del navegador (lo genera el checkout): un carrito por visitante.
+  token    String
+
+  nombre   String?
+  email    String?
+  telefono String?
+  /// [{ productoId, nombre, variante, cantidad, precio, foto }] al momento de guardar.
+  items    Json
+  subtotal Decimal @db.Decimal(12, 2)
+
+  estado              EstadoCarrito @default(ABIERTO)
+  /// Cuándo la dueña le escribió (o se mandó el correo automático).
+  contactadoEn        DateTime?
+  recordatorioEnviado Boolean       @default(false)
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  tienda Tienda @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+
+  @@unique([tiendaId, token])
+  @@index([tiendaId, estado, actualizadoEn])
+  @@map("carritos_abandonados")
 }

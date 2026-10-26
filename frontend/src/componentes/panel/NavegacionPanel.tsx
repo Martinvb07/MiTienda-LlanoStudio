@@ -22,6 +22,7 @@ import {
   Settings,
   Star,
   Ticket,
+  Users,
 } from 'lucide-react'
 import { cerrarSesion } from '@/servicios/panel'
 import { urlTienda } from '@/utilidades/dominios'
@@ -66,6 +67,7 @@ const GRUPOS: { titulo: string; enlaces: Enlace[] }[] = [
   {
     titulo: 'Clientes',
     enlaces: [
+      { href: '/panel/clientes', etiqueta: 'Clientes', corta: 'Clientes', Icono: Users, movil: false },
       { href: '/panel/agenda', etiqueta: 'Agenda', corta: 'Agenda', Icono: CalendarDays, movil: false },
       { href: '/panel/mensajes', etiqueta: 'Mensajes', corta: 'Mensajes', Icono: Inbox, movil: false },
       { href: '/panel/resenas', etiqueta: 'Opiniones', corta: 'Opiniones', Icono: Star, movil: false },
@@ -93,7 +95,7 @@ function gruposPara(vende: boolean) {
 }
 
 /** Secciones de dinero y personas: un editor no las ve (la API tampoco se las da). */
-const SOLO_GESTION = new Set(['/panel/descuentos', '/panel/estadisticas'])
+const SOLO_GESTION = new Set(['/panel/descuentos', '/panel/estadisticas', '/panel/clientes'])
 
 // Por segmento completo: /panel/plantillas no debe marcar /panel/plan.
 const esActivo = (href: string, ruta: string) =>
@@ -162,6 +164,7 @@ export function NavegacionPanel() {
     '/panel/agenda': avisos?.citasPorConfirmar ?? 0,
     '/panel/mensajes': avisos?.mensajesNuevos ?? 0,
     '/panel/resenas': avisos?.resenasPendientes ?? 0,
+    '/panel/clientes': avisos?.carritosAbandonados ?? 0,
   }
 
   useEffect(() => setMas(false), [ruta])

@@ -51,7 +51,7 @@ export function cerrarSesion() {
 }
 
 /** Lo que se guarda aquí no cambia la tienda pública: no hace falta refrescarla. */
-const SIN_TIENDA = /^\/(ingreso|registro|recuperar|cuenta|novedades|soporte|citas|mensajes)/
+const SIN_TIENDA = /^\/(ingreso|registro|recuperar|cuenta|novedades|soporte|citas|mensajes|clientes|carritos)/
 
 let esperaRefresco: ReturnType<typeof setTimeout> | undefined
 
@@ -268,6 +268,7 @@ export interface Avisos {
   mensajesNuevos?: number
   citasPorConfirmar?: number
   resenasPendientes?: number
+  carritosAbandonados?: number
 }
 
 export const obtenerAvisos = () => pedir<Avisos>('/avisos')
@@ -378,6 +379,42 @@ export const moderarResena = (id: string, cambios: { estado?: EstadoResena; resp
   pedir<{ resena: ResenaPanel }>(`/resenas/${id}`, { method: 'PATCH', body: JSON.stringify(cambios) }).then((respuesta) => respuesta.resena)
 
 export const eliminarResena = (id: string) => pedir<void>(`/resenas/${id}`, { method: 'DELETE' })
+
+// ── Clientes y carritos abandonados ──
+
+export interface ClientePanel {
+  clave: string
+  nombre: string
+  email: string | null
+  telefono: string | null
+  ciudad: string | null
+  pedidos: number
+  citas: number
+  gastado: number
+  primeraVez: string
+  ultimaVez: string
+  historial: { tipo: 'pedido' | 'cita'; id: string; titulo: string; estado: string; total: string | null; fecha: string }[]
+}
+
+export interface CarritoPanel {
+  id: string
+  nombre: string | null
+  email: string | null
+  telefono: string | null
+  items: { productoId: string; nombre: string; variante: string | null; cantidad: number; precio: number; foto: string | null; slug: string }[]
+  subtotal: string
+  estado: 'ABIERTO' | 'RECUPERADO' | 'DESCARTADO'
+  contactadoEn: string | null
+  recordatorioEnviado: boolean
+  actualizadoEn: string
+}
+
+export const listarClientes = () => pedir<{ clientes: ClientePanel[] }>('/clientes').then((respuesta) => respuesta.clientes)
+
+export const listarCarritos = () => pedir<{ carritos: CarritoPanel[] }>('/carritos').then((respuesta) => respuesta.carritos)
+
+export const actualizarCarrito = (id: string, cambios: { estado?: CarritoPanel['estado']; contactado?: boolean }) =>
+  pedir<void>(`/carritos/${id}`, { method: 'PATCH', body: JSON.stringify(cambios) })
 
 // ── Cupones ──
 

@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../config/prisma.js'
+import { contarCarritosAbandonados } from './clientes.controlador.js'
 import { Prisma } from '../generado/prisma/client.js'
 import { planDeLaSesion, tiendaDeLaSesion } from '../servicios/sesion.servicio.js'
 
@@ -157,7 +158,7 @@ export async function obtenerAvisos(req: Request, res: Response): Promise<void> 
   const tiendaId = await tiendaDeLaSesion(req)
   const enTresDias = new Date(Date.now() + 3 * 86_400_000)
 
-  const [pedidosNuevos, ultimos, agotados, stockBajo, cuponesPorVencer, mensajesNuevos, citasPorConfirmar, resenasPendientes] = await Promise.all([
+  const [pedidosNuevos, ultimos, agotados, stockBajo, cuponesPorVencer, mensajesNuevos, citasPorConfirmar, resenasPendientes, carritosAbandonados] = await Promise.all([
     prisma.pedido.count({ where: { tiendaId, estado: 'PENDIENTE' } }),
     prisma.pedido.findMany({
       where: { tiendaId, estado: 'PENDIENTE' },
@@ -178,6 +179,7 @@ export async function obtenerAvisos(req: Request, res: Response): Promise<void> 
     prisma.mensajeContacto.count({ where: { tiendaId, leido: false, archivado: false } }),
     prisma.cita.count({ where: { tiendaId, estado: 'PENDIENTE', inicio: { gte: new Date() } } }),
     prisma.resena.count({ where: { tiendaId, estado: 'PENDIENTE' } }),
+    contarCarritosAbandonados(tiendaId),
   ])
 
   res.json({
@@ -189,5 +191,6 @@ export async function obtenerAvisos(req: Request, res: Response): Promise<void> 
     mensajesNuevos,
     citasPorConfirmar,
     resenasPendientes,
+    carritosAbandonados,
   })
 }

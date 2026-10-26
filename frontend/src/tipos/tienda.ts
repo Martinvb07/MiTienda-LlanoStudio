@@ -153,6 +153,8 @@ export interface AjustesTienda {
   recogerEnTienda?: boolean
   /** Dónde se recoge; sin ella, la dirección de Contacto. */
   direccionRecogida?: string
+  /** Correo automático a quien deja el carrito con su correo. */
+  recordarCarritos?: boolean
 
   paginaProducto?: PlantillaProducto
 

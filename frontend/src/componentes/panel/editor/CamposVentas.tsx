@@ -111,6 +111,13 @@ export function CamposVentas({ ajustes, alCambiar }: Props) {
         />
       )}
 
+      <Interruptor activo={ajustes.recordarCarritos ?? false} alCambiar={(recordarCarritos) => alCambiar({ recordarCarritos })}>
+        Recordar carritos por correo
+        <small className="block text-[11.5px] text-sitio-tenue">
+          A quien deja su correo y no termina, le llega un recordatorio unas horas después. Los ves en Clientes.
+        </small>
+      </Interruptor>
+
       <span className="mt-1 text-[11.5px] text-sitio-suave">Cómo te pagan</span>
       <Interruptor activo={ajustes.pagoContraEntrega ?? false} alCambiar={(pagoContraEntrega) => alCambiar({ pagoContraEntrega })}>
         Pago contra entrega

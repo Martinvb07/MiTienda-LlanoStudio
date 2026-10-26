@@ -85,6 +85,7 @@ import {
   listarMensajes,
 } from '../controladores/contacto.controlador.js'
 import { eliminarResena, esquemaModerarResena, listarResenasPanel, moderarResena } from '../controladores/resenas.controlador.js'
+import { actualizarCarrito, esquemaActualizarCarrito, listarCarritos, listarClientes } from '../controladores/clientes.controlador.js'
 
 const enrutador = Router()
 
@@ -161,6 +162,11 @@ enrutador.delete('/mensajes/:id', eliminarMensaje)
 enrutador.get('/resenas', listarResenasPanel)
 enrutador.patch('/resenas/:id', validar(esquemaModerarResena), moderarResena)
 enrutador.delete('/resenas/:id', eliminarResena)
+
+// Datos de personas: sólo dueña y administradores.
+enrutador.get('/clientes', gestion, listarClientes)
+enrutador.get('/carritos', gestion, listarCarritos)
+enrutador.patch('/carritos/:id', gestion, validar(esquemaActualizarCarrito), actualizarCarrito)
 
 // La imagen llega como cuerpo binario: sin multipart no hace falta otra dependencia.
 enrutador.post(

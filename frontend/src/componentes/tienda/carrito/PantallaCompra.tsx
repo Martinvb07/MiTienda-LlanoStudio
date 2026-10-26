@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
 import { CheckCircle2, CreditCard, MessageCircle, Store, Truck } from 'lucide-react'
 import { crearPedido, validarCupon, type CuponAplicado } from '@/app/(tienda)/[subdominio]/carrito/acciones'
+import { guardarCarrito } from '@/app/(tienda)/[subdominio]/acciones-sitio'
 import { ETIQUETAS_PAGO, type CheckoutPago, type MetodoPago, type PedidoCreado } from '@/tipos/pedidos'
 import { abrirCheckout } from './abrirCheckout'
 import { formatearPrecio } from '@/utilidades/formato'
@@ -60,6 +61,20 @@ function mensajeWhatsapp(pedido: PedidoCreado, nombreTienda: string, moneda: str
   ].join('\n')
 }
 
+/** Un identificador por navegador para el carrito guardado: así se actualiza en vez de duplicarse. */
+function tokenCarrito(): string {
+  const clave = 'mt-carrito-token'
+  try {
+    const guardado = localStorage.getItem(clave)
+    if (guardado) return guardado
+    const nuevo = crypto.randomUUID()
+    localStorage.setItem(clave, nuevo)
+    return nuevo
+  } catch {
+    return crypto.randomUUID()
+  }
+}
+
 /**
  * Finalizar compra: datos de entrega, medio de pago y resumen. Al confirmar,
  * el pedido se crea en la API (que recalcula precios y aparta el stock) y, si
@@ -100,6 +115,41 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
   const [revisandoCupon, setRevisandoCupon] = useState(false)
   const [entrega, setEntrega] = useState<Entrega>('domicilio')
   const [ciudad, setCiudad] = useState('')
+  const formulario = useRef<HTMLFormElement>(null)
+  const contactoDejado = useRef(false)
+  const ultimoGuardado = useRef('')
+
+  // Con el correo o el celular escritos, el carrito se guarda: si no termina,
+  // la tienda puede escribirle (Clientes → Carritos abandonados).
+  const lineasActuales = carrito?.lineas
+  const guardar = useCallback(() => {
+    const datos = formulario.current ? new FormData(formulario.current) : null
+    if (!datos || !lineasActuales) return
+    const texto = (clave: string) => String(datos.get(clave) ?? '').trim()
+    const email = texto('email')
+    const telefono = texto('telefono')
+    const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    if (!correoValido && telefono.replace(/\D/g, '').length < 7) return
+    contactoDejado.current = true
+    const datosCarrito = {
+      nombre: texto('nombre') || undefined,
+      email: correoValido ? email : undefined,
+      telefono: telefono || undefined,
+      items: lineasActuales.map((linea) => ({ productoId: linea.productoId, cantidad: linea.cantidad, variante: linea.variante })),
+    }
+    // Cada campo que se deja dispara esto: sólo se manda si algo cambió.
+    const firma = JSON.stringify(datosCarrito)
+    if (firma === ultimoGuardado.current) return
+    ultimoGuardado.current = firma
+    void guardarCarrito({ token: tokenCarrito(), ...datosCarrito }).catch(() => undefined)
+  }, [lineasActuales])
+
+  // Si cambia el carrito después de dejar el contacto, se actualiza.
+  useEffect(() => {
+    if (!contactoDejado.current) return
+    const espera = setTimeout(guardar, 1500)
+    return () => clearTimeout(espera)
+  }, [guardar])
   const subtotalActual = carrito?.subtotal ?? 0
 
   // Si cambia el carrito, el descuento ya no es el mismo: se vuelve a pedir.
@@ -259,7 +309,7 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
 
   return (
     <main className="mx-auto grid max-w-6xl gap-10 px-6 py-12 lg:grid-cols-[1.3fr_1fr] lg:gap-16">
-      <form onSubmit={confirmar} noValidate className="flex flex-col gap-8">
+      <form ref={formulario} onSubmit={confirmar} onBlur={guardar} noValidate className="flex flex-col gap-8">
         <div>
           <h1 className="font-display text-3xl font-semibold tracking-tight">Finalizar compra</h1>
           <p className="mt-2 text-tinta/65">Sin crear cuenta. Te contactamos para coordinar la entrega.</p>

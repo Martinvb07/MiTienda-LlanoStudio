@@ -113,3 +113,16 @@ export async function enviarResena(datos: {
 }) {
   return enviar<{ ok: true }>('/api/resenas', datos)
 }
+
+// ── Carritos abandonados ──
+
+/** Guarda el carrito de quien dejó su contacto en el checkout. No avisa errores: es en segundo plano. */
+export async function guardarCarrito(datos: {
+  token: string
+  nombre?: string
+  email?: string
+  telefono?: string
+  items: { productoId: string; cantidad: number; variante?: string }[]
+}) {
+  await enviar<unknown>('/api/carritos', datos)
+}

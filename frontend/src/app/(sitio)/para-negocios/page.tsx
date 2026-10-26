@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight, BarChart3, CalendarCheck, Clock, Globe, Phone, Users, type LucideIcon } from 'lucide-react'
+import { ArrowUpRight, CalendarCheck, Clock, Globe, Inbox, Phone, Users, type LucideIcon } from 'lucide-react'
 import { Boton } from '@/componentes/sitio/Boton'
 import { CabeceraPagina } from '@/componentes/sitio/CabeceraPagina'
 import { Contenedor } from '@/componentes/sitio/Contenedor'
@@ -18,11 +18,11 @@ export const metadata: Metadata = {
 
 /** Lo que de verdad trae hoy. Lo que depende del plan lo dice en voz baja. */
 const DETALLES: { icono: LucideIcon; titulo: string; texto: string; plan?: string }[] = [
-  { icono: CalendarCheck, titulo: 'Agendar por WhatsApp', texto: 'Cada servicio abre el chat con su nombre escrito.' },
+  { icono: CalendarCheck, titulo: 'Reservas en línea', texto: 'Eligen servicio, día y hora libre; la cita llega a tu agenda.' },
+  { icono: Inbox, titulo: 'Formulario de contacto', texto: 'Cotizaciones y preguntas que llegan a tu panel y a tu correo.' },
   { icono: Clock, titulo: 'Servicios y horario', texto: 'Con precio, duración y días de atención.' },
   { icono: Phone, titulo: 'Llamar y cómo llegar', texto: 'Un toque para llamar o abrir el mapa.' },
   { icono: Users, titulo: 'Tu equipo', texto: 'Foto, nombre y cargo.', plan: 'Desde Emprende' },
-  { icono: BarChart3, titulo: 'Visitas', texto: 'Cuánta gente entra a tu página.' },
   { icono: Globe, titulo: 'Tu dominio', texto: 'www.tunegocio.co, con HTTPS.', plan: 'Negocio y Pro' },
 ]
 

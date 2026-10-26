@@ -1,8 +1,9 @@
 'use client'
 
 import Image from 'next/image'
-import { ArrowUpRight, Banknote, Lock, MessageCircle } from 'lucide-react'
+import { ArrowUpRight, Banknote, Lock, MapPinned, MessageCircle, ShoppingCart, Star, Users } from 'lucide-react'
 import { Contenedor } from './Contenedor'
+import { Detalles, type Detalle } from './Detalles'
 import { Revelar } from './Revelar'
 import { cn } from '@/utilidades/clases'
 
@@ -53,6 +54,14 @@ export function Baldosa({
  * oficial en public/logos) se muestra la marca en blanco; sin él, el nombre.
  */
 const PASARELAS: { nombre: string; logo?: string }[] = [{ nombre: 'Wompi' }, { nombre: 'ePayco' }, { nombre: 'Bold' }]
+
+/** Lo que trae la tienda además del mosaico, dicho corto. */
+const MAS_TIENDA: Detalle[] = [
+  { icono: MapPinned, titulo: 'Envíos por zona', texto: 'Un precio por ciudad o región, y recoger en la tienda sin costo.' },
+  { icono: Star, titulo: 'Opiniones con estrellas', texto: 'Tus clientes califican; sale lo que apruebes, con compra verificada.' },
+  { icono: ShoppingCart, titulo: 'Carritos abandonados', texto: 'Ves quién no terminó y le escribes por WhatsApp con un toque.' },
+  { icono: Users, titulo: 'Tus clientes', texto: 'Quién te compra, cuánto lleva y cuándo volvió, en una lista.' },
+]
 
 const OTROS_PAGOS = [
   { nombre: 'WhatsApp', detalle: 'Cierras la venta en el chat', icono: MessageCircle },
@@ -174,6 +183,7 @@ export function Caracteristicas({ rotulo = 'Tienda en línea' }: { rotulo?: stri
             </div>
           </Baldosa>
         </div>
+        <Detalles detalles={MAS_TIENDA} columnas={4} />
       </Contenedor>
     </section>
   )

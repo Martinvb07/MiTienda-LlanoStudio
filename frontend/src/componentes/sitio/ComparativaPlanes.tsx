@@ -34,6 +34,9 @@ const GRUPOS: { titulo: string; filas: Fila[] }[] = [
       { etiqueta: 'Carrito, pedidos y pago contra entrega', valor: () => true },
       { etiqueta: 'Pagos en línea con Wompi, ePayco o Bold', valor: () => true },
       { etiqueta: 'Terminar la compra por WhatsApp', valor: () => true },
+      { etiqueta: 'Envíos por zona y recoger en la tienda', valor: () => true },
+      { etiqueta: 'Opiniones de clientes con estrellas', valor: () => true },
+      { etiqueta: 'Clientes y carritos abandonados', valor: () => true },
       { etiqueta: 'Agregar en las tarjetas y aviso con foto', valor: (l) => experienciaIncluye(l.experienciaCompra, 'avanzada') },
       { etiqueta: 'Foto que vuela a la bolsa y barra fija', valor: (l) => experienciaIncluye(l.experienciaCompra, 'completa') },
       { etiqueta: 'Cupones de descuento activos', valor: (l) => (l.cupones === null ? 'Ilimitados' : l.cupones || false) },
@@ -97,6 +100,8 @@ const GRUPOS_PAGINA: { titulo: string; filas: Fila[] }[] = [
     titulo: 'Tu negocio',
     filas: [
       { etiqueta: 'Servicios con precio y agenda por WhatsApp', valor: (l) => l.bloques.includes('servicios') },
+      { etiqueta: 'Reservas en línea con agenda', valor: (l) => (l.citasMes === null ? 'Ilimitadas' : `${l.citasMes} al mes`) },
+      { etiqueta: 'Formulario de contacto y bandeja de mensajes', valor: (l) => l.bloques.includes('formulario') },
       { etiqueta: 'Horario, dirección y contacto', valor: (l) => l.bloques.includes('horario') },
       { etiqueta: 'Equipo con foto y cargo', valor: (l) => l.bloques.includes('equipo') },
       { etiqueta: 'Páginas aparte (/servicios, /nosotros…)', valor: (l) => (l.paginasExtra ? `Hasta ${l.paginasExtra}` : false) },

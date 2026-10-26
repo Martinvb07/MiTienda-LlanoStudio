@@ -1,9 +1,11 @@
 import { Caracteristicas, ComoFunciona } from '@/componentes/sitio/Caracteristicas'
+import { CualTeConviene } from '@/componentes/sitio/CualTeConviene'
 import { Hero } from '@/componentes/sitio/Hero'
 import { LlamadoFinal } from '@/componentes/sitio/LlamadoFinal'
 import { SeccionEnlaces, SeccionPagina } from '@/componentes/sitio/PaginaYEnlaces'
 import { Plantillas } from '@/componentes/sitio/Plantillas'
 import { Preguntas } from '@/componentes/sitio/Preguntas'
+import { PreciosPortada } from '@/componentes/sitio/PreciosPortada'
 import { Testimonios } from '@/componentes/sitio/Testimonios'
 import { TresProductos } from '@/componentes/sitio/TresProductos'
 import { obtenerContenidoSitio } from '@/servicios/contenido.servicio'
@@ -31,7 +33,12 @@ const PREGUNTAS = [
   {
     pregunta: '¿Qué trae la página para mi negocio?',
     respuesta:
-      'Tus servicios con precio y horario, tu equipo, cómo llegar y un botón para agendar por WhatsApp. Hay una plantilla para cada oficio.',
+      'Tus servicios con precio y horario, tu equipo, cómo llegar, un formulario de contacto y reservas en línea. Hay una plantilla para cada oficio.',
+  },
+  {
+    pregunta: '¿Mis clientes pueden agendar solos?',
+    respuesta:
+      'Sí. Con la sección de reservas eligen servicio, día y hora libre; la cita llega a tu agenda en el panel y les mandamos un recordatorio el día antes. Funciona en la página y también en la tienda.',
   },
   {
     pregunta: '¿Qué son los enlaces para la bio?',
@@ -45,6 +52,10 @@ const PREGUNTAS = [
   {
     pregunta: '¿Cómo me pagan en la tienda?',
     respuesta: 'Con tu propia cuenta de Wompi, ePayco o Bold, por WhatsApp o contra entrega.',
+  },
+  {
+    pregunta: '¿Puedo cobrar distinto el envío según la ciudad?',
+    respuesta: 'Sí. Armas zonas con sus ciudades y su precio, y si quieres, ofreces recoger en tu local sin costo.',
   },
   {
     pregunta: '¿Cobran comisión por venta?',
@@ -70,7 +81,9 @@ export default async function PaginaInicio() {
       <Caracteristicas />
       <SeccionPagina />
       <SeccionEnlaces />
+      <CualTeConviene />
       <Plantillas />
+      <PreciosPortada />
       <ComoFunciona titulo="De cero a publicado en una tarde" pasos={PASOS} />
       <Testimonios testimonios={testimonios} />
       <Preguntas titulo="Lo que más nos preguntan" preguntas={PREGUNTAS} />

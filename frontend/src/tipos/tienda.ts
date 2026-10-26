@@ -107,6 +107,8 @@ export interface PlantillaProducto {
   animarEntrada?: boolean
   /** Barra de compra pegada abajo al pasar el botón (Negocio y Pro). */
   barraFija?: boolean
+  /** Opiniones de clientes al final de la página y estrellas en las tarjetas. */
+  resenas?: boolean
 }
 
 /** Cabecera, contacto y redes. Todo opcional: sin nada, la cabecera es la simple. */
@@ -218,6 +220,27 @@ export interface Producto {
   destacado?: boolean
   opciones?: OpcionProducto[]
   variantes?: VarianteProducto[]
+  /** Promedio y cantidad de opiniones aprobadas; null = todavía ninguna. */
+  resenas?: ResumenResenas | null
+}
+
+export interface ResumenResenas {
+  /** 1 a 5, con un decimal. */
+  promedio: number
+  total: number
+}
+
+/** Una opinión aprobada, como se ve en la tienda. */
+export interface ResenaPublica {
+  id: string
+  nombre: string
+  ciudad: string | null
+  estrellas: number
+  texto: string
+  /** El correo tiene un pedido con el producto. */
+  verificada: boolean
+  respuesta: string | null
+  creadoEn: string
 }
 
 /** Una característica que el cliente elige: Talla (S, M, L), Color (Rojo, Azul)… */

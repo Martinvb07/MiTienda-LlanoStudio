@@ -261,6 +261,15 @@ export function CamposFicha({ plantilla, alCambiar, limites }: Props) {
         )}
       </Seccion>
 
+      <Seccion titulo="Opiniones de clientes">
+        <Interruptor activo={completa.resenas} alCambiar={(resenas) => cambiar({ resenas })}>
+          Mostrar opiniones
+          <small className="block text-[11.5px] text-sitio-tenue">
+            Tus clientes califican con estrellas; sale lo que apruebes en Opiniones.
+          </small>
+        </Interruptor>
+      </Seccion>
+
       <Seccion titulo="Productos relacionados">
         <Interruptor activo={completa.relacionados} alCambiar={(relacionados) => cambiar({ relacionados })}>
           Mostrar productos relacionados

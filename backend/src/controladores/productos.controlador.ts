@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express'
 import { prisma } from '../config/prisma.js'
 import { noEncontrado } from '../utilidades/errores.js'
+import { resumenResenas } from './resenas.controlador.js'
 
 /**
  * Los importes viajan como texto: Decimal no cabe siempre en un número de
@@ -55,7 +56,9 @@ export async function listarProductosPublicos(req: Request, res: Response): Prom
     take: 200,
   })
 
-  res.json({ productos: productos.map(serializarProducto) })
+  // Estrellas de cada producto para las tarjetas del catálogo.
+  const resenas = await resumenResenas(tiendaId)
+  res.json({ productos: productos.map((producto) => ({ ...serializarProducto(producto), resenas: resenas.get(producto.id) ?? null })) })
 }
 
 /** Ficha pública de un producto por slug. */
@@ -70,5 +73,6 @@ export async function obtenerProductoPublico(req: Request, res: Response): Promi
 
   if (!producto) throw noEncontrado(`No existe el producto "${slug}"`)
 
-  res.json({ producto: serializarProducto(producto) })
+  const resenas = await resumenResenas(tiendaId, [producto.id])
+  res.json({ producto: { ...serializarProducto(producto), resenas: resenas.get(producto.id) ?? null } })
 }

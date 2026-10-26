@@ -65,7 +65,7 @@ export function bloquesVisiblesPara<T extends Bloque>(tipo: TipoSitio | undefine
 }
 
 /** Rutas del panel que son de vender: una página no las muestra. */
-export const RUTAS_SOLO_TIENDA: ReadonlySet<string> = new Set(['/panel/productos', '/panel/pedidos', '/panel/descuentos'])
+export const RUTAS_SOLO_TIENDA: ReadonlySet<string> = new Set(['/panel/productos', '/panel/pedidos', '/panel/descuentos', '/panel/resenas'])
 
 interface Textos {
   /** "tienda" o "página", en minúscula. */

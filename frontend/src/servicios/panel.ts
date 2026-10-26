@@ -267,6 +267,7 @@ export interface Avisos {
   cuponesPorVencer: { id: string; codigo: string; venceEn: string }[]
   mensajesNuevos?: number
   citasPorConfirmar?: number
+  resenasPendientes?: number
 }
 
 export const obtenerAvisos = () => pedir<Avisos>('/avisos')
@@ -352,6 +353,31 @@ export const actualizarMensaje = (id: string, cambios: { leido?: boolean; archiv
 export const eliminarMensaje = (id: string) => pedir<void>(`/mensajes/${id}`, { method: 'DELETE' })
 
 export const marcarMensajesLeidos = () => pedir<void>('/mensajes/leidos', { method: 'POST' })
+
+// ── Opiniones de productos ──
+
+export type EstadoResena = 'PENDIENTE' | 'APROBADA' | 'RECHAZADA'
+
+export interface ResenaPanel {
+  id: string
+  nombre: string
+  email: string
+  ciudad: string | null
+  estrellas: number
+  texto: string
+  verificada: boolean
+  respuesta: string | null
+  estado: EstadoResena
+  creadoEn: string
+  producto: { id: string; nombre: string; slug: string; foto: string | null }
+}
+
+export const listarResenas = () => pedir<{ resenas: ResenaPanel[] }>('/resenas').then((respuesta) => respuesta.resenas)
+
+export const moderarResena = (id: string, cambios: { estado?: EstadoResena; respuesta?: string | null }) =>
+  pedir<{ resena: ResenaPanel }>(`/resenas/${id}`, { method: 'PATCH', body: JSON.stringify(cambios) }).then((respuesta) => respuesta.resena)
+
+export const eliminarResena = (id: string) => pedir<void>(`/resenas/${id}`, { method: 'DELETE' })
 
 // ── Cupones ──
 

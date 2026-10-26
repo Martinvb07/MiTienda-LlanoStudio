@@ -99,3 +99,17 @@ export async function enviarMensaje(datos: {
 }) {
   return enviar<{ ok: true }>('/api/mensajes', datos)
 }
+
+// ── Opiniones de productos ──
+
+export async function enviarResena(datos: {
+  productoId: string
+  nombre: string
+  email: string
+  ciudad?: string
+  estrellas: number
+  texto: string
+  sitioWeb?: string
+}) {
+  return enviar<{ ok: true }>('/api/resenas', datos)
+}

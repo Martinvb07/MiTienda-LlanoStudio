@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { MessageCircle, Truck } from 'lucide-react'
-import type { AjustesTienda, BloqueFicha, Producto } from '@/tipos/tienda'
+import type { AjustesTienda, BloqueFicha, Producto, ResenaPublica } from '@/tipos/tienda'
 import { plantillaCompleta } from '@/utilidades/fichaProducto'
 import { formatearPrecio, generarSlug } from '@/utilidades/formato'
 import { enlaceWhatsapp } from '@/utilidades/whatsapp'
@@ -10,6 +10,8 @@ import { Beneficios } from './ficha/Beneficios'
 import { BotonComprar } from './ficha/BotonComprar'
 import { Compartir } from './ficha/Compartir'
 import { GaleriaFicha } from './ficha/GaleriaFicha'
+import { Opiniones } from './ficha/Opiniones'
+import { Estrellas } from './Estrellas'
 
 interface Props {
   producto: Producto
@@ -18,6 +20,8 @@ interface Props {
   ajustes?: AjustesTienda
   /** Catálogo de la tienda, para los productos relacionados. */
   catalogo?: Producto[]
+  /** Opiniones aprobadas; sin ellas (vista previa) la sección sale vacía. */
+  resenas?: ResenaPublica[]
 }
 
 /**
@@ -25,7 +29,7 @@ interface Props {
  * (ajustes.paginaProducto): qué piezas se ven, en qué orden y cómo van las
  * fotos. La usan la tienda pública y la vista previa del editor.
  */
-export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, catalogo = [] }: Props) {
+export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, catalogo = [], resenas = [] }: Props) {
   const plantilla = plantillaCompleta(ajustes.paginaProducto)
   const descuento =
     producto.precioComparacion && Number(producto.precioComparacion) > Number(producto.precio)
@@ -46,7 +50,18 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
     : []
 
   const piezas: Record<BloqueFicha, React.ReactNode> = {
-    titulo: <h1 className="font-display text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{producto.nombre}</h1>,
+    titulo: (
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{producto.nombre}</h1>
+        {plantilla.resenas && producto.resenas && producto.resenas.total > 0 && (
+          <a href="#opiniones" className="inline-flex w-fit items-center gap-2 text-sm text-tinta/65 transition hover:text-tinta">
+            <Estrellas valor={producto.resenas.promedio} />
+            {producto.resenas.promedio.toLocaleString('es-CO', { minimumFractionDigits: 1 })} · {producto.resenas.total}{' '}
+            {producto.resenas.total === 1 ? 'opinión' : 'opiniones'}
+          </a>
+        )}
+      </div>
+    ),
     presentacion: producto.presentacion ? <p className="text-sm text-tinta/55">{producto.presentacion}</p> : null,
     precio: (
       <div className="flex flex-wrap items-baseline gap-3">
@@ -149,6 +164,8 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
             ))}
         </div>
       </div>
+
+      {plantilla.resenas && <Opiniones productoId={producto.id} resenas={resenas} resumen={producto.resenas ?? null} />}
 
       {relacionados.length > 0 && (
         <section className="mt-24">

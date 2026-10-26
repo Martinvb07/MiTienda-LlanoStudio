@@ -56,5 +56,6 @@ export function plantillaCompleta(plantilla: PlantillaProducto = {}): Required<P
     zoomFoto: plantilla.zoomFoto ?? false,
     animarEntrada: plantilla.animarEntrada ?? false,
     barraFija: plantilla.barraFija ?? false,
+    resenas: plantilla.resenas ?? true,
   }
 }

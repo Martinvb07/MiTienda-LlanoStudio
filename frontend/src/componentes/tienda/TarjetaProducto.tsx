@@ -5,6 +5,7 @@ import type { Producto } from '@/tipos/tienda'
 import { formatearPrecio } from '@/utilidades/formato'
 import { esMedioLocal } from '@/utilidades/medios'
 import { AgregarRapido } from './carrito/AgregarRapido'
+import { Estrellas } from './Estrellas'
 
 /**
  * Un producto en una grilla. 'simple' es foto grande y texto suelto; 'tarjeta'
@@ -67,6 +68,11 @@ export function TarjetaProducto({
           )}
         </div>
         {ver.nombre && <h3 className="mt-3 line-clamp-2 text-center text-sm">{producto.nombre}</h3>}
+        {producto.resenas && producto.resenas.total > 0 && (
+          <p className="mt-1 flex items-center justify-center gap-1 text-[11px] text-tinta/55">
+            <Estrellas valor={producto.resenas.promedio} tamano="h-3 w-3" /> ({producto.resenas.total})
+          </p>
+        )}
         {(ver.precio || ver.precioAntes) && (
           <p className="mt-2 text-center">
             {ver.precio && (
@@ -103,6 +109,11 @@ export function TarjetaProducto({
         {ver.boton && <AgregarRapido producto={producto} forma="flotante" />}
       </div>
       {ver.nombre && <h3 className="mt-4 font-medium">{producto.nombre}</h3>}
+      {producto.resenas && producto.resenas.total > 0 && (
+        <p className="mt-1 flex items-center gap-1.5 text-xs text-tinta/55">
+          <Estrellas valor={producto.resenas.promedio} tamano="h-3.5 w-3.5" /> ({producto.resenas.total})
+        </p>
+      )}
       {ver.precio && <p className="mt-1 text-tinta/70">{formatearPrecio(producto.precio, moneda)}</p>}
       {ver.precioAntes && producto.precioComparacion && (
         <p className="text-sm text-tinta/40 line-through">{formatearPrecio(producto.precioComparacion, moneda)}</p>

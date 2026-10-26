@@ -20,6 +20,7 @@ import {
   Receipt,
   Search,
   Settings,
+  Star,
   Ticket,
 } from 'lucide-react'
 import { cerrarSesion } from '@/servicios/panel'
@@ -67,6 +68,7 @@ const GRUPOS: { titulo: string; enlaces: Enlace[] }[] = [
     enlaces: [
       { href: '/panel/agenda', etiqueta: 'Agenda', corta: 'Agenda', Icono: CalendarDays, movil: false },
       { href: '/panel/mensajes', etiqueta: 'Mensajes', corta: 'Mensajes', Icono: Inbox, movil: false },
+      { href: '/panel/resenas', etiqueta: 'Opiniones', corta: 'Opiniones', Icono: Star, movil: false },
     ],
   },
   {
@@ -159,6 +161,7 @@ export function NavegacionPanel() {
     '/panel/pedidos': pedidosNuevos,
     '/panel/agenda': avisos?.citasPorConfirmar ?? 0,
     '/panel/mensajes': avisos?.mensajesNuevos ?? 0,
+    '/panel/resenas': avisos?.resenasPendientes ?? 0,
   }
 
   useEffect(() => setMas(false), [ruta])

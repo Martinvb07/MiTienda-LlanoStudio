@@ -1,7 +1,7 @@
 import 'server-only'
 import { pedirApi, ErrorApi } from './api'
 import { normalizarBloques } from '@/tipos/bloques'
-import type { Producto, Tienda } from '@/tipos/tienda'
+import type { Producto, ResenaPublica, Tienda } from '@/tipos/tienda'
 import { ajustarAlPlan, temaAlPlan } from '@/utilidades/planes'
 
 interface RespuestaTienda {
@@ -65,5 +65,18 @@ export async function obtenerProducto(host: string, slug: string): Promise<Produ
   } catch (error) {
     if (error instanceof ErrorApi && error.estado === 404) return null
     throw error
+  }
+}
+
+/** Opiniones aprobadas de un producto. Se refrescan con la ficha (misma etiqueta). */
+export async function obtenerResenas(host: string, productoId: string, slug: string): Promise<ResenaPublica[]> {
+  try {
+    const { resenas } = await pedirApi<{ resenas: ResenaPublica[] }>(`/api/resenas?producto=${encodeURIComponent(productoId)}`, {
+      host,
+      etiquetas: [`producto:${host}:${slug}`],
+    })
+    return resenas
+  } catch {
+    return []
   }
 }

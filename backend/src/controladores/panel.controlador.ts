@@ -182,6 +182,7 @@ const esquemaAjustes = z.object({
       zoomFoto: z.boolean().optional(),
       animarEntrada: z.boolean().optional(),
       barraFija: z.boolean().optional(),
+      resenas: z.boolean().optional(),
     })
     .optional(),
   // Enlaces para tu bio

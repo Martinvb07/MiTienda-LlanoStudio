@@ -200,6 +200,7 @@ model Tienda {
   pasarelas PasarelaTienda[]
   citas     Cita[]
   mensajes  MensajeContacto[]
+  resenas   Resena[]
 
   @@map("tiendas")
 }
@@ -239,6 +240,7 @@ model Producto {
 
   tienda      Tienda       @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
   itemsPedido ItemPedido[]
+  resenas     Resena[]
 
   @@unique([tiendaId, slug])
   @@index([tiendaId, activo])
@@ -821,4 +823,45 @@ model MensajeContacto {
 
   @@index([tiendaId, archivado, creadoEn])
   @@map("mensajes_contacto")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reseñas
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum EstadoResena {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+}
+
+/// Opinión de un cliente sobre un producto. Sale en la tienda sólo cuando la
+/// dueña la aprueba.
+model Resena {
+  id         String @id @default(cuid())
+  tiendaId   String
+  productoId String
+
+  nombre     String
+  /// No se muestra: sirve para saber si compró y para no repetir.
+  email      String
+  ciudad     String?
+  /// 1 a 5.
+  estrellas  Int
+  texto      String
+  /// El correo tiene un pedido con este producto.
+  verificada Boolean      @default(false)
+  estado     EstadoResena @default(PENDIENTE)
+  /// Respuesta pública de la tienda.
+  respuesta  String?
+
+  creadoEn DateTime @default(now())
+
+  tienda   Tienda   @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+
+  @@unique([productoId, email])
+  @@index([tiendaId, estado])
+  @@index([productoId, estado])
+  @@map("resenas")
 }

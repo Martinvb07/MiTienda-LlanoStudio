@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { listarProductos, obtenerProducto, obtenerTienda } from '@/servicios/tiendas.servicio'
+import { listarProductos, obtenerProducto, obtenerResenas, obtenerTienda } from '@/servicios/tiendas.servicio'
 import { vendeEnLinea } from '@/utilidades/sitio'
 import { hostDesdeIdentificador } from '@/utilidades/dominios'
 import { FichaProducto } from '@/componentes/tienda/FichaProducto'
@@ -43,11 +43,12 @@ export default async function PaginaProducto({ params }: Props) {
   ])
 
   if (!tienda || !producto || !vendeEnLinea(tienda.tipo)) notFound()
+  const resenas = tienda.ajustes.paginaProducto?.resenas === false ? [] : await obtenerResenas(host, producto.id, producto.slug)
 
   return (
     <>
       <CabeceraTienda nombre={tienda.nombre} logoUrl={tienda.logoUrl} ajustes={tienda.ajustes} />
-      <FichaProducto producto={producto} nombreTienda={tienda.nombre} moneda={tienda.moneda} ajustes={tienda.ajustes} catalogo={catalogo} />
+      <FichaProducto producto={producto} nombreTienda={tienda.nombre} moneda={tienda.moneda} ajustes={tienda.ajustes} catalogo={catalogo} resenas={resenas} />
     </>
   )
 }

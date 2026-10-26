@@ -84,6 +84,7 @@ import {
   leerTodos,
   listarMensajes,
 } from '../controladores/contacto.controlador.js'
+import { eliminarResena, esquemaModerarResena, listarResenasPanel, moderarResena } from '../controladores/resenas.controlador.js'
 
 const enrutador = Router()
 
@@ -156,6 +157,10 @@ enrutador.get('/mensajes', listarMensajes)
 enrutador.post('/mensajes/leidos', leerTodos)
 enrutador.patch('/mensajes/:id', validar(esquemaActualizarMensaje), actualizarMensaje)
 enrutador.delete('/mensajes/:id', eliminarMensaje)
+
+enrutador.get('/resenas', listarResenasPanel)
+enrutador.patch('/resenas/:id', validar(esquemaModerarResena), moderarResena)
+enrutador.delete('/resenas/:id', eliminarResena)
 
 // La imagen llega como cuerpo binario: sin multipart no hace falta otra dependencia.
 enrutador.post(

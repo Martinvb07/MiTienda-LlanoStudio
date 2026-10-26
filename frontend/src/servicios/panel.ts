@@ -51,7 +51,7 @@ export function cerrarSesion() {
 }
 
 /** Lo que se guarda aquí no cambia la tienda pública: no hace falta refrescarla. */
-const SIN_TIENDA = /^\/(ingreso|registro|recuperar|cuenta|novedades|soporte|citas)/
+const SIN_TIENDA = /^\/(ingreso|registro|recuperar|cuenta|novedades|soporte|citas|mensajes)/
 
 let esperaRefresco: ReturnType<typeof setTimeout> | undefined
 
@@ -265,6 +265,8 @@ export interface Avisos {
   agotados: number
   stockBajo: { id: string; nombre: string; stock: number }[]
   cuponesPorVencer: { id: string; codigo: string; venceEn: string }[]
+  mensajesNuevos?: number
+  citasPorConfirmar?: number
 }
 
 export const obtenerAvisos = () => pedir<Avisos>('/avisos')
@@ -326,6 +328,30 @@ export const crearCita = (datos: DatosCitaPanel) =>
 
 export const actualizarCita = (id: string, cambios: { estado?: EstadoCita; notaInterna?: string | null }) =>
   pedir<{ cita: Cita }>(`/citas/${id}`, { method: 'PATCH', body: JSON.stringify(cambios) }).then((respuesta) => respuesta.cita)
+
+// ── Mensajes del formulario de contacto ──
+
+export interface MensajeContacto {
+  id: string
+  nombre: string
+  email: string | null
+  telefono: string | null
+  motivo: string | null
+  mensaje: string
+  pagina: string | null
+  leido: boolean
+  archivado: boolean
+  creadoEn: string
+}
+
+export const listarMensajes = () => pedir<{ mensajes: MensajeContacto[] }>('/mensajes').then((respuesta) => respuesta.mensajes)
+
+export const actualizarMensaje = (id: string, cambios: { leido?: boolean; archivado?: boolean }) =>
+  pedir<{ mensaje: MensajeContacto }>(`/mensajes/${id}`, { method: 'PATCH', body: JSON.stringify(cambios) }).then((respuesta) => respuesta.mensaje)
+
+export const eliminarMensaje = (id: string) => pedir<void>(`/mensajes/${id}`, { method: 'DELETE' })
+
+export const marcarMensajesLeidos = () => pedir<void>('/mensajes/leidos', { method: 'POST' })
 
 // ── Cupones ──
 

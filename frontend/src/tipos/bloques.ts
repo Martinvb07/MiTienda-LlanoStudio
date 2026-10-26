@@ -30,6 +30,7 @@ export type TipoBloque =
   | 'equipo'
   | 'horario'
   | 'reservas'
+  | 'formulario'
   | 'espaciador'
   | 'lienzo'
   | 'perfil'
@@ -353,6 +354,20 @@ export interface PropsReservas {
   mensajeFinal?: string
 }
 
+/** Formulario de contacto: lo que escriben llega a Mensajes en el panel y al correo. */
+export interface PropsFormulario {
+  titulo?: string
+  subtitulo?: string
+  /** Opciones para que el visitante diga por qué escribe ("Cotización", "Soporte"…). */
+  motivos: string[]
+  pedirTelefono: boolean
+  pedirCorreo: boolean
+  textoBoton: string
+  mensajeExito?: string
+  /** Con tus datos al lado (WhatsApp, correo, dirección) o sólo el formulario. */
+  conDatos?: boolean
+}
+
 /** Cabeza de los enlaces para tu bio: foto, nombre, una línea sobre ti y tus redes. */
 export interface PropsPerfil {
   /** Vacío = el nombre del sitio. */
@@ -534,6 +549,7 @@ export type BloqueServicios = BloqueBase<'servicios', PropsServicios>
 export type BloqueEquipo = BloqueBase<'equipo', PropsEquipo>
 export type BloqueHorario = BloqueBase<'horario', PropsHorario>
 export type BloqueReservas = BloqueBase<'reservas', PropsReservas>
+export type BloqueFormulario = BloqueBase<'formulario', PropsFormulario>
 export type BloqueEspaciador = BloqueBase<'espaciador', PropsEspaciador>
 export type BloqueLienzo = BloqueBase<'lienzo', PropsLienzo>
 export type BloquePerfil = BloqueBase<'perfil', PropsPerfil>
@@ -562,6 +578,7 @@ export type Bloque =
   | BloqueEquipo
   | BloqueHorario
   | BloqueReservas
+  | BloqueFormulario
   | BloqueEspaciador
   | BloqueLienzo
   | BloquePerfil
@@ -591,6 +608,7 @@ export const ETIQUETAS_BLOQUE: Record<TipoBloque, string> = {
   equipo: 'Equipo',
   horario: 'Horario y contacto',
   reservas: 'Reservas',
+  formulario: 'Formulario de contacto',
   espaciador: 'Espacio o línea',
   lienzo: 'Lienzo libre',
   perfil: 'Perfil',
@@ -603,7 +621,7 @@ export const GRUPOS_BLOQUE: { titulo: string; tipos: TipoBloque[] }[] = [
   { titulo: 'Tu bio', tipos: ['perfil', 'enlaces'] },
   { titulo: 'Portada', tipos: ['hero', 'carrusel', 'anuncio', 'banner-doble'] },
   { titulo: 'Catálogo', tipos: ['grilla-productos', 'categorias'] },
-  { titulo: 'Tu negocio', tipos: ['servicios', 'reservas', 'horario', 'equipo'] },
+  { titulo: 'Tu negocio', tipos: ['servicios', 'reservas', 'formulario', 'horario', 'equipo'] },
   { titulo: 'Contenido', tipos: ['texto', 'imagen-texto', 'columnas', 'galeria', 'video'] },
   { titulo: 'Confianza', tipos: ['testimonios', 'preguntas', 'logos', 'mapa'] },
   { titulo: 'Ventas', tipos: ['llamado', 'cuenta-regresiva'] },
@@ -633,6 +651,7 @@ export const DESCRIPCIONES_BLOQUE: Record<TipoBloque, string> = {
   equipo: 'Quiénes atienden, con foto y cargo.',
   horario: 'Cuándo atiendes, dónde estás y botones para escribir, llamar o llegar.',
   reservas: 'Tus clientes eligen servicio, día y hora libre, y la cita llega a tu agenda.',
+  formulario: 'Para que te escriban: cotizaciones, preguntas o pedidos especiales. Llega a tu panel y a tu correo.',
   espaciador: 'Aire entre secciones, con o sin línea.',
   lienzo: 'Un espacio en blanco: arrastra títulos, fotos y botones donde quieras y estíralos a tu gusto.',
   perfil: 'Tu foto, tu nombre, una línea sobre ti y tus redes.',
@@ -782,6 +801,16 @@ export const PROPS_INICIALES: { [T in TipoBloque]: Extract<Bloque, { tipo: T }>[
     diasAdelante: 30,
     anticipacion: 2,
     pedirCorreo: true,
+  },
+  formulario: {
+    titulo: 'Escríbenos',
+    subtitulo: 'Te respondemos en menos de un día hábil.',
+    motivos: ['Cotización', 'Una pregunta', 'Otro'],
+    pedirTelefono: true,
+    pedirCorreo: true,
+    textoBoton: 'Enviar mensaje',
+    mensajeExito: '¡Gracias! Recibimos tu mensaje y te contactamos pronto.',
+    conDatos: true,
   },
   espaciador: { alto: 'medio', linea: false },
   perfil: { bio: 'Cuenta en una línea quién eres y qué haces.', forma: 'circulo', mostrarRedes: true },

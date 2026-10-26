@@ -19,6 +19,7 @@ import { CamposLienzo } from './CamposLienzo'
 import { CamposEquipo, CamposHorario, CamposServicios } from './CamposNegocio'
 import { CamposEnlaces, CamposPerfil } from './CamposBio'
 import { CamposReservas } from './CamposReservas'
+import { CamposFormularioContacto } from './CamposFormularioContacto'
 import { ZonaImagen } from '../ui/imagenes'
 import { ICONOS_BLOQUE, claveIcono } from '@/componentes/comunes/IconoBloque'
 import { cn } from '@/utilidades/clases'
@@ -863,6 +864,9 @@ export function CamposBloque({ bloque, alCambiar, alError, alSubiendo, limites, 
     case 'reservas':
       return <CamposReservas bloque={bloque} alCambiar={alCambiar} limites={limites} />
 
+    case 'formulario':
+      return <CamposFormularioContacto bloque={bloque} alCambiar={alCambiar} />
+
     case 'perfil':
       return <CamposPerfil bloque={bloque} alCambiar={alCambiar} limites={limites} {...subida} />
 
@@ -947,6 +951,8 @@ export function resumenBloque(bloque: Bloque): string {
       return bloque.props.dias.map((fila) => fila.dia).filter(Boolean).join(' · ')
     case 'reservas':
       return bloque.props.titulo || `${bloque.props.servicios.length} servicios para agendar`
+    case 'formulario':
+      return bloque.props.titulo || 'Formulario de contacto'
     case 'espaciador':
       return bloque.props.linea ? 'Con línea' : 'Espacio'
     case 'perfil':

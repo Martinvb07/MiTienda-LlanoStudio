@@ -85,3 +85,17 @@ export async function verCita(codigo: string) {
 export async function cancelarCita(codigo: string) {
   return enviar<{ cita: CitaPublica }>(`/api/reservas/${encodeURIComponent(codigo)}/cancelar`, {})
 }
+
+// ── Formulario de contacto ──
+
+export async function enviarMensaje(datos: {
+  nombre: string
+  email?: string
+  telefono?: string
+  motivo?: string
+  mensaje: string
+  pagina?: string
+  sitioWeb?: string
+}) {
+  return enviar<{ ok: true }>('/api/mensajes', datos)
+}

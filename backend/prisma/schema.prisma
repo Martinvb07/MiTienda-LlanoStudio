@@ -199,6 +199,7 @@ model Tienda {
   visitas   VisitaDiaria[]
   pasarelas PasarelaTienda[]
   citas     Cita[]
+  mensajes  MensajeContacto[]
 
   @@map("tiendas")
 }
@@ -791,4 +792,33 @@ model Cita {
   @@index([tiendaId, inicio])
   @@index([tiendaId, estado])
   @@map("citas")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Formulario de contacto
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Lo que un visitante escribe en la sección "Formulario de contacto".
+model MensajeContacto {
+  id       String @id @default(cuid())
+  tiendaId String
+
+  nombre   String
+  email    String?
+  telefono String?
+  /// La opción que eligió ("Cotización", "Soporte"…), si la sección las tiene.
+  motivo   String?
+  mensaje  String
+  /// Página del sitio desde donde escribió ("/" o "/servicios").
+  pagina   String?
+
+  leido     Boolean @default(false)
+  archivado Boolean @default(false)
+
+  creadoEn DateTime @default(now())
+
+  tienda Tienda @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+
+  @@index([tiendaId, archivado, creadoEn])
+  @@map("mensajes_contacto")
 }

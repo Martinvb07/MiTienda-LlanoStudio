@@ -91,7 +91,7 @@ export function nivelIncluye(actual: NivelEstilo, requerido: NivelEstilo) {
  * Lo básico de una página de negocio: qué ofrece, cuándo atiende y cómo
  * contactarlo. Va desde Gratis, en tienda y en página.
  */
-const BLOQUES_NEGOCIO_BASICO: readonly TipoBloque[] = ['servicios', 'horario', 'reservas']
+const BLOQUES_NEGOCIO_BASICO: readonly TipoBloque[] = ['servicios', 'horario', 'reservas', 'formulario']
 
 /** Lo de los enlaces para tu bio: el perfil y los botones. Va desde Gratis. */
 const BLOQUES_BIO: readonly TipoBloque[] = ['perfil', 'enlaces']

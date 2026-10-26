@@ -25,6 +25,7 @@ import { Servicios } from './bloques/Servicios'
 import { Equipo } from './bloques/Equipo'
 import { Horario } from './bloques/Horario'
 import { Reservas } from './bloques/Reservas'
+import { FormularioContacto } from './bloques/FormularioContacto'
 import { Perfil } from './bloques/Perfil'
 import { Enlaces } from './bloques/Enlaces'
 import { EnvolturaSeccion } from './EnvolturaSeccion'
@@ -119,6 +120,17 @@ function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categ
       )
     case 'reservas':
       return <Reservas {...bloque.props} whatsapp={ajustes.whatsapp} negocio={nombreTienda} editando={editando} />
+    case 'formulario':
+      return (
+        <FormularioContacto
+          {...bloque.props}
+          whatsapp={ajustes.whatsapp}
+          correo={ajustes.correo}
+          direccion={ajustes.direccion}
+          negocio={nombreTienda}
+          editando={editando}
+        />
+      )
     case 'espaciador':
       return <Espaciador {...bloque.props} />
     case 'perfil':
@@ -133,7 +145,7 @@ function pintar(bloque: Bloque, { productos, moneda, quitarMarca, ajustes, categ
 }
 
 /** Ancla con la que la primera sección de cada tipo se deja enlazar desde el menú o un botón. */
-const ANCLAS: Partial<Record<Bloque['tipo'], string>> = { servicios: 'servicios', equipo: 'equipo', horario: 'contacto', reservas: 'reservas' }
+const ANCLAS: Partial<Record<Bloque['tipo'], string>> = { servicios: 'servicios', equipo: 'equipo', horario: 'contacto', reservas: 'reservas', formulario: 'escribenos' }
 
 function conAnclas(bloques: Bloque[]): Bloque[] {
   const usadas = new Set(bloques.map((bloque) => bloque.estilo?.ancla).filter(Boolean))

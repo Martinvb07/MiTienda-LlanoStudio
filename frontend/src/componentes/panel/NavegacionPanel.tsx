@@ -12,6 +12,7 @@ import {
   CreditCard,
   LayoutGrid,
   House,
+  Inbox,
   LogOut,
   Menu,
   Package,
@@ -57,9 +58,15 @@ const GRUPOS: { titulo: string; enlaces: Enlace[] }[] = [
     titulo: 'Ventas',
     enlaces: [
       { href: '/panel/pedidos', etiqueta: 'Pedidos', corta: 'Pedidos', Icono: Receipt },
-      { href: '/panel/agenda', etiqueta: 'Agenda', corta: 'Agenda', Icono: CalendarDays, movil: false },
       { href: '/panel/descuentos', etiqueta: 'Descuentos', corta: 'Cupones', Icono: Ticket, movil: false },
       { href: '/panel/estadisticas', etiqueta: 'Estadísticas', corta: 'Datos', Icono: BarChart3, movil: false },
+    ],
+  },
+  {
+    titulo: 'Clientes',
+    enlaces: [
+      { href: '/panel/agenda', etiqueta: 'Agenda', corta: 'Agenda', Icono: CalendarDays, movil: false },
+      { href: '/panel/mensajes', etiqueta: 'Mensajes', corta: 'Mensajes', Icono: Inbox, movil: false },
     ],
   },
   {
@@ -147,6 +154,12 @@ export function NavegacionPanel() {
   const abrirBuscador = useAbrirBuscador()
   const [mas, setMas] = useState(false)
   const pedidosNuevos = avisos?.pedidosNuevos ?? 0
+  // Lo que espera respuesta, en la insignia de cada sección.
+  const insignias: Record<string, number> = {
+    '/panel/pedidos': pedidosNuevos,
+    '/panel/agenda': avisos?.citasPorConfirmar ?? 0,
+    '/panel/mensajes': avisos?.mensajesNuevos ?? 0,
+  }
 
   useEffect(() => setMas(false), [ruta])
   useHojaAbierta(mas, () => setMas(false))
@@ -239,9 +252,9 @@ export function NavegacionPanel() {
                           className="relative h-4 w-4 shrink-0 transition-transform duration-500 ease-salida group-hover:scale-110"
                         />
                         <span className="relative">{enlace.etiqueta}</span>
-                        {enlace.href === '/panel/pedidos' && pedidosNuevos > 0 && (
+                        {(insignias[enlace.href] ?? 0) > 0 && (
                           <span className="relative ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-sitio-azul px-1.5 text-[10.5px] font-semibold text-[#fff]">
-                            {pedidosNuevos}
+                            {insignias[enlace.href]}
                           </span>
                         )}
                       </Link>
@@ -364,9 +377,7 @@ export function NavegacionPanel() {
               )}
               <enlace.Icono aria-hidden="true" strokeWidth={1.7} className="relative h-[18px] w-[18px]" />
               <span className="relative">{enlace.corta}</span>
-              {enlace.href === '/panel/pedidos' && pedidosNuevos > 0 && (
-                <span className="absolute top-1 right-[22%] h-2 w-2 rounded-full bg-sitio-azul-claro" />
-              )}
+              {(insignias[enlace.href] ?? 0) > 0 && <span className="absolute top-1 right-[22%] h-2 w-2 rounded-full bg-sitio-azul-claro" />}
             </Link>
           )
         })}

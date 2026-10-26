@@ -77,6 +77,13 @@ import {
   esquemaRangoCitas,
   listarCitasPanel,
 } from '../controladores/reservas.controlador.js'
+import {
+  actualizarMensaje,
+  eliminarMensaje,
+  esquemaActualizarMensaje,
+  leerTodos,
+  listarMensajes,
+} from '../controladores/contacto.controlador.js'
 
 const enrutador = Router()
 
@@ -144,6 +151,11 @@ enrutador.patch('/pedidos/:id', validar(esquemaActualizarPedido), actualizarPedi
 enrutador.get('/citas', validar(esquemaRangoCitas, 'query'), listarCitasPanel)
 enrutador.post('/citas', validar(esquemaCitaPanel), crearCitaPanel)
 enrutador.patch('/citas/:id', validar(esquemaActualizarCita), actualizarCitaPanel)
+
+enrutador.get('/mensajes', listarMensajes)
+enrutador.post('/mensajes/leidos', leerTodos)
+enrutador.patch('/mensajes/:id', validar(esquemaActualizarMensaje), actualizarMensaje)
+enrutador.delete('/mensajes/:id', eliminarMensaje)
 
 // La imagen llega como cuerpo binario: sin multipart no hace falta otra dependencia.
 enrutador.post(

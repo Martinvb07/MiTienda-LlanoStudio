@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { Bell, Megaphone, PackageX, Receipt, Sparkles, Ticket, TriangleAlert, X } from 'lucide-react'
+import { Bell, CalendarDays, Inbox, Megaphone, PackageX, Receipt, Sparkles, Ticket, TriangleAlert, X } from 'lucide-react'
 import { marcarNovedadesVistas, obtenerAvisos, obtenerComunicados, type Avisos, type Comunicados } from '@/servicios/panel'
 import { formatearPrecio } from '@/utilidades/formato'
 import { cn } from '@/utilidades/clases'
@@ -92,6 +92,8 @@ export function ProveedorAvisos({ children }: { children: ReactNode }) {
     (avisos?.agotados ? 1 : 0) +
     (avisos?.stockBajo.length ?? 0) +
     (avisos?.cuponesPorVencer.length ?? 0) +
+    (avisos?.mensajesNuevos ? 1 : 0) +
+    (avisos?.citasPorConfirmar ? 1 : 0) +
     anunciosNuevos +
     (comunicados?.novedadesSinVer ? 1 : 0)
 
@@ -258,6 +260,36 @@ export function CampanaAvisos({ abajo = false }: { abajo?: boolean }) {
         </>
       ),
     })),
+    ...(avisos?.citasPorConfirmar
+      ? [
+          {
+            clave: 'citas',
+            href: '/panel/agenda',
+            icono: <CalendarDays aria-hidden="true" className="h-4 w-4 text-sitio-ambar" />,
+            texto: (
+              <>
+                <strong className="font-medium text-white">{avisos.citasPorConfirmar}</strong>{' '}
+                {avisos.citasPorConfirmar === 1 ? 'cita por confirmar' : 'citas por confirmar'}
+              </>
+            ),
+          },
+        ]
+      : []),
+    ...(avisos?.mensajesNuevos
+      ? [
+          {
+            clave: 'mensajes',
+            href: '/panel/mensajes',
+            icono: <Inbox aria-hidden="true" className="h-4 w-4 text-sitio-azul-claro" />,
+            texto: (
+              <>
+                <strong className="font-medium text-white">{avisos.mensajesNuevos}</strong>{' '}
+                {avisos.mensajesNuevos === 1 ? 'mensaje sin leer' : 'mensajes sin leer'}
+              </>
+            ),
+          },
+        ]
+      : []),
     ...(avisos?.agotados
       ? [
           {

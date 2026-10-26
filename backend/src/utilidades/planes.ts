@@ -38,7 +38,7 @@ export interface LimitesPlan {
  * Lo básico de una página de negocio: qué ofrece, cuándo atiende y cómo
  * contactarlo. Va desde Gratis, en tienda y en página.
  */
-const BLOQUES_NEGOCIO_BASICO = ['servicios', 'horario', 'reservas'] as const
+const BLOQUES_NEGOCIO_BASICO = ['servicios', 'horario', 'reservas', 'formulario'] as const
 
 /** Lo de los enlaces para tu bio: el perfil y los botones. Va desde Gratis. */
 const BLOQUES_BIO = ['perfil', 'enlaces'] as const
@@ -172,6 +172,7 @@ export const ETIQUETAS_BLOQUE_PLAN: Record<string, string> = {
   equipo: 'Equipo',
   horario: 'Horario y contacto',
   reservas: 'Reservas',
+  formulario: 'Formulario de contacto',
   perfil: 'Perfil',
   enlaces: 'Enlaces',
 }

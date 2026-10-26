@@ -157,7 +157,7 @@ export async function obtenerAvisos(req: Request, res: Response): Promise<void> 
   const tiendaId = await tiendaDeLaSesion(req)
   const enTresDias = new Date(Date.now() + 3 * 86_400_000)
 
-  const [pedidosNuevos, ultimos, agotados, stockBajo, cuponesPorVencer] = await Promise.all([
+  const [pedidosNuevos, ultimos, agotados, stockBajo, cuponesPorVencer, mensajesNuevos, citasPorConfirmar] = await Promise.all([
     prisma.pedido.count({ where: { tiendaId, estado: 'PENDIENTE' } }),
     prisma.pedido.findMany({
       where: { tiendaId, estado: 'PENDIENTE' },
@@ -175,6 +175,8 @@ export async function obtenerAvisos(req: Request, res: Response): Promise<void> 
       where: { tiendaId, activo: true, venceEn: { gte: new Date(), lte: enTresDias } },
       select: { id: true, codigo: true, venceEn: true },
     }),
+    prisma.mensajeContacto.count({ where: { tiendaId, leido: false, archivado: false } }),
+    prisma.cita.count({ where: { tiendaId, estado: 'PENDIENTE', inicio: { gte: new Date() } } }),
   ])
 
   res.json({
@@ -183,5 +185,7 @@ export async function obtenerAvisos(req: Request, res: Response): Promise<void> 
     agotados,
     stockBajo,
     cuponesPorVencer,
+    mensajesNuevos,
+    citasPorConfirmar,
   })
 }

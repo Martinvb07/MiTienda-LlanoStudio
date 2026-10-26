@@ -13,7 +13,7 @@ export function moverLuz(evento: React.PointerEvent<HTMLElement>) {
   evento.currentTarget.style.setProperty('--my', `${evento.clientY - caja.top}px`)
 }
 
-function Baldosa({
+export function Baldosa({
   titulo,
   texto,
   plan,
@@ -179,7 +179,13 @@ export function Caracteristicas({ rotulo = 'Tienda en línea' }: { rotulo?: stri
   )
 }
 
-const PASOS = [
+interface Paso {
+  titulo: string
+  texto: string
+}
+
+/** Los pasos de la tienda, que es lo que cuenta la página de características. */
+const PASOS: Paso[] = [
   { titulo: 'Crea tu cuenta', texto: 'Dos minutos, sin tarjeta.' },
   { titulo: 'Elige una plantilla', texto: 'Y cámbiala a tu gusto.' },
   { titulo: 'Sube tus productos', texto: 'Fotos, precio y variantes.' },
@@ -188,16 +194,22 @@ const PASOS = [
 ]
 
 /** Cómo funciona, en filas numeradas como el índice de servicios de llanostudio.co. */
-export function ComoFunciona() {
+export function ComoFunciona({
+  titulo = 'De cero a vender en una tarde',
+  pasos = PASOS,
+}: {
+  titulo?: string
+  pasos?: Paso[]
+}) {
   return (
     <section className="py-[110px] md:py-[150px]">
       <Contenedor className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
         <Revelar>
           <span className="antetitulo mb-[22px]">Cómo funciona</span>
-          <h2 className="titulo-2 max-w-[11ch]">De cero a vender en una tarde</h2>
+          <h2 className="titulo-2 max-w-[11ch]">{titulo}</h2>
         </Revelar>
         <Revelar retardo={0.1} className="border-b border-white/12">
-          {PASOS.map((paso, indice) => (
+          {pasos.map((paso, indice) => (
             <div
               key={paso.titulo}
               className="group grid grid-cols-[56px_1fr_auto] items-center gap-6 border-t border-white/12 py-8 md:grid-cols-[80px_1fr_auto]"

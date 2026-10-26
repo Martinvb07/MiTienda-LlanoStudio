@@ -35,10 +35,16 @@ function CapturaPagina() {
   )
 }
 
+/** Lo que trae cada uno, en una línea bajo su resumen. */
+const PUNTOS: Record<'pagina' | 'enlaces', string[]> = {
+  pagina: ['Servicios y horario', 'Agendar por WhatsApp', 'Tu equipo', 'Cómo llegar'],
+  enlaces: ['Botones a todo', 'Tus redes', 'Código QR', 'Tu color'],
+}
+
 /**
  * Las tres formas de usar Mi Sitio. La tienda ocupa todo el ancho; la página
- * se muestra con una captura real y los enlaces, que vienen, con una maqueta
- * que no finge ser captura.
+ * se muestra con una captura real y los enlaces con una maqueta que no finge
+ * ser captura.
  */
 export function TresProductos() {
   return (
@@ -50,7 +56,8 @@ export function TresProductos() {
             <h2 className="titulo-2 max-w-[14ch]">Empieza por uno. Suma los otros cuando quieras.</h2>
           </div>
           <p className="bajada md:justify-self-end">
-            Mismo panel, misma dirección. Sin abrir otra cuenta.
+            Vende con la tienda, preséntate con la página y junta todo en el link de tu bio. Mismo panel, misma
+            dirección, sin abrir otra cuenta.
           </p>
         </Revelar>
 
@@ -105,30 +112,32 @@ export function TresProductos() {
         </Revelar>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <TarjetaProxima producto={PAGINA} retardo={0}>
+          <TarjetaProducto producto={PAGINA} puntos={PUNTOS.pagina} retardo={0}>
             <CapturaPagina />
-          </TarjetaProxima>
-          <TarjetaProxima producto={ENLACES} retardo={0.08}>
+          </TarjetaProducto>
+          <TarjetaProducto producto={ENLACES} puntos={PUNTOS.enlaces} retardo={0.08}>
             <MaquetaEnlaces />
-          </TarjetaProxima>
+          </TarjetaProducto>
         </div>
       </Contenedor>
     </section>
   )
 }
 
-function TarjetaProxima({
+function TarjetaProducto({
   producto,
+  puntos,
   retardo,
   children,
 }: {
   producto: (typeof PRODUCTOS)[number]
+  puntos: string[]
   retardo: number
   children: React.ReactNode
 }) {
   return (
     <Revelar retardo={retardo}>
-      <Link href={producto.href} onPointerMove={moverLuz} className="baldosa foco group flex h-[480px] flex-col overflow-hidden">
+      <Link href={producto.href} onPointerMove={moverLuz} className="baldosa foco group flex h-[520px] flex-col overflow-hidden">
         <div className="relative z-10 p-7 md:p-8">
           <div className="flex items-center justify-between gap-4">
             <Estado disponible={producto.disponible} />
@@ -142,6 +151,7 @@ function TarjetaProxima({
           <p className="mt-1.5 max-w-[40ch] text-[14px] leading-relaxed text-white/55">
             {producto.resumen}
           </p>
+          <p className="mt-4 text-[12px] tracking-[0.02em] text-white/40">{puntos.join(' · ')}</p>
         </div>
         <div aria-hidden="true" className="relative flex-1">
           {children}

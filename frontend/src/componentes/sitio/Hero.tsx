@@ -5,27 +5,33 @@ import Image from 'next/image'
 import { motion, useScroll, useTransform, type MotionValue } from 'motion/react'
 import { Boton } from './Boton'
 import { PLANTILLAS_TIENDA } from '@/utilidades/plantillas'
+import { PLANTILLAS_ENLACES } from '@/utilidades/plantillasEnlaces'
+import { PLANTILLAS_PAGINA } from '@/utilidades/plantillasPagina'
 
 const SALIDA = [0.16, 1, 0.3, 1] as const
 
-/** Tiendas de la vitrina: la del centro y las que se abren a los lados. */
+/**
+ * Lo que se abre a los lados de la tienda del centro: una página de negocio y
+ * otra tienda en escritorio, y dos enlaces para la bio en celular. Así la
+ * portada muestra los tres productos, no sólo la tienda.
+ */
 const VITRINA = [
-  { src: '/ejemplos/casa-morichal.webp', alt: 'Tienda de ejemplo Casa Morichal', lado: -1, tipo: 'escritorio' },
+  { src: '/ejemplos/morichal-abogados.webp', alt: 'Página de ejemplo Morichal Abogados', lado: -1, tipo: 'escritorio' },
   { src: '/ejemplos/orbita.webp', alt: 'Tienda de ejemplo Órbita', lado: 1, tipo: 'escritorio' },
-  { src: '/ejemplos/paso-urbano-movil.webp', alt: 'Tienda de ejemplo Paso Urbano en celular', lado: -2, tipo: 'movil' },
-  { src: '/ejemplos/barro-vivo-movil.webp', alt: 'Tienda de ejemplo Barro Vivo en celular', lado: 2, tipo: 'movil' },
+  { src: '/ejemplos/yuli-ariza-movil.webp', alt: 'Enlaces para la bio de ejemplo Yuli Ariza en celular', lado: -2, tipo: 'movil' },
+  { src: '/ejemplos/dulce-antojo-movil.webp', alt: 'Enlaces para la bio de ejemplo Dulce Antojo en celular', lado: 2, tipo: 'movil' },
 ] as const
 
 const CIFRAS = [
-  { valor: String(PLANTILLAS_TIENDA.length), etiqueta: 'plantillas listas' },
-  { valor: '0', etiqueta: 'líneas de código' },
+  { valor: String(PLANTILLAS_TIENDA.length + PLANTILLAS_PAGINA.length + PLANTILLAS_ENLACES.length), etiqueta: 'plantillas listas' },
+  { valor: '3', etiqueta: 'productos, una cuenta' },
   { valor: '0%', etiqueta: 'de comisión por venta' },
 ]
 
 /**
  * Portada como la de llanostudio.co: titular enorme, un botón, y una vitrina
- * de tiendas reales hechas con Mi Sitio que se abre al bajar. La tienda es lo
- * que ya está; la página y los enlaces se nombran como lo que viene.
+ * de sitios reales hechos con Mi Sitio (tienda, página y enlaces) que se abre
+ * al bajar.
  */
 export function Hero() {
   const zona = useRef<HTMLDivElement>(null)
@@ -41,7 +47,7 @@ export function Hero() {
           en un solo sitio
         </h1>
         <p className="bajada mx-auto mt-[22px] hidden !text-base md:block">
-          Tu tienda, tu página y tus enlaces. Una cuenta, una dirección.
+          Vende con tu tienda, preséntate con tu página y junta todo en el link de tu bio. Una sola cuenta.
         </p>
         <div className="mt-[30px] flex w-full max-w-[400px] justify-center gap-3 md:mt-[34px] md:w-auto md:max-w-none">
           <Boton href="/panel/crear-cuenta" flecha className="w-full md:w-auto">

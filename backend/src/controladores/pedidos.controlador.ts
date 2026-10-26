@@ -5,6 +5,7 @@ import { Prisma } from '../generado/prisma/client.js'
 import { ErrorHttp, noEncontrado, solicitudInvalida } from '../utilidades/errores.js'
 import { evaluarCupon } from './cupones.controlador.js'
 import { armarCheckout, leerSecretos, nuevaReferenciaPago } from '../servicios/pasarelas.servicio.js'
+import { calcularEnvio, type AjustesEnvio } from '../utilidades/envios.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Esquemas
@@ -18,8 +19,9 @@ export const esquemaPedidoPublico = z.object({
     nombre: z.string().trim().min(2, 'Escribe tu nombre').max(80),
     email: z.string().trim().toLowerCase().email('Ese correo no parece válido').max(160),
     telefono: z.string().trim().min(7, 'Escribe un teléfono de contacto').max(20),
-    ciudad: z.string().trim().min(2, 'Escribe tu ciudad').max(80),
-    direccion: z.string().trim().min(4, 'Escribe la dirección de entrega').max(200),
+    // Obligatorias sólo con entrega a domicilio (ver el refine de abajo).
+    ciudad: z.string().trim().max(80).default(''),
+    direccion: z.string().trim().max(200).default(''),
     detalle: z.string().trim().max(120).optional(),
     notas: z.string().trim().max(500).optional(),
   }),
@@ -36,7 +38,18 @@ export const esquemaPedidoPublico = z.object({
   metodoPago: z.enum(METODOS_PAGO),
   canal: z.enum(['web', 'whatsapp']).default('web'),
   cupon: z.string().trim().toUpperCase().max(30).optional(),
+  /** A domicilio o recoger en la tienda, si la tienda lo ofrece. */
+  entrega: z.enum(['domicilio', 'recoger']).default('domicilio'),
 })
+  .superRefine((datos, contexto) => {
+    if (datos.entrega === 'recoger') return
+    if (datos.cliente.ciudad.length < 2) {
+      contexto.addIssue({ code: 'custom', path: ['cliente', 'ciudad'], message: 'Escribe tu ciudad' })
+    }
+    if (datos.cliente.direccion.length < 4) {
+      contexto.addIssue({ code: 'custom', path: ['cliente', 'direccion'], message: 'Escribe la dirección de entrega' })
+    }
+  })
 
 const ESTADOS = ['PENDIENTE', 'PAGADO', 'PREPARANDO', 'ENVIADO', 'ENTREGADO', 'CANCELADO', 'REEMBOLSADO'] as const
 
@@ -49,20 +62,10 @@ export const esquemaActualizarPedido = z.object({
 // Utilidades
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface AjustesVenta {
-  costoEnvio?: number
-  envioGratisDesde?: number
+interface AjustesVenta extends AjustesEnvio {
   pedidoMinimo?: number
   pagoContraEntrega?: boolean
   pagoTransferencia?: boolean
-}
-
-/** Costo de envío según los ajustes de la tienda y el subtotal ya descontado. */
-export function calcularEnvio(ajustes: AjustesVenta, subtotal: number): number {
-  const costo = ajustes.costoEnvio ?? 0
-  if (costo <= 0) return 0
-  if (ajustes.envioGratisDesde && subtotal >= ajustes.envioGratisDesde) return 0
-  return costo
 }
 
 const camposPedido = {
@@ -241,6 +244,9 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
   if (ajustes.pedidoMinimo && subtotal < ajustes.pedidoMinimo) {
     throw solicitudInvalida(`El pedido mínimo es de $${ajustes.pedidoMinimo.toLocaleString('es-CO')}`)
   }
+  // Antes de apartar nada: si la tienda no llega a esa ciudad, se dice ya.
+  const destino = calcularEnvio(ajustes, subtotal, datos.cliente.ciudad, datos.entrega)
+  if (!destino.ok) throw solicitudInvalida(destino.motivo, [{ campo: 'cliente.ciudad', mensaje: destino.motivo }])
 
   // El número consecutivo puede chocar si entran dos pedidos a la vez: se
   // reintenta con el siguiente.
@@ -279,7 +285,8 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
           codigo = cupon.codigo
           envioGratis = cupon.envioGratis
         }
-        const envio = envioGratis ? 0 : calcularEnvio(ajustes, subtotal - descuento)
+        const calculo = calcularEnvio(ajustes, subtotal - descuento, datos.cliente.ciudad, datos.entrega)
+        const envio = envioGratis || !calculo.ok ? 0 : calculo.costo
         const ultimo = await tx.pedido.findFirst({
           where: { tiendaId },
           orderBy: { numero: 'desc' },
@@ -293,11 +300,16 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
             clienteNombre: datos.cliente.nombre,
             clienteEmail: datos.cliente.email,
             clienteTelefono: datos.cliente.telefono,
-            direccionEnvio: {
-              ciudad: datos.cliente.ciudad,
-              direccion: datos.cliente.direccion,
-              ...(datos.cliente.detalle ? { detalle: datos.cliente.detalle } : {}),
-            },
+            direccionEnvio:
+              datos.entrega === 'recoger'
+                ? { entrega: 'recoger' }
+                : {
+                    entrega: 'domicilio',
+                    ciudad: datos.cliente.ciudad,
+                    direccion: datos.cliente.direccion,
+                    ...(datos.cliente.detalle ? { detalle: datos.cliente.detalle } : {}),
+                    ...(calculo.ok && calculo.zona ? { zona: calculo.zona.nombre } : {}),
+                  },
             notas: datos.cliente.notas || null,
             canal: datos.canal,
             metodoPago: datos.metodoPago,

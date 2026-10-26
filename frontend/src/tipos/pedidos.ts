@@ -17,6 +17,7 @@ export interface SolicitudPedido {
   metodoPago: MetodoPago
   canal: 'web' | 'whatsapp'
   cupon?: string
+  entrega?: 'domicilio' | 'recoger'
 }
 
 export interface ItemPedido {
@@ -38,7 +39,15 @@ export interface Pedido {
   clienteNombre: string
   clienteEmail: string
   clienteTelefono: string | null
-  direccionEnvio: { ciudad?: string; direccion?: string; detalle?: string } | null
+  direccionEnvio: {
+    /** Sin ella (pedidos viejos), es a domicilio. */
+    entrega?: 'domicilio' | 'recoger'
+    ciudad?: string
+    direccion?: string
+    detalle?: string
+    /** Zona de envío que cubrió la ciudad, si alguna. */
+    zona?: string
+  } | null
   notas: string | null
   canal: 'web' | 'whatsapp'
   metodoPago: MetodoPago

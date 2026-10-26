@@ -4,13 +4,14 @@ import { useEffect, useState, type FormEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { CheckCircle2, CreditCard, MessageCircle } from 'lucide-react'
+import { CheckCircle2, CreditCard, MessageCircle, Store, Truck } from 'lucide-react'
 import { crearPedido, validarCupon, type CuponAplicado } from '@/app/(tienda)/[subdominio]/carrito/acciones'
 import { ETIQUETAS_PAGO, type CheckoutPago, type MetodoPago, type PedidoCreado } from '@/tipos/pedidos'
 import { abrirCheckout } from './abrirCheckout'
 import { formatearPrecio } from '@/utilidades/formato'
 import { esMedioLocal } from '@/utilidades/medios'
 import { enlaceWhatsapp } from '@/utilidades/whatsapp'
+import { calcularEnvio, type Entrega } from '@/utilidades/envios'
 import { MetaEnvioGratis, SelectorCantidad, useCarrito } from './Carrito'
 
 const SALIDA = [0.16, 1, 0.3, 1] as const
@@ -44,17 +45,18 @@ function mensajeWhatsapp(pedido: PedidoCreado, nombreTienda: string, moneda: str
     (item) => `• ${item.cantidad} × ${item.nombreProducto}${item.variante ? ` (${item.variante})` : ''} — ${formatearPrecio(item.subtotal, moneda)}`,
   )
   const direccion = pedido.direccionEnvio
+  const recoge = direccion?.entrega === 'recoger'
   return [
     `¡Hola ${nombreTienda}! Acabo de hacer el pedido #${pedido.numero}:`,
     '',
     ...lineas,
     '',
-    `Envío: ${Number(pedido.envio) > 0 ? formatearPrecio(pedido.envio, moneda) : 'gratis'}`,
+    recoge ? 'Entrega: paso a recogerlo' : `Envío: ${Number(pedido.envio) > 0 ? formatearPrecio(pedido.envio, moneda) : 'gratis'}`,
     `Total: ${formatearPrecio(pedido.total, moneda)}`,
     `Pago: ${ETIQUETAS_PAGO[pedido.metodoPago]}`,
     '',
     `${pedido.clienteNombre} · ${pedido.clienteTelefono ?? ''}`,
-    `${direccion?.direccion ?? ''}${direccion?.detalle ? `, ${direccion.detalle}` : ''}, ${direccion?.ciudad ?? ''}`,
+    ...(recoge ? [] : [`${direccion?.direccion ?? ''}${direccion?.detalle ? `, ${direccion.detalle}` : ''}, ${direccion?.ciudad ?? ''}`]),
   ].join('\n')
 }
 
@@ -96,6 +98,8 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
   const [cupon, setCupon] = useState<CuponAplicado | null>(null)
   const [errorCupon, setErrorCupon] = useState('')
   const [revisandoCupon, setRevisandoCupon] = useState(false)
+  const [entrega, setEntrega] = useState<Entrega>('domicilio')
+  const [ciudad, setCiudad] = useState('')
   const subtotalActual = carrito?.subtotal ?? 0
 
   // Si cambia el carrito, el descuento ya no es el mismo: se vuelve a pedir.
@@ -106,12 +110,11 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
   if (!carrito) return null
   const { lineas, subtotal, moneda } = carrito
   const descuento = cupon?.descuento ?? 0
-  const envio =
-    cupon?.envioGratis
-      ? 0
-      : ajustes.costoEnvio && !(ajustes.envioGratisDesde && subtotal - descuento >= ajustes.envioGratisDesde)
-        ? ajustes.costoEnvio
-        : 0
+  // La misma cuenta que hace la API: zona de la ciudad, costo general o recoger.
+  const calculo = calcularEnvio(ajustes, subtotal - descuento, ciudad, entrega)
+  const envio = cupon?.envioGratis || !calculo.ok ? 0 : calculo.costo
+  const zona = calculo.ok ? calculo.zona : null
+  const ciudadesZonas = [...new Set((ajustes.zonasEnvio ?? []).flatMap((otra) => otra.ciudades.map((nombre) => nombre.trim())).filter(Boolean))]
   const total = subtotal - descuento + envio
 
   async function aplicarCupon() {
@@ -144,15 +147,16 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
         nombre: texto('nombre'),
         email: texto('email'),
         telefono: texto('telefono'),
-        ciudad: texto('ciudad'),
-        direccion: texto('direccion'),
-        detalle: texto('detalle') || undefined,
+        ciudad: entrega === 'recoger' ? '' : texto('ciudad'),
+        direccion: entrega === 'recoger' ? '' : texto('direccion'),
+        detalle: entrega === 'recoger' ? undefined : texto('detalle') || undefined,
         notas: texto('notas') || undefined,
       },
       items: carrito.lineas.map((linea) => ({ productoId: linea.productoId, cantidad: linea.cantidad, variante: linea.variante })),
       metodoPago: metodo,
       canal: porWhatsapp ? 'whatsapp' : 'web',
       cupon: cupon?.codigo,
+      entrega,
     })
     setEnviando(false)
 
@@ -190,6 +194,13 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
           <strong className="text-tinta">{formatearPrecio(creado.total, moneda)}</strong>. Te escribiremos a {creado.clienteEmail} y por
           teléfono para coordinar la entrega.
         </p>
+        {creado.direccionEnvio?.entrega === 'recoger' && (
+          <div className="mt-8 rounded-(--radius-marca) border border-tinta/15 p-5 text-left">
+            <p className="font-medium">Dónde recogerlo</p>
+            <p className="mt-2 text-sm text-tinta/75">{ajustes.direccionRecogida || ajustes.direccion || 'La tienda te escribe para contarte dónde.'}</p>
+            {ajustes.horario && <p className="mt-1 text-xs text-tinta/55">{ajustes.horario}</p>}
+          </div>
+        )}
         {checkout && (
           <div className="mt-8 rounded-(--radius-marca) border border-tinta/15 p-5">
             <p className="font-medium">Falta el pago</p>
@@ -263,9 +274,66 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
 
         <fieldset className="grid gap-4 sm:grid-cols-2">
           <legend className="mb-4 font-medium">Entrega</legend>
-          <Campo etiqueta="Dirección" nombre="direccion" autoComplete="street-address" required error={errores.direccion} ancho />
-          <Campo etiqueta="Apto, torre o barrio (opcional)" nombre="detalle" error={errores.detalle} />
-          <Campo etiqueta="Ciudad" nombre="ciudad" autoComplete="address-level2" required error={errores.ciudad} />
+          {ajustes.recogerEnTienda && (
+            <div className="grid gap-2.5 sm:col-span-2 sm:grid-cols-2">
+              {(
+                [
+                  { valor: 'domicilio', titulo: 'A domicilio', detalle: 'Te lo llevamos', Icono: Truck },
+                  {
+                    valor: 'recoger',
+                    titulo: 'Recoger en la tienda',
+                    detalle: ajustes.direccionRecogida || ajustes.direccion || 'Sin costo de envío',
+                    Icono: Store,
+                  },
+                ] as const
+              ).map(({ valor, titulo, detalle, Icono }) => (
+                <label
+                  key={valor}
+                  className={`flex cursor-pointer items-start gap-3 rounded-(--radius-marca) border px-4 py-3.5 transition ${
+                    entrega === valor ? 'border-tinta bg-tinta/[0.03]' : 'border-tinta/15 hover:border-tinta/35'
+                  }`}
+                >
+                  <input type="radio" name="entrega" checked={entrega === valor} onChange={() => setEntrega(valor)} className="sr-only" />
+                  <Icono aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-tinta/70" strokeWidth={1.6} />
+                  <span className="flex min-w-0 flex-col">
+                    <span className="text-sm font-medium">{titulo}</span>
+                    <span className="truncate text-xs text-tinta/55">{detalle}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+          {entrega === 'domicilio' && (
+            <>
+              <Campo etiqueta="Dirección" nombre="direccion" autoComplete="street-address" required error={errores.direccion} ancho />
+              <Campo etiqueta="Apto, torre o barrio (opcional)" nombre="detalle" error={errores.detalle} />
+              <div className="flex flex-col gap-1.5">
+                <Campo
+                  etiqueta="Ciudad"
+                  nombre="ciudad"
+                  autoComplete="address-level2"
+                  required
+                  list={ciudadesZonas.length ? 'ciudades-envio' : undefined}
+                  value={ciudad}
+                  onChange={(evento) => setCiudad(evento.target.value)}
+                  error={errores.ciudad ?? (!calculo.ok && ciudad.trim().length > 2 ? calculo.motivo : undefined)}
+                />
+                {ciudadesZonas.length > 0 && (
+                  <datalist id="ciudades-envio">
+                    {ciudadesZonas.map((nombre) => (
+                      <option key={nombre} value={nombre} />
+                    ))}
+                  </datalist>
+                )}
+                {zona && (
+                  <span className="text-xs text-tinta/60">
+                    {zona.nombre}: {zona.costo > 0 ? formatearPrecio(zona.costo, moneda) : 'envío gratis'}
+                    {zona.tiempo ? ` · ${zona.tiempo}` : ''}
+                  </span>
+                )}
+              </div>
+            </>
+          )}
           <label className="flex flex-col gap-1.5 text-sm sm:col-span-2">
             <span className="text-tinta/70">Notas para la tienda (opcional)</span>
             <textarea
@@ -411,8 +479,8 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
             </div>
           )}
           <div className="flex justify-between">
-            <dt className="text-tinta/65">Envío</dt>
-            <dd className="tabular-nums">{envio ? formatearPrecio(envio, moneda) : 'Gratis'}</dd>
+            <dt className="text-tinta/65">{entrega === 'recoger' ? 'Entrega' : 'Envío'}</dt>
+            <dd className="tabular-nums">{entrega === 'recoger' ? 'Recoges en la tienda' : envio ? formatearPrecio(envio, moneda) : 'Gratis'}</dd>
           </div>
           <div className="mt-2 flex justify-between border-t border-tinta/10 pt-3 text-base font-semibold">
             <dt>Total</dt>

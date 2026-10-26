@@ -48,6 +48,8 @@ export function fechaCorta(fecha: string) {
   return new Date(fecha).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })
 }
 
+const recoge = (pedido: Pedido) => pedido.direccionEnvio?.entrega === 'recoger'
+
 function exportarCsv(pedidos: Pedido[]) {
   const filas = [
     ['Pedido', 'Fecha', 'Cliente', 'Correo', 'Teléfono', 'Ciudad', 'Dirección', 'Productos', 'Pago', 'Estado', 'Subtotal', 'Envío', 'Descuento', 'Total'],
@@ -57,7 +59,7 @@ function exportarCsv(pedidos: Pedido[]) {
       pedido.clienteNombre,
       pedido.clienteEmail,
       pedido.clienteTelefono ?? '',
-      pedido.direccionEnvio?.ciudad ?? '',
+      recoge(pedido) ? 'Recoge en la tienda' : (pedido.direccionEnvio?.ciudad ?? ''),
       [pedido.direccionEnvio?.direccion, pedido.direccionEnvio?.detalle].filter(Boolean).join(', '),
       pedido.items.map((item) => `${item.cantidad} x ${item.nombreProducto}${item.variante ? ` (${item.variante})` : ''}`).join(' | '),
       ETIQUETAS_PAGO[pedido.metodoPago],
@@ -253,7 +255,7 @@ export function PantallaPedidos() {
                         <span className="min-w-0">
                           <span className="block truncate text-[14px]">{pedido.clienteNombre}</span>
                           <span className="block truncate text-[12px] text-sitio-tenue">
-                            {pedido.items.reduce((suma, item) => suma + item.cantidad, 0)} productos · {pedido.direccionEnvio?.ciudad}
+                            {pedido.items.reduce((suma, item) => suma + item.cantidad, 0)} productos · {recoge(pedido) ? 'Recoge en la tienda' : pedido.direccionEnvio?.ciudad}
                           </span>
                         </span>
                         <span className="hidden text-[12.5px] text-sitio-tenue md:block">
@@ -419,12 +421,17 @@ function DetallePedido({
               )}
               <p className="flex items-start gap-2">
                 <MapPin aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                <span>
-                  {pedido.direccionEnvio?.direccion}
-                  {pedido.direccionEnvio?.detalle ? `, ${pedido.direccionEnvio.detalle}` : ''}
-                  <br />
-                  {pedido.direccionEnvio?.ciudad}
-                </span>
+                {recoge(pedido) ? (
+                  <span>Pasa a recogerlo en la tienda</span>
+                ) : (
+                  <span>
+                    {pedido.direccionEnvio?.direccion}
+                    {pedido.direccionEnvio?.detalle ? `, ${pedido.direccionEnvio.detalle}` : ''}
+                    <br />
+                    {pedido.direccionEnvio?.ciudad}
+                    {pedido.direccionEnvio?.zona && <span className="text-sitio-tenue"> · {pedido.direccionEnvio.zona}</span>}
+                  </span>
+                )}
               </p>
             </div>
             {pedido.clienteTelefono && (

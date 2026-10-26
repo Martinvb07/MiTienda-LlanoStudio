@@ -283,6 +283,8 @@ export function ajustarAlPlan(
     botonDestacado: completa ? ajustes.botonDestacado : undefined,
     whatsappFlotante: limites.whatsappFlotante ? ajustes.whatsappFlotante : false,
     ...(limites.pieColumnas ? {} : { direccion: undefined, correo: undefined, horario: undefined }),
+    // Quien recoge necesita saber dónde, aunque el plan no muestre la dirección en el pie.
+    direccionRecogida: ajustes.recogerEnTienda ? ajustes.direccionRecogida || ajustes.direccion : undefined,
     // Lo premium de la página de producto, según el plan.
     paginaProducto: ajustes.paginaProducto && {
       ...ajustes.paginaProducto,

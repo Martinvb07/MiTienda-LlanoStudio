@@ -46,6 +46,7 @@ export function ListaEditable<T extends { id: string }>({
   maximo,
   textoAgregar,
   titulo,
+  minimo = 1,
   children,
 }: {
   elementos: T[]
@@ -54,6 +55,8 @@ export function ListaEditable<T extends { id: string }>({
   maximo: number
   textoAgregar: string
   titulo: (elemento: T, indice: number) => string
+  /** Cuántos deben quedar como mínimo; 0 deja quitarlos todos. */
+  minimo?: number
   children: (elemento: T, cambiar: (cambios: Partial<T>) => void) => ReactNode
 }) {
   function mover(indice: number, delta: number) {
@@ -95,7 +98,7 @@ export function ListaEditable<T extends { id: string }>({
             <button
               type="button"
               className={`${boton} hover:!text-red-300`}
-              disabled={elementos.length <= 1}
+              disabled={elementos.length <= minimo}
               onClick={() => alCambiar(elementos.filter((otro) => otro.id !== elemento.id))}
               aria-label="Quitar"
             >

@@ -1,4 +1,5 @@
 import type { Bloque } from './bloques'
+import type { ZonaEnvio } from '@/utilidades/envios'
 
 /** Clave de utilidades/fuentes.ts: 'moderna', 'clasica', 'redondeada' o una de Google Fonts. */
 export type FuenteTitulos = string
@@ -142,6 +143,14 @@ export interface AjustesTienda {
   datosTransferencia?: string
   /** El cliente termina la compra mandando el pedido por WhatsApp. */
   pedidosWhatsapp?: boolean
+  /** Zonas con sus ciudades y su precio; lo que no cae en ninguna paga costoEnvio. */
+  zonasEnvio?: ZonaEnvio[]
+  /** Sólo se envía a las ciudades de las zonas. */
+  soloZonas?: boolean
+  /** El cliente puede pasar a recoger el pedido sin pagar envío. */
+  recogerEnTienda?: boolean
+  /** Dónde se recoge; sin ella, la dirección de Contacto. */
+  direccionRecogida?: string
 
   paginaProducto?: PlantillaProducto
 

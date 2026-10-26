@@ -243,7 +243,9 @@ export function BotonCarrito({ className }: { className?: string }) {
 /** Barra "te faltan $X para el envío gratis". */
 export function MetaEnvioGratis({ subtotal, ajustes, moneda }: { subtotal: number; ajustes: AjustesTienda; moneda: string }) {
   const meta = ajustes.envioGratisDesde
-  if (!meta || !ajustes.costoEnvio) return null
+  // Con zonas, puede que el general sea 0 y una zona sí cobre.
+  const cobraEnvio = Boolean(ajustes.costoEnvio) || (ajustes.zonasEnvio ?? []).some((zona) => zona.costo > 0)
+  if (!meta || !cobraEnvio) return null
   const falta = meta - subtotal
   return (
     <div className="text-sm">

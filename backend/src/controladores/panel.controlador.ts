@@ -131,6 +131,27 @@ const esquemaAjustes = z.object({
   pagoTransferencia: z.boolean().optional(),
   datosTransferencia: z.string().trim().max(400).optional(),
   pedidosWhatsapp: z.boolean().optional(),
+  // Envíos por zona: cada una con sus ciudades y su precio
+  zonasEnvio: z
+    .array(
+      z.object({
+        id: z.string().min(1).max(40),
+        nombre: z.string().trim().min(1, 'La zona necesita un nombre').max(60),
+        // El panel manda lo escrito separado por comas, con huecos incluidos.
+        ciudades: z
+          .array(z.string().trim().max(60))
+          .max(80)
+          .transform((ciudades) => ciudades.filter(Boolean))
+          .refine((ciudades) => ciudades.length > 0, 'Agrega al menos una ciudad'),
+        costo: z.coerce.number().min(0).max(10_000_000),
+        tiempo: z.string().trim().max(40).optional(),
+      }),
+    )
+    .max(20)
+    .optional(),
+  soloZonas: z.boolean().optional(),
+  recogerEnTienda: z.boolean().optional(),
+  direccionRecogida: z.string().trim().max(200).optional(),
   // Cabecera
   cabeceraFija: z.boolean().optional(),
   logoCentrado: z.boolean().optional(),

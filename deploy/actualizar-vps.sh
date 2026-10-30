@@ -103,6 +103,14 @@ fi
 if agregar_env "$ENV_BACK" CLAVE_CIFRADO "$(openssl rand -hex 32)"; then
   verde "CLAVE_CIFRADO creada (guárdala: si se pierde, las tiendas deben volver a pegar sus llaves)."
 fi
+# Llaves VAPID de los avisos push del panel (par P-256). Cambiarlas obliga a
+# volver a activar los avisos en cada celular, así que se crean una sola vez.
+if ! grep -qE "^VAPID_PUBLICA=" "$ENV_BACK"; then
+  read -r VAPID_PUB VAPID_PRIV < <(node -e "const c=require('crypto').createECDH('prime256v1');c.generateKeys();console.log(c.getPublicKey('base64url'),Buffer.from(c.getPrivateKey('hex').padStart(64,'0'),'hex').toString('base64url'))")
+  agregar_env "$ENV_BACK" VAPID_PUBLICA "$VAPID_PUB"
+  agregar_env "$ENV_BACK" VAPID_PRIVADA "$VAPID_PRIV"
+  verde "Llaves de avisos push creadas."
+fi
 for clave in BOLD_LLAVE_IDENTIDAD BOLD_LLAVE_SECRETA URL_PANEL SMTP_HOST SMTP_USUARIO SMTP_CLAVE; do
   if agregar_env "$ENV_BACK" "$clave" ""; then ambar "$clave agregada vacía: llénala en backend/.env cuando la tengas."; fi
 done

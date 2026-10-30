@@ -19,6 +19,7 @@ import { enviarCorreoDirecto, plantillaCorreo } from '../servicios/correos.servi
 import { urlPanel } from '../servicios/suscripciones.servicio.js'
 import { registro } from '../utilidades/registro.js'
 import { entorno } from '../config/entorno.js'
+import { avisarTiendaEnSegundoPlano } from '../servicios/push.servicio.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Esquemas
@@ -191,6 +192,12 @@ async function crearCita(
 /** Avisos por correo de una cita nueva: a la dueña y, si dejó correo, al cliente. */
 async function avisarCitaNueva(tenantId: string, negocio: string, cita: CitaBd, host: string) {
   const cuando = describirFecha(cita.inicio)
+  avisarTiendaEnSegundoPlano(tenantId, {
+    titulo: 'Cita nueva',
+    cuerpo: `${cita.clienteNombre} · ${cita.servicio}, ${cuando}`,
+    url: '/panel/agenda',
+    etiqueta: 'citas',
+  })
   const duenas = await prisma.usuario.findMany({
     where: { tenantId, activo: true, rol: { in: ['PROPIETARIO', 'ADMINISTRADOR'] } },
     select: { email: true },

@@ -5,6 +5,7 @@ import { ErrorHttp, noEncontrado } from '../utilidades/errores.js'
 import { enviarCorreoDirecto, plantillaCorreo } from '../servicios/correos.servicio.js'
 import { urlPanel } from '../servicios/suscripciones.servicio.js'
 import { registro } from '../utilidades/registro.js'
+import { avisarTiendaEnSegundoPlano } from '../servicios/push.servicio.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Esquemas
@@ -97,6 +98,7 @@ export async function recibirMensaje(req: Request, res: Response): Promise<void>
 }
 
 async function avisarMensaje(tenantId: string, negocio: string, mensaje: { nombre: string; email: string | null; telefono: string | null; motivo: string | null; mensaje: string }) {
+  avisarTiendaEnSegundoPlano(tenantId, { titulo: `Mensaje de ${mensaje.nombre}`, cuerpo: mensaje.mensaje.slice(0, 140), url: '/panel/mensajes', etiqueta: 'mensajes' })
   const duenas = await prisma.usuario.findMany({
     where: { tenantId, activo: true, rol: { in: ['PROPIETARIO', 'ADMINISTRADOR'] } },
     select: { email: true },

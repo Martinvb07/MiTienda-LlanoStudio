@@ -87,6 +87,7 @@ import {
 import { eliminarResena, esquemaModerarResena, listarResenasPanel, moderarResena } from '../controladores/resenas.controlador.js'
 import { actualizarCarrito, esquemaActualizarCarrito, listarCarritos, listarClientes } from '../controladores/clientes.controlador.js'
 import { limites } from '../middlewares/limiteIntentos.js'
+import { darDeBajaPush, esquemaBajaPush, esquemaSuscripcionPush, llavePush, suscribirPush } from '../controladores/push.controlador.js'
 
 const enrutador = Router()
 
@@ -102,6 +103,11 @@ enrutador.post('/ingreso', limites.ingresoPorIp, limites.ingresoPorCorreo, valid
 enrutador.use(exigirSesion)
 
 enrutador.get('/sesion', obtenerSesion)
+
+// Avisos push del panel instalado como app.
+enrutador.get('/push/llave', llavePush)
+enrutador.post('/push', validar(esquemaSuscripcionPush), suscribirPush)
+enrutador.post('/push/baja', validar(esquemaBajaPush), darDeBajaPush)
 enrutador.put('/cuenta', validar(esquemaCuenta), actualizarCuenta)
 enrutador.put('/cuenta/contrasena', validar(esquemaContrasena), cambiarContrasena)
 

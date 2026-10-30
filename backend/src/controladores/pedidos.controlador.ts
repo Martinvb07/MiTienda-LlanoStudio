@@ -9,6 +9,7 @@ import { calcularEnvio, type AjustesEnvio } from '../utilidades/envios.js'
 import { marcarCarritosRecuperados } from './clientes.controlador.js'
 import { registro } from '../utilidades/registro.js'
 import { avisarComprador, esEstadoAvisado, revisarStockTrasVenta } from '../servicios/avisosPedido.servicio.js'
+import { avisarTiendaEnSegundoPlano } from '../servicios/push.servicio.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Esquemas
@@ -333,6 +334,12 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
         })
       })
 
+      avisarTiendaEnSegundoPlano(req.tenant!.tenantId, {
+        titulo: `Pedido nuevo #${pedido.numero}`,
+        cuerpo: `${pedido.clienteNombre} · $${Number(pedido.total).toLocaleString('es-CO')} · ${pedido.items.reduce((suma, item) => suma + item.cantidad, 0)} productos`,
+        url: '/panel/pedidos',
+        etiqueta: `pedido-${pedido.numero}`,
+      })
       avisarComprador(pedido.id, 'PENDIENTE').catch((error: unknown) => registro.warn({ err: error }, 'No se pudo confirmar el pedido al comprador'))
       revisarStockTrasVenta(tiendaId, pedido.items).catch((error: unknown) => registro.warn({ err: error }, 'No se pudo revisar el inventario'))
       marcarCarritosRecuperados(tiendaId, pedido.clienteEmail, pedido.clienteTelefono).catch((error: unknown) =>

@@ -152,7 +152,8 @@ model Usuario {
   creadoEn       DateTime  @default(now())
   actualizadoEn  DateTime  @updatedAt
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  suscripcionesPush SuscripcionPush[]
 
   @@index([tenantId])
   @@map("usuarios")
@@ -930,4 +931,23 @@ model AvisoDisponible {
   @@unique([productoId, email])
   @@index([productoId, avisadoEn])
   @@map("avisos_disponible")
+}
+
+/// Un celular o computador de la dueña (o su equipo) que recibe avisos push
+/// del panel instalado como app: pedidos nuevos, citas y mensajes.
+model SuscripcionPush {
+  id        String @id @default(cuid())
+  usuarioId String
+  tenantId  String
+  /// URL del servicio de push del navegador; identifica al dispositivo.
+  endpoint  String @unique
+  p256dh    String
+  auth      String
+
+  creadoEn DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("suscripciones_push")
 }

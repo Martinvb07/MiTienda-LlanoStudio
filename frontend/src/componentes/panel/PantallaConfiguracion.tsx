@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowUpRight, Check, ChevronDown, Copy, Globe, CreditCard, KeyRound, Link2, LogOut, Sparkles, UserRound, Users, X } from 'lucide-react'
+import { ArrowUpRight, BellRing, Check, ChevronDown, Copy, CreditCard, Globe, KeyRound, Link2, LogOut, Sparkles, UserRound, Users, X } from 'lucide-react'
 import {
   ErrorPanel,
   actualizarCuenta,
@@ -20,6 +20,7 @@ import { BotonPanel, Campo } from './ui/basicos'
 import { Aparecer, SALIDA } from './ui/movimiento'
 import { GestionDominio, GestionEquipo } from './GestionEquipo'
 import { GestionPasarelas } from './GestionPasarelas'
+import { AvisosDispositivo } from './AvisosDispositivo'
 
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
@@ -389,7 +390,11 @@ export function PantallaConfiguracion() {
         </Bloque>
         )}
 
-        <Bloque titulo="Sesión" descripcion={`Conectado como ${sesion.usuario.email}.`} Icono={LogOut} orden={8}>
+        <Bloque titulo="App y avisos" descripcion="Instala el panel en tu celular y entérate de cada pedido." Icono={BellRing} orden={8}>
+          <AvisosDispositivo />
+        </Bloque>
+
+        <Bloque titulo="Sesión" descripcion={`Conectado como ${sesion.usuario.email}.`} Icono={LogOut} orden={9}>
           <BotonPanel
             variante="peligro"
             onClick={() => {

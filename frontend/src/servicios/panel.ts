@@ -583,3 +583,13 @@ export const guardarPasarela = (
   datos: { activa: boolean; modoPrueba: boolean; llavePublica: string; secretos: Record<string, string> },
 ) =>
   pedir<{ pasarelas: PasarelaTienda[] }>(`/pasarelas/${proveedor}`, { method: 'PUT', body: JSON.stringify(datos) }).then((r) => r.pasarelas)
+
+// ── Avisos push (panel instalado como app) ──
+
+export const llavePush = () => pedir<{ llave: string | null }>('/push/llave').then((respuesta) => respuesta.llave)
+
+export const guardarSuscripcionPush = (suscripcion: PushSubscriptionJSON) =>
+  pedir<void>('/push', { method: 'POST', body: JSON.stringify({ endpoint: suscripcion.endpoint, keys: suscripcion.keys }) })
+
+export const borrarSuscripcionPush = (endpoint: string) =>
+  pedir<void>('/push/baja', { method: 'POST', body: JSON.stringify({ endpoint }) })

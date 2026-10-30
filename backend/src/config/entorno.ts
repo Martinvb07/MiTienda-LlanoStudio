@@ -55,6 +55,11 @@ const esquema = z.object({
   SMTP_CLAVE: z.string().default(''),
   CORREO_REMITENTE: z.string().default('Mi Sitio <hola@llanostudio.co>'),
 
+  // Avisos push del panel instalado como app (pedidos nuevos, citas). Las llaves
+  // VAPID las crea deploy/actualizar-vps.sh. Vacías = sin avisos push.
+  VAPID_PUBLICA: z.string().default(''),
+  VAPID_PRIVADA: z.string().default(''),
+
   // Alertas de errores 500: a qué correo llegan (vacío = ADMIN_CORREO) y un
   // webhook opcional (Slack, Discord, Google Chat) que recibe { text, content }.
   ALERTAS_CORREO: z.string().default(''),

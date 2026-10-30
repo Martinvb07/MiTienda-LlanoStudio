@@ -41,3 +41,7 @@ coverage/
 .turbo/
 backend/.medios/
 .mitienda.env
+
+# Pruebas de punta a punta
+frontend/test-results/
+frontend/playwright-report/

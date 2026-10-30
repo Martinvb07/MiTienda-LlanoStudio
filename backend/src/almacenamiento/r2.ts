@@ -1,4 +1,6 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { randomUUID } from 'node:crypto'
 import { entorno } from '../config/entorno.js'
 
 /**
@@ -8,7 +10,8 @@ import { entorno } from '../config/entorno.js'
  * endpoint de la cuenta. La ventaja frente a S3 es que no cobra egreso: las
  * tiendas sirven imágenes sin que el tráfico dispare la factura.
  *
- * Estado: subida y borrado desde el servidor listos; la URL firmada todavía no.
+ * Subida y borrado desde el servidor, lectura (para reoptimizar fotos viejas)
+ * y URL firmada para que el navegador suba directo al bucket.
  */
 
 let clienteMemorizado: S3Client | null = null
@@ -75,9 +78,30 @@ export interface OpcionesSubidaFirmada {
   expiraEn?: number
 }
 
-/** TODO: firmar un PutObjectCommand con @aws-sdk/s3-request-presigner. */
-export function crearUrlSubidaFirmada(_opciones: OpcionesSubidaFirmada): Promise<string> {
-  return Promise.reject(new Error('crearUrlSubidaFirmada aún no está implementada'))
+/**
+ * URL firmada para que el navegador suba un archivo directo a R2 sin pasar por
+ * la API. Devuelve también la clave, para avisarle después al backend.
+ */
+export async function crearUrlSubidaFirmada(opciones: OpcionesSubidaFirmada): Promise<{ url: string; clave: string }> {
+  const { tenantId, tiendaId, nombreArchivo, tipoMime, expiraEn = 300 } = opciones
+  // El nombre lo manda el navegador: sólo se conserva una versión limpia.
+  const limpio = nombreArchivo.toLowerCase().replace(/[^a-z0-9.]+/g, '-').replace(/^-+|-+$/g, '').slice(-80) || 'archivo'
+  const clave = claveMedio(tenantId, tiendaId, `${randomUUID()}-${limpio}`)
+  const comando = new PutObjectCommand({
+    Bucket: entorno.R2_BUCKET,
+    Key: clave,
+    ContentType: tipoMime,
+    CacheControl: 'public, max-age=31536000, immutable',
+  })
+  const url = await getSignedUrl(obtenerClienteR2(), comando, { expiresIn: expiraEn })
+  return { url, clave }
+}
+
+/** Descarga un objeto del bucket entero a memoria. */
+export async function leerObjeto(clave: string): Promise<Buffer> {
+  const respuesta = await obtenerClienteR2().send(new GetObjectCommand({ Bucket: entorno.R2_BUCKET, Key: clave }))
+  if (!respuesta.Body) throw new Error(`El objeto ${clave} llegó vacío`)
+  return Buffer.from(await respuesta.Body.transformToByteArray())
 }
 
 /** Sube un objeto desde el propio servidor (lo usa la subida de medios del panel). */

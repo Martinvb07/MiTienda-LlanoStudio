@@ -22,7 +22,8 @@
     "prisma:migrar": "prisma migrate dev",
     "prisma:desplegar": "prisma migrate deploy",
     "prisma:estudio": "prisma studio",
-    "admin:clave": "tsx scripts/clave-admin.ts"
+    "admin:clave": "tsx scripts/clave-admin.ts",
+    "medios:optimizar": "tsx scripts/optimizar-fotos.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1095.0",
@@ -39,6 +40,7 @@
     "nodemailer": "^7.0.13",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
+    "sharp": "^0.35.5",
     "socket.io": "^4.8.4",
     "zod": "^4.4.3"
   },

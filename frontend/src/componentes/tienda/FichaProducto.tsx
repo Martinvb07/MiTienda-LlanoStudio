@@ -12,6 +12,7 @@ import { Compartir } from './ficha/Compartir'
 import { GaleriaFicha } from './ficha/GaleriaFicha'
 import { Opiniones } from './ficha/Opiniones'
 import { Estrellas } from './Estrellas'
+import { MedirVista } from './ficha/MedirVista'
 
 interface Props {
   producto: Producto
@@ -137,6 +138,7 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
+      <MedirVista id={producto.id} nombre={producto.nombre} precio={producto.precio} moneda={moneda} />
       <nav aria-label="Ruta" className="flex flex-wrap items-center gap-2 text-sm text-tinta/60">
         <Link href="/" className="transition hover:text-tinta">
           {nombreTienda}

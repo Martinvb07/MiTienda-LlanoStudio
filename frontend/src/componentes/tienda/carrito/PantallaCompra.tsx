@@ -13,6 +13,7 @@ import { formatearPrecio } from '@/utilidades/formato'
 import { esMedioLocal } from '@/utilidades/medios'
 import { enlaceWhatsapp } from '@/utilidades/whatsapp'
 import { calcularEnvio, type Entrega } from '@/utilidades/envios'
+import { medir } from '@/utilidades/medicion'
 import { MetaEnvioGratis, SelectorCantidad, useCarrito } from './Carrito'
 
 const SALIDA = [0.16, 1, 0.3, 1] as const
@@ -217,6 +218,18 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
     }
     setCreado(resultado.pedido)
     setCheckout(resultado.checkout)
+    medir({
+      tipo: 'compra',
+      moneda,
+      pedido: String(resultado.pedido.numero),
+      total: Number(resultado.pedido.total),
+      articulos: resultado.pedido.items.map((item) => ({
+        id: item.productoId ?? item.nombreProducto,
+        nombre: item.nombreProducto,
+        precio: Number(item.precioUnitario),
+        cantidad: item.cantidad,
+      })),
+    })
     carrito.vaciar()
     window.scrollTo({ top: 0, behavior: 'smooth' })
     // Pago en línea: directo a la pasarela; el WhatsApp va después de pagar.

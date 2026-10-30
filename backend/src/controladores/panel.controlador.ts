@@ -186,6 +186,9 @@ const esquemaAjustes = z.object({
       resenas: z.boolean().optional(),
     })
     .optional(),
+  // Medición: el pixel de Meta y Google Analytics de la propia tienda
+  pixelMeta: z.string().trim().regex(/^\d{5,20}$/, 'El ID del pixel son sólo números').or(z.literal('')).optional(),
+  googleAnalytics: z.string().trim().toUpperCase().regex(/^G-[A-Z0-9]{4,16}$/, 'El ID de Google Analytics empieza por G-').or(z.literal('')).optional(),
   // Enlaces para tu bio
   fondoBio: z.enum(['liso', 'degradado', 'malla']).optional(),
   ocultarMarca: z.boolean().optional(),

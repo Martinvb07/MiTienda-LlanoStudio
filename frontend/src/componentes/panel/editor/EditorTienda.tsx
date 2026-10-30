@@ -22,6 +22,7 @@ import { CamposCabecera, CamposContacto } from './CamposAjustes'
 import { CamposFicha } from './CamposFicha'
 import { CamposTema } from './CamposTema'
 import { CamposVentas } from './CamposVentas'
+import { CamposMedicion } from './CamposMedicion'
 import { CamposPaginas } from './CamposPaginas'
 import { crearPagina, menuConPagina, RUTAS_RESERVADAS } from '@/utilidades/paginas'
 import { ListaBloques, posicionNueva } from './ListaBloques'
@@ -1050,6 +1051,10 @@ export function EditorTienda({ tienda, subdominio, alGuardar, alCerrar, plantill
                   <CamposVentas ajustes={borrador.ajustes} alCambiar={cambiarAjustes} />
                 </Seccion>
               )}
+
+              <Seccion titulo="Medición y catálogo">
+                <CamposMedicion ajustes={borrador.ajustes} alCambiar={cambiarAjustes} direccion={urlTienda(subdominio)} vende={vende} />
+              </Seccion>
 
               <Seccion titulo="Identidad">
                 <Campo

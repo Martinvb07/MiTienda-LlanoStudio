@@ -8,6 +8,7 @@ import { FuentesTema } from '@/componentes/tienda/FuentesTema'
 import { BotonWhatsapp } from '@/componentes/tienda/BotonWhatsapp'
 import { ProveedorCarrito } from '@/componentes/tienda/carrito/Carrito'
 import { ContadorVisitas } from '@/componentes/tienda/ContadorVisitas'
+import { MedicionTienda } from '@/componentes/tienda/MedicionTienda'
 
 /** Revalidación ISR: las tiendas se sirven de caché y se refrescan solas. */
 export const revalidate = 60
@@ -68,6 +69,7 @@ export default async function LayoutTienda({ children, params }: Props) {
         {children}
       </ProveedorCarrito>
       <ContadorVisitas />
+      <MedicionTienda pixelMeta={tienda.ajustes.pixelMeta} googleAnalytics={tienda.ajustes.googleAnalytics} />
       {tienda.ajustes.whatsappFlotante && tienda.ajustes.whatsapp && (
         <BotonWhatsapp numero={tienda.ajustes.whatsapp} tienda={tienda.nombre} />
       )}

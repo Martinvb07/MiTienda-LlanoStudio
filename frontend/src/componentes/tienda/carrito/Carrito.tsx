@@ -8,6 +8,7 @@ import { Check, Minus, Plus, ShoppingBag, Trash2, X, Truck } from 'lucide-react'
 import type { AjustesTienda, TemaTienda } from '@/tipos/tienda'
 import { formatearPrecio } from '@/utilidades/formato'
 import { esMedioLocal } from '@/utilidades/medios'
+import { medir } from '@/utilidades/medicion'
 
 export interface LineaCarrito {
   productoId: string
@@ -107,6 +108,7 @@ export function ProveedorCarrito({
 
   const agregar = useCallback(
     (nueva: LineaCarrito, origen?: Element | null) => {
+      medir({ tipo: 'agregar', moneda, articulo: { id: nueva.productoId, nombre: nueva.nombre, precio: Number(nueva.precio), cantidad: nueva.cantidad } })
       setLineas((actuales) => {
         const existente = actuales.find((linea) => misma(linea, nueva.productoId, nueva.variante))
         if (!existente) return [...actuales, { ...nueva, cantidad: Math.min(nueva.cantidad, nueva.stock) }]

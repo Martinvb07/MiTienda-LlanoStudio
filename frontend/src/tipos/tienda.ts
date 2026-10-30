@@ -155,6 +155,10 @@ export interface AjustesTienda {
   direccionRecogida?: string
   /** Correo automático a quien deja el carrito con su correo. */
   recordarCarritos?: boolean
+  /** ID del pixel de Meta (sólo números). */
+  pixelMeta?: string
+  /** ID de medición de Google Analytics 4 (G-XXXX). */
+  googleAnalytics?: string
 
   paginaProducto?: PlantillaProducto
 

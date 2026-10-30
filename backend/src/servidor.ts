@@ -10,6 +10,9 @@ import { enviarRecordatoriosCitas } from './controladores/reservas.controlador.j
 import { recordarCarritos } from './controladores/clientes.controlador.js'
 import { cerrarTiempoReal, iniciarTiempoReal } from './servicios/soporte.servicio.js'
 import { verificarDominiosPendientes } from './controladores/dominios.controlador.js'
+import { vigilarProceso } from './servicios/alertas.servicio.js'
+
+vigilarProceso('api')
 
 const app = crearApp()
 

@@ -105,4 +105,5 @@ export const limites = {
   pedido: limitarIntentos({ nombre: 'pedido', ventanaMs: 10 * MINUTO, maximo: 15 }),
   cupon: limitarIntentos({ nombre: 'cupon', ventanaMs: 10 * MINUTO, maximo: 20, mensaje: 'Probaste muchos códigos seguidos. Espera unos minutos.' }),
   carrito: limitarIntentos({ nombre: 'carrito', ventanaMs: MINUTO, maximo: 30 }),
+  erroresWeb: limitarIntentos({ nombre: 'errores-web', ventanaMs: 10 * MINUTO, maximo: 10 }),
 }

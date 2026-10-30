@@ -55,6 +55,11 @@ const esquema = z.object({
   SMTP_CLAVE: z.string().default(''),
   CORREO_REMITENTE: z.string().default('Mi Sitio <hola@llanostudio.co>'),
 
+  // Alertas de errores 500: a qué correo llegan (vacío = ADMIN_CORREO) y un
+  // webhook opcional (Slack, Discord, Google Chat) que recibe { text, content }.
+  ALERTAS_CORREO: z.string().default(''),
+  ALERTAS_WEBHOOK: z.string().default(''),
+
   // Cloudflare R2 — opcionales mientras la subida de archivos no esté implementada.
   R2_ACCOUNT_ID: z.string().default(''),
   R2_ACCESS_KEY_ID: z.string().default(''),

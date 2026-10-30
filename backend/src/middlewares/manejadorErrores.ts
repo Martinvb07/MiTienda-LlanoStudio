@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 import { entorno } from '../config/entorno.js'
 import { ErrorHttp } from '../utilidades/errores.js'
 import { registro } from '../utilidades/registro.js'
-import { anotarError } from '../utilidades/erroresRecientes.js'
+import { reportarError } from '../servicios/alertas.servicio.js'
 
 /** 404 para rutas que no existen. Va montado después de todas las rutas. */
 export function rutaNoEncontrada(req: Request, res: Response): void {
@@ -26,8 +26,9 @@ export function manejadorErrores(
 
   if (estado >= 500) {
     registro.error({ err: error, ruta: req.originalUrl, host: req.headers.host }, 'Error no controlado')
-    anotarError({
+    reportarError({
       hora: new Date().toISOString(),
+      origen: 'api',
       metodo: req.method,
       ruta: req.originalUrl,
       mensaje: (error as Error)?.message ?? String(error),

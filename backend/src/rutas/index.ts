@@ -17,6 +17,9 @@ import rutasContenido from './contenido.rutas.js'
 import rutasSoporte from './soporte.rutas.js'
 import { recibirAviso } from '../controladores/pasarelas.controlador.js'
 import { dominiosParaServidor } from '../controladores/dominios.controlador.js'
+import { esquemaErrorWeb, recibirErrorWeb } from '../controladores/erroresWeb.controlador.js'
+import { limites } from '../middlewares/limiteIntentos.js'
+import { validar } from '../middlewares/validacion.js'
 
 const enrutador = Router()
 
@@ -35,6 +38,7 @@ enrutador.use('/soporte', rutasSoporte)
 // Avisos de Wompi, ePayco y Bold de las tiendas (sin Host de tienda: la referencia dice cuál).
 enrutador.all('/pagos/aviso/:proveedor', recibirAviso)
 enrutador.get('/plataforma/dominios', dominiosParaServidor)
+enrutador.post('/plataforma/errores', limites.erroresWeb, validar(esquemaErrorWeb), recibirErrorWeb)
 
 // A partir de aquí, toda petición pasa por la resolución de tenant por Host.
 enrutador.use(resolverTenant)

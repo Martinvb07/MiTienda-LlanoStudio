@@ -4,6 +4,8 @@
  */
 export interface ErrorReciente {
   hora: string
+  /** api = el servidor; web = el navegador de alguien (lo reporta el frontend). */
+  origen?: 'api' | 'web' | 'proceso'
   metodo: string
   ruta: string
   mensaje: string

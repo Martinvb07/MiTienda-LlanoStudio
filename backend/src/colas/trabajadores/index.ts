@@ -2,6 +2,7 @@ import type { Worker } from 'bullmq'
 import { registro } from '../../utilidades/registro.js'
 import { desconectarPrisma } from '../../config/prisma.js'
 import { crearTrabajadorImagenes } from './imagenes.trabajador.js'
+import { vigilarProceso } from '../../servicios/alertas.servicio.js'
 
 /**
  * Punto de entrada del proceso de trabajadores.
@@ -10,6 +11,8 @@ import { crearTrabajadorImagenes } from './imagenes.trabajador.js'
  * que una tanda de imágenes pesadas no consuma el bucle de eventos que atiende
  * a los compradores.
  */
+vigilarProceso('trabajadores')
+
 const trabajadores: Worker[] = [crearTrabajadorImagenes()]
 
 registro.info({ cantidad: trabajadores.length }, 'Trabajadores en marcha')

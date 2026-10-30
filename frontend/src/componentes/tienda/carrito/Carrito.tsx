@@ -141,7 +141,7 @@ export function ProveedorCarrito({
       setGolpe((valor) => valor + 1)
       setAviso({ linea: nueva, id })
     },
-    [modo],
+    [modo, moneda],
   )
 
   const cambiarCantidad = useCallback((productoId: string, variante: string | undefined, cantidad: number) => {

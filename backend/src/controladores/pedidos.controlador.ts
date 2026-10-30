@@ -10,6 +10,7 @@ import { marcarCarritosRecuperados } from './clientes.controlador.js'
 import { registro } from '../utilidades/registro.js'
 import { avisarComprador, esEstadoAvisado, revisarStockTrasVenta } from '../servicios/avisosPedido.servicio.js'
 import { avisarTiendaEnSegundoPlano } from '../servicios/push.servicio.js'
+import { facturarSiCorresponde } from '../servicios/facturacion/facturacion.servicio.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Esquemas
@@ -28,6 +29,13 @@ export const esquemaPedidoPublico = z.object({
     direccion: z.string().trim().max(200).default(''),
     detalle: z.string().trim().max(120).optional(),
     notas: z.string().trim().max(500).optional(),
+    // Sólo si pide factura electrónica (la tienda la tiene conectada).
+    tipoDocumento: z.enum(['CC', 'NIT', 'CE', 'PP']).optional(),
+    documento: z
+      .string()
+      .trim()
+      .regex(/^[0-9A-Za-z-]{4,20}$/, 'Escribe el número sin puntos ni espacios')
+      .optional(),
   }),
   items: z
     .array(
@@ -90,6 +98,11 @@ const camposPedido = {
   notaInterna: true,
   transportadora: true,
   guia: true,
+  clienteTipoDocumento: true,
+  clienteDocumento: true,
+  facturaEstado: true,
+  facturaNumero: true,
+  facturaError: true,
   estado: true,
   subtotal: true,
   descuento: true,
@@ -321,6 +334,9 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
                     ...(calculo.ok && calculo.zona ? { zona: calculo.zona.nombre } : {}),
                   },
             notas: datos.cliente.notas || null,
+            ...(datos.cliente.documento
+              ? { clienteTipoDocumento: datos.cliente.tipoDocumento ?? 'CC', clienteDocumento: datos.cliente.documento }
+              : {}),
             canal: datos.canal,
             metodoPago: datos.metodoPago,
             cupon: codigo,
@@ -464,6 +480,9 @@ export async function actualizarPedidoPanel(req: Request, res: Response): Promis
     }).then((actualizado) => ({ actualizado, cambio: Boolean(datos.estado && datos.estado !== actual.estado) }))
   })
 
+  if (pedido.cambio && (pedido.actualizado.estado === 'PAGADO' || pedido.actualizado.estado === 'ENTREGADO')) {
+    facturarSiCorresponde(id, tiendaId)
+  }
   if (pedido.cambio && datos.avisar !== false && esEstadoAvisado(pedido.actualizado.estado)) {
     avisarComprador(id, pedido.actualizado.estado).catch((error: unknown) => registro.warn({ err: error }, 'No se pudo avisar el cambio al comprador'))
   }

@@ -2,6 +2,7 @@ import type { Worker } from 'bullmq'
 import { registro } from '../../utilidades/registro.js'
 import { desconectarPrisma } from '../../config/prisma.js'
 import { crearTrabajadorImagenes } from './imagenes.trabajador.js'
+import { crearTrabajadorFacturas } from './facturas.trabajador.js'
 import { vigilarProceso } from '../../servicios/alertas.servicio.js'
 
 /**
@@ -13,7 +14,7 @@ import { vigilarProceso } from '../../servicios/alertas.servicio.js'
  */
 vigilarProceso('trabajadores')
 
-const trabajadores: Worker[] = [crearTrabajadorImagenes()]
+const trabajadores: Worker[] = [crearTrabajadorImagenes(), crearTrabajadorFacturas()]
 
 registro.info({ cantidad: trabajadores.length }, 'Trabajadores en marcha')
 

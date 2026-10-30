@@ -5,6 +5,7 @@ import { cifrar, descifrar } from '../utilidades/cifrado.js'
 import { registro } from '../utilidades/registro.js'
 import { urlPanel } from './suscripciones.servicio.js'
 import { avisarComprador } from './avisosPedido.servicio.js'
+import { facturarSiCorresponde } from './facturacion/facturacion.servicio.js'
 
 /**
  * Pasarelas de pago de las tiendas: Wompi, ePayco y Bold. Cada tienda pone
@@ -270,7 +271,10 @@ export async function consultarPago(
  * Es idempotente: un aviso repetido no cambia nada.
  */
 export async function aplicarResultado(referencia: string, resultado: Omit<AvisoPago, 'referencia'>) {
-  const pago = await prisma.pago.findUnique({ where: { referencia }, select: { id: true, estado: true, monto: true, pedidoId: true } })
+  const pago = await prisma.pago.findUnique({
+    where: { referencia },
+    select: { id: true, estado: true, monto: true, pedidoId: true, pedido: { select: { tiendaId: true } } },
+  })
   if (!pago || pago.estado === 'APROBADO' || resultado.estado === 'PENDIENTE') return pago?.estado ?? null
 
   let estado = resultado.estado
@@ -289,6 +293,7 @@ export async function aplicarResultado(referencia: string, resultado: Omit<Aviso
     return pedido.count > 0
   })
   if (pagado) {
+    facturarSiCorresponde(pago.pedidoId, pago.pedido.tiendaId)
     avisarComprador(pago.pedidoId, 'PAGADO').catch((error: unknown) => registro.warn({ err: error, referencia }, 'No se pudo avisar el pago al comprador'))
   }
   registro.info({ referencia, estado }, 'Pago de pedido actualizado')

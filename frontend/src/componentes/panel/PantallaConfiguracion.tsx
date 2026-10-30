@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowUpRight, BellRing, Check, ChevronDown, Copy, CreditCard, Globe, KeyRound, Link2, LogOut, Sparkles, UserRound, Users, X } from 'lucide-react'
+import { ArrowUpRight, BellRing, Check, ChevronDown, Copy, CreditCard, Globe, KeyRound, Link2, LogOut, ReceiptText, Sparkles, UserRound, Users, X } from 'lucide-react'
 import {
   ErrorPanel,
   actualizarCuenta,
@@ -20,7 +20,9 @@ import { BotonPanel, Campo } from './ui/basicos'
 import { Aparecer, SALIDA } from './ui/movimiento'
 import { GestionDominio, GestionEquipo } from './GestionEquipo'
 import { GestionPasarelas } from './GestionPasarelas'
+import { GestionFacturacion } from './GestionFacturacion'
 import { AvisosDispositivo } from './AvisosDispositivo'
+import { vendeEnLinea } from '@/utilidades/sitio'
 
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
@@ -237,6 +239,7 @@ export function PantallaConfiguracion() {
   const { sesion } = useSesion()
   const plan = limitesDe(sesion.tenant.plan)
   const gestiona = sesion.usuario.rol !== 'EDITOR'
+  const vende = vendeEnLinea(sesion.tienda?.tipo)
   const [productos, setProductos] = useState<number | null>(null)
   const [copiado, setCopiado] = useState(false)
   const direccion = `${sesion.tenant.subdominio}.${configuracionDominios.dominioBase}`
@@ -388,6 +391,12 @@ export function PantallaConfiguracion() {
         >
           <GestionPasarelas />
         </Bloque>
+        )}
+
+        {gestiona && vende && (
+          <Bloque titulo="Factura electrónica" descripcion="Factura DIAN de tus pedidos con tu cuenta de Alegra." Icono={ReceiptText} orden={7}>
+            <GestionFacturacion />
+          </Bloque>
         )}
 
         <Bloque titulo="App y avisos" descripcion="Instala el panel en tu celular y entérate de cada pedido." Icono={BellRing} orden={8}>

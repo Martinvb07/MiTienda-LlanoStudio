@@ -39,6 +39,7 @@ import {
   listarEquipo,
   quitarMiembro,
 } from '../controladores/equipo.controlador.js'
+import { esquemaFacturacion, facturarPedido, guardarFacturacion, obtenerFacturacion } from '../controladores/facturacion.controlador.js'
 import {
   actualizarCupon,
   crearCupon,
@@ -146,6 +147,9 @@ enrutador.post('/suscripcion/checkout', gestion, validar(esquemaCheckout), crear
 enrutador.post('/suscripcion/pagos/:referencia/verificar', gestion, verificarPago)
 enrutador.post('/suscripcion/cupon', gestion, validar(esquemaCheckout), probarCupon)
 enrutador.get('/referidos', gestion, obtenerReferidos)
+enrutador.get('/facturacion', gestion, obtenerFacturacion)
+enrutador.put('/facturacion', gestion, validar(esquemaFacturacion), guardarFacturacion)
+enrutador.post('/pedidos/:id/factura', facturarPedido)
 enrutador.get('/pasarelas', gestion, listarPasarelas)
 enrutador.put('/pasarelas/:proveedor', gestion, validar(esquemaPasarela), guardarPasarela)
 

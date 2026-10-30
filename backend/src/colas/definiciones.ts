@@ -28,6 +28,11 @@ export interface TrabajoOptimizarImagen {
   anchoMaximo?: number
 }
 
+/** Emisión de la factura electrónica de un pedido. */
+export interface TrabajoFactura {
+  pedidoId: string
+}
+
 export const OPCIONES_TRABAJO_POR_DEFECTO: JobsOptions = {
   attempts: 3,
   backoff: { type: 'exponential', delay: 2_000 },

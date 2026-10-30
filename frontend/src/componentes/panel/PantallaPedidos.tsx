@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Check, Download, Mail, MapPin, MessageCircle, Phone, Search, X } from 'lucide-react'
-import { actualizarPedido, listarPedidos, type CambiosPedido } from '@/servicios/panel'
+import { actualizarPedido, facturarPedido, listarPedidos, type CambiosPedido } from '@/servicios/panel'
 import { ETIQUETAS_PAGO, type EstadoPedido, type Pedido } from '@/tipos/pedidos'
 import { formatearPrecio } from '@/utilidades/formato'
 import { limitesDe, planMinimo } from '@/utilidades/planes'
@@ -53,13 +53,14 @@ const recoge = (pedido: Pedido) => pedido.direccionEnvio?.entrega === 'recoger'
 
 function exportarCsv(pedidos: Pedido[]) {
   const filas = [
-    ['Pedido', 'Fecha', 'Cliente', 'Correo', 'Teléfono', 'Ciudad', 'Dirección', 'Productos', 'Pago', 'Estado', 'Subtotal', 'Envío', 'Descuento', 'Total'],
+    ['Pedido', 'Fecha', 'Cliente', 'Correo', 'Teléfono', 'Documento', 'Ciudad', 'Dirección', 'Productos', 'Pago', 'Estado', 'Subtotal', 'Envío', 'Descuento', 'Total', 'Factura', 'Guía'],
     ...pedidos.map((pedido) => [
       pedido.numero,
       new Date(pedido.creadoEn).toLocaleString('es-CO'),
       pedido.clienteNombre,
       pedido.clienteEmail,
       pedido.clienteTelefono ?? '',
+      pedido.clienteDocumento ? `${pedido.clienteTipoDocumento ?? 'CC'} ${pedido.clienteDocumento}` : '',
       recoge(pedido) ? 'Recoge en la tienda' : (pedido.direccionEnvio?.ciudad ?? ''),
       [pedido.direccionEnvio?.direccion, pedido.direccionEnvio?.detalle].filter(Boolean).join(', '),
       pedido.items.map((item) => `${item.cantidad} x ${item.nombreProducto}${item.variante ? ` (${item.variante})` : ''}`).join(' | '),
@@ -69,6 +70,8 @@ function exportarCsv(pedidos: Pedido[]) {
       pedido.envio,
       pedido.descuento,
       pedido.total,
+      pedido.facturaNumero ?? '',
+      pedido.guia ? `${pedido.transportadora ?? ''} ${pedido.guia}`.trim() : '',
     ]),
   ]
   descargarCsv('pedidos', filas)
@@ -318,6 +321,20 @@ function DetallePedido({
     }
   }
 
+  async function emitirFactura() {
+    setGuardando(true)
+    try {
+      await facturarPedido(pedido.id)
+      // Se emite en segundo plano: se muestra "emitiéndose" y se consulta en unos segundos.
+      alCambiar({ ...pedido, facturaEstado: 'PENDIENTE', facturaError: null })
+      setTimeout(() => void actualizarPedido(pedido.id, {}).then(alCambiar).catch(() => undefined), 6000)
+    } catch (problema) {
+      alError(problema instanceof Error ? problema.message : 'No se pudo emitir la factura')
+    } finally {
+      setGuardando(false)
+    }
+  }
+
   const mensajeCliente: Partial<Record<EstadoPedido, string>> = {
     PENDIENTE: `Hola ${pedido.clienteNombre.split(' ')[0]}, recibimos tu pedido #${pedido.numero} en ${tienda}. ¡Gracias por tu compra!`,
     PAGADO: `Hola ${pedido.clienteNombre.split(' ')[0]}, confirmamos el pago de tu pedido #${pedido.numero}. Ya lo estamos preparando.`,
@@ -486,6 +503,39 @@ function DetallePedido({
               <dd className="tabular-nums">{formatearPrecio(pedido.total)}</dd>
             </div>
           </dl>
+
+          {vendido(pedido) && (
+            <>
+              <h3 className="mt-8 text-[11px] tracking-[0.14em] text-sitio-tenue uppercase">Factura electrónica</h3>
+              <div className="mt-3 flex flex-col gap-2 text-[13px]">
+                {pedido.clienteDocumento && (
+                  <p className="text-sitio-suave">
+                    Pidió factura a {pedido.clienteTipoDocumento ?? 'CC'} {pedido.clienteDocumento}
+                  </p>
+                )}
+                {pedido.facturaEstado === 'EMITIDA' ? (
+                  <p className="flex items-center gap-2">
+                    <Etiqueta tono="verde">Emitida</Etiqueta>
+                    <span className="tabular-nums">{pedido.facturaNumero}</span>
+                  </p>
+                ) : pedido.facturaEstado === 'PENDIENTE' ? (
+                  <p className="flex flex-wrap items-center gap-2">
+                    <Etiqueta tono="azul">Emitiéndose con Alegra…</Etiqueta>
+                    <button type="button" disabled={guardando} onClick={() => void cambiar({})} className="text-sitio-suave underline underline-offset-2">
+                      Actualizar
+                    </button>
+                  </p>
+                ) : (
+                  <>
+                    {pedido.facturaEstado === 'ERROR' && <p className="text-sitio-rojo">Alegra la rechazó: {pedido.facturaError}</p>}
+                    <BotonPanel disabled={guardando} onClick={() => void emitirFactura()} className="self-start">
+                      {pedido.facturaEstado === 'ERROR' ? 'Intentar de nuevo' : 'Emitir factura'}
+                    </BotonPanel>
+                  </>
+                )}
+              </div>
+            </>
+          )}
 
           {pedido.direccionEnvio?.entrega !== 'recoger' && (
             <>

@@ -2,6 +2,15 @@ export type MetodoPago = 'contra-entrega' | 'transferencia' | 'acordar' | 'wompi
 
 export type EstadoPedido = 'PENDIENTE' | 'PAGADO' | 'PREPARANDO' | 'ENVIADO' | 'ENTREGADO' | 'CANCELADO' | 'REEMBOLSADO'
 
+export type TipoDocumento = 'CC' | 'NIT' | 'CE' | 'PP'
+
+export const TIPOS_DOCUMENTO: { valor: TipoDocumento; etiqueta: string }[] = [
+  { valor: 'CC', etiqueta: 'Cédula' },
+  { valor: 'NIT', etiqueta: 'NIT' },
+  { valor: 'CE', etiqueta: 'Cédula de extranjería' },
+  { valor: 'PP', etiqueta: 'Pasaporte' },
+]
+
 /** Lo que la tienda manda al crear un pedido: sólo ids y cantidades, los precios los pone la API. */
 export interface SolicitudPedido {
   cliente: {
@@ -12,6 +21,9 @@ export interface SolicitudPedido {
     direccion: string
     detalle?: string
     notas?: string
+    /** Sólo si pidió factura electrónica. */
+    tipoDocumento?: TipoDocumento
+    documento?: string
   }
   items: { productoId: string; cantidad: number; variante?: string }[]
   metodoPago: MetodoPago
@@ -56,6 +68,12 @@ export interface Pedido {
   /** Seguimiento del envío; le llega al comprador en el correo de "va en camino". */
   transportadora?: string | null
   guia?: string | null
+  clienteTipoDocumento?: TipoDocumento | null
+  clienteDocumento?: string | null
+  /** Factura electrónica: PENDIENTE (emitiéndose), EMITIDA o ERROR. null = sin factura. */
+  facturaEstado?: 'PENDIENTE' | 'EMITIDA' | 'ERROR' | null
+  facturaNumero?: string | null
+  facturaError?: string | null
   estado: EstadoPedido
   subtotal: string
   descuento: string

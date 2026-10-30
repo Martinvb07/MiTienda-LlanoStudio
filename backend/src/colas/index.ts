@@ -4,6 +4,7 @@ import { registro } from '../utilidades/registro.js'
 import {
   NOMBRES_COLAS,
   OPCIONES_TRABAJO_POR_DEFECTO,
+  type TrabajoFactura,
   type TrabajoOptimizarImagen,
 } from './definiciones.js'
 
@@ -29,7 +30,24 @@ export async function encolarOptimizacionImagen(datos: TrabajoOptimizarImagen): 
   return trabajo.id ?? ''
 }
 
-const todasLasColas = [colaImagenes]
+export const colaFacturas = new Queue<TrabajoFactura>(NOMBRES_COLAS.facturas, {
+  connection: conexionRedis,
+  defaultJobOptions: { ...OPCIONES_TRABAJO_POR_DEFECTO, attempts: 4, backoff: { type: 'exponential', delay: 30_000 } },
+})
+
+/**
+ * Encola la factura electrónica de un pedido. El id del trabajo es el del
+ * pedido: dos clics seguidos en "Emitir factura" no la emiten dos veces.
+ */
+export async function encolarFactura(pedidoId: string): Promise<void> {
+  const id = `factura-${pedidoId}`
+  // Un intento anterior que terminó (con error) se quita para poder reintentar.
+  const previo = await colaFacturas.getJob(id)
+  if (previo && ((await previo.isFailed()) || (await previo.isCompleted()))) await previo.remove()
+  await colaFacturas.add('emitir', { pedidoId }, { jobId: id })
+}
+
+const todasLasColas = [colaImagenes, colaFacturas]
 
 /** Cierra las colas al apagar el proceso, para no dejar trabajos a medias. */
 export async function cerrarColas(): Promise<void> {

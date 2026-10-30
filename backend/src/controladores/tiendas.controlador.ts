@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 import { prisma } from '../config/prisma.js'
 import { noEncontrado } from '../utilidades/errores.js'
 import { pasarelasActivas } from './pasarelas.controlador.js'
+import { facturaElectronicaActiva } from './facturacion.controlador.js'
 
 /**
  * Devuelve la configuración pública de la tienda del Host actual: es lo que
@@ -34,9 +35,10 @@ export async function obtenerTiendaPublica(req: Request, res: Response): Promise
 
   // El plan viaja con la tienda: la marca del pie depende de él.
   // Las pasarelas conectadas viajan con los ajustes: el checkout ofrece pagar en línea.
-  const pagosEnLinea = await pasarelasActivas(tienda.id)
+  // Con la factura electrónica conectada, el checkout deja pedirla con el documento.
+  const [pagosEnLinea, facturaElectronica] = await Promise.all([pasarelasActivas(tienda.id), facturaElectronicaActiva(tienda.id)])
   res.json({
-    tienda: { ...tienda, ajustes: { ...(tienda.ajustes as object), pagosEnLinea }, plan: contexto.plan },
+    tienda: { ...tienda, ajustes: { ...(tienda.ajustes as object), pagosEnLinea, facturaElectronica }, plan: contexto.plan },
     subdominio: contexto.subdominio,
   })
 }

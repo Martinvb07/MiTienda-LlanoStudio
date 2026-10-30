@@ -142,6 +142,8 @@ export interface AjustesTienda {
   pagoTransferencia?: boolean
   /** Pasarelas conectadas en el panel (la API las agrega a los ajustes públicos). */
   pagosEnLinea?: ('WOMPI' | 'EPAYCO' | 'BOLD')[]
+  /** La tienda emite factura electrónica (la pone la API, no se edita). */
+  facturaElectronica?: boolean
   datosTransferencia?: string
   /** El cliente termina la compra mandando el pedido por WhatsApp. */
   pedidosWhatsapp?: boolean

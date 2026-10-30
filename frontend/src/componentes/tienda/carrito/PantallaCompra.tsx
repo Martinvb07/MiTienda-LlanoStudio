@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { CheckCircle2, CreditCard, MessageCircle, Store, Truck } from 'lucide-react'
 import { crearPedido, validarCupon, type CuponAplicado } from '@/app/(tienda)/[subdominio]/carrito/acciones'
 import { guardarCarrito, recuperarCarrito } from '@/app/(tienda)/[subdominio]/acciones-sitio'
-import { ETIQUETAS_PAGO, type CheckoutPago, type MetodoPago, type PedidoCreado } from '@/tipos/pedidos'
+import { ETIQUETAS_PAGO, TIPOS_DOCUMENTO, type CheckoutPago, type MetodoPago, type PedidoCreado, type TipoDocumento } from '@/tipos/pedidos'
 import { abrirCheckout } from './abrirCheckout'
 import { formatearPrecio } from '@/utilidades/formato'
 import { esMedioLocal } from '@/utilidades/medios'
@@ -115,6 +115,7 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
   const [errorCupon, setErrorCupon] = useState('')
   const [revisandoCupon, setRevisandoCupon] = useState(false)
   const [entrega, setEntrega] = useState<Entrega>('domicilio')
+  const [quiereFactura, setQuiereFactura] = useState(false)
   const [ciudad, setCiudad] = useState('')
   const formulario = useRef<HTMLFormElement>(null)
   const contactoDejado = useRef(false)
@@ -224,6 +225,9 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
         direccion: entrega === 'recoger' ? '' : texto('direccion'),
         detalle: entrega === 'recoger' ? undefined : texto('detalle') || undefined,
         notas: texto('notas') || undefined,
+        ...(quiereFactura && texto('documento')
+          ? { tipoDocumento: texto('tipoDocumento') as TipoDocumento, documento: texto('documento').replace(/[.\s]/g, '') }
+          : {}),
       },
       items: carrito.lineas.map((linea) => ({ productoId: linea.productoId, cantidad: linea.cantidad, variante: linea.variante })),
       metodoPago: metodo,
@@ -355,6 +359,33 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
           <Campo etiqueta="Nombre completo" nombre="nombre" autoComplete="name" required error={errores.nombre} ancho />
           <Campo etiqueta="Correo" nombre="email" type="email" autoComplete="email" required error={errores.email} />
           <Campo etiqueta="Celular" nombre="telefono" type="tel" autoComplete="tel" required error={errores.telefono} />
+          {ajustes.facturaElectronica && (
+            <div className="flex flex-col gap-3 sm:col-span-2">
+              <label className="flex items-center gap-2.5 text-sm">
+                <input type="checkbox" checked={quiereFactura} onChange={(evento) => setQuiereFactura(evento.target.checked)} className="accent-current" />
+                Necesito factura electrónica a mi nombre o el de mi empresa
+              </label>
+              {quiereFactura && (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="flex flex-col gap-1.5 text-sm">
+                    <span className="text-tinta/70">Tipo de documento</span>
+                    <select
+                      name="tipoDocumento"
+                      defaultValue="CC"
+                      className="rounded-(--radius-marca) border border-tinta/20 bg-transparent px-3.5 py-2.5 outline-none focus:border-tinta/60"
+                    >
+                      {TIPOS_DOCUMENTO.map((tipo) => (
+                        <option key={tipo.valor} value={tipo.valor}>
+                          {tipo.etiqueta}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <Campo etiqueta="Número (sin puntos)" nombre="documento" inputMode="text" required error={errores.documento} />
+                </div>
+              )}
+            </div>
+          )}
         </fieldset>
 
         <fieldset className="grid gap-4 sm:grid-cols-2">

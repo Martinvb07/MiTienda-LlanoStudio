@@ -193,17 +193,18 @@ model Tienda {
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
 
-  tenant    Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  productos Producto[]
-  pedidos   Pedido[]
-  cupones   Cupon[]
-  visitas   VisitaDiaria[]
-  pasarelas PasarelaTienda[]
-  citas     Cita[]
-  mensajes  MensajeContacto[]
-  resenas   Resena[]
-  carritos  CarritoAbandonado[]
-  avisos    AvisoDisponible[]
+  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  productos   Producto[]
+  pedidos     Pedido[]
+  cupones     Cupon[]
+  visitas     VisitaDiaria[]
+  pasarelas   PasarelaTienda[]
+  citas       Cita[]
+  mensajes    MensajeContacto[]
+  resenas     Resena[]
+  carritos    CarritoAbandonado[]
+  avisos      AvisoDisponible[]
+  facturacion FacturacionTienda?
 
   @@map("tiendas")
 }
@@ -271,14 +272,26 @@ model Pedido {
   notas           String?
 
   /// Por dónde llegó: "web" (confirmó en la tienda) o "whatsapp" (lo mandó por chat).
-  canal          String  @default("web")
+  canal                String  @default("web")
   /// "contra-entrega", "transferencia" o "acordar". Wompi/PSE llegan con Pago.
-  metodoPago     String  @default("acordar")
+  metodoPago           String  @default("acordar")
   /// Código del cupón aplicado, guardado tal cual para el histórico.
-  cupon          String?
+  cupon                String?
   /// Nota interna de la tienda; el cliente no la ve.
-  notaInterna    String?
+  notaInterna          String?
   /// Seguimiento del envío: con qué transportadora salió y su número de guía.
+  /// Documento del comprador, si pidió factura electrónica (CC, NIT, CE, PP).
+  clienteTipoDocumento String?
+  clienteDocumento     String?
+
+  /// Factura electrónica: PENDIENTE (en cola), EMITIDA o ERROR. null = sin factura.
+  facturaEstado String?
+  facturaNumero String?
+  /// Id de la factura en el proveedor (Alegra), para no emitirla dos veces.
+  facturaId     String?
+  facturaError  String?
+  facturaEn     DateTime?
+
   transportadora String?
   guia           String?
 
@@ -950,4 +963,29 @@ model SuscripcionPush {
 
   @@index([tenantId])
   @@map("suscripciones_push")
+}
+
+/// Factura electrónica DIAN de la tienda, emitida con su propia cuenta de
+/// Alegra (proveedor tecnológico autorizado). La API emite a nombre de la tienda.
+model FacturacionTienda {
+  id         String  @id @default(cuid())
+  tiendaId   String  @unique
+  proveedor  String  @default("alegra")
+  activa     Boolean @default(false)
+  /// true = se emite sola cuando el pedido queda pagado o entregado.
+  automatica Boolean @default(false)
+
+  /// Correo de la cuenta de Alegra (usuario de su API).
+  usuario String
+  /// Token de la API de Alegra, cifrado.
+  secreto String
+  /// { productoId: idDelItemEnAlegra } para no crear el mismo producto dos veces.
+  items   Json   @default("{}")
+
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  tienda Tienda @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+
+  @@map("facturacion_tienda")
 }

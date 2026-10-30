@@ -593,3 +593,21 @@ export const guardarSuscripcionPush = (suscripcion: PushSubscriptionJSON) =>
 
 export const borrarSuscripcionPush = (endpoint: string) =>
   pedir<void>('/push/baja', { method: 'POST', body: JSON.stringify({ endpoint }) })
+
+// ── Factura electrónica (Alegra) ──
+
+export interface FacturacionTienda {
+  proveedor: 'alegra'
+  activa: boolean
+  automatica: boolean
+  usuario: string
+  tokenPuesto: boolean
+}
+
+export const obtenerFacturacion = () => pedir<{ facturacion: FacturacionTienda }>('/facturacion').then((r) => r.facturacion)
+
+export const guardarFacturacion = (datos: { activa: boolean; automatica: boolean; usuario: string; token?: string }) =>
+  pedir<{ facturacion: FacturacionTienda }>('/facturacion', { method: 'PUT', body: JSON.stringify(datos) }).then((r) => r.facturacion)
+
+export const facturarPedido = (id: string) =>
+  pedir<{ facturaEstado: 'PENDIENTE' }>(`/pedidos/${id}/factura`, { method: 'POST' }).then((r) => r.facturaEstado)

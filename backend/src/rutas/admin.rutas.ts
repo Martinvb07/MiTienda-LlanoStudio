@@ -23,6 +23,7 @@ import * as sistema from '../controladores/admin/sistema.js'
 import * as contenido from '../controladores/admin/contenido.js'
 import * as soporte from '../controladores/admin/soporte.js'
 import { exigirAdmin, puedeEscribir, soloDueno } from '../servicios/admins.servicio.js'
+import { limites } from '../middlewares/limiteIntentos.js'
 
 /**
  * Admin de la plataforma. Roles: LECTURA ve todo y no cambia nada; SOPORTE
@@ -31,7 +32,7 @@ import { exigirAdmin, puedeEscribir, soloDueno } from '../servicios/admins.servi
  */
 const enrutador = Router()
 
-enrutador.post('/ingreso', validar(esquemaIngresoAdmin), ingresarAdmin)
+enrutador.post('/ingreso', limites.ingresoPorIp, limites.ingresoPorCorreo, validar(esquemaIngresoAdmin), ingresarAdmin)
 
 enrutador.use(exigirAdmin)
 

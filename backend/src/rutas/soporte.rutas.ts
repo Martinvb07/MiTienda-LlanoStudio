@@ -6,6 +6,7 @@ import { leerSesionPanel } from '../middlewares/autenticacion.js'
 import { noAutorizado, noEncontrado } from '../utilidades/errores.js'
 import { leerAjuste } from '../servicios/plataforma.servicio.js'
 import { anunciarTicket, nuevoTokenVisitante, publicarMensaje } from '../servicios/soporte.servicio.js'
+import { limites } from '../middlewares/limiteIntentos.js'
 
 /**
  * Chat de soporte, lado cliente. Desde la web cualquiera abre una
@@ -32,7 +33,7 @@ const esquemaNuevo = z.object({
   mensaje: z.string().trim().min(1, 'Escribe tu mensaje').max(4000),
 })
 
-enrutador.post('/tickets', validar(esquemaNuevo), async (req, res) => {
+enrutador.post('/tickets', limites.formularioPublico, validar(esquemaNuevo), async (req, res) => {
   const datos = req.body as z.infer<typeof esquemaNuevo>
   const sesion = sesionDe(req)
 

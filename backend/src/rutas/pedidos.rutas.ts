@@ -4,11 +4,12 @@ import { esquemaValidarCupon, validarCuponPublico } from '../controladores/cupon
 import { exigirTenant } from '../middlewares/resolverTenant.js'
 import { estadoPago } from '../controladores/pasarelas.controlador.js'
 import { validar } from '../middlewares/validacion.js'
+import { limites } from '../middlewares/limiteIntentos.js'
 
 const enrutador = Router()
 
-enrutador.post('/', exigirTenant, validar(esquemaPedidoPublico), crearPedidoPublico)
-enrutador.post('/cupon', exigirTenant, validar(esquemaValidarCupon), validarCuponPublico)
+enrutador.post('/', limites.pedido, exigirTenant, validar(esquemaPedidoPublico), crearPedidoPublico)
+enrutador.post('/cupon', limites.cupon, exigirTenant, validar(esquemaValidarCupon), validarCuponPublico)
 enrutador.get('/pagos/:referencia', exigirTenant, estadoPago)
 
 export default enrutador

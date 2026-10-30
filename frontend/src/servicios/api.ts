@@ -1,4 +1,5 @@
 import 'server-only'
+import { headers } from 'next/headers'
 
 /**
  * Cliente HTTP hacia la API de Express.
@@ -57,6 +58,20 @@ export async function pedirApi<T>(ruta: string, opciones: OpcionesPeticion): Pro
 }
 
 /**
+ * IP del visitante, para que la API aplique sus topes de intentos a la persona
+ * y no al servidor de Next (desde aquí todas las llamadas salen de la misma IP).
+ * nginx la deja en X-Real-IP. Fuera de una petición (build, ISR) no hay.
+ */
+async function ipVisitante(): Promise<string | null> {
+  try {
+    const cabeceras = await headers()
+    return cabeceras.get('x-real-ip') ?? cabeceras.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
  * POST a la API en nombre de la tienda de `host` (por ejemplo, un pedido). No
  * lanza en errores 4xx: devuelve el cuerpo para mostrar el mensaje al cliente.
  */
@@ -65,6 +80,7 @@ export async function enviarApi<T>(
   cuerpo: unknown,
   host: string,
 ): Promise<{ ok: true; datos: T } | { ok: false; estado: number; mensaje: string; campos: Record<string, string> }> {
+  const ip = await ipVisitante()
   let respuesta: Response
   try {
     respuesta = await fetch(`${URL_API}${ruta}`, {
@@ -74,6 +90,7 @@ export async function enviarApi<T>(
         'content-type': 'application/json',
         'x-mitienda-host': host,
         ...(TOKEN_INTERNO ? { 'x-mitienda-interno': TOKEN_INTERNO } : {}),
+        ...(TOKEN_INTERNO && ip ? { 'x-mitienda-ip': ip } : {}),
       },
       body: JSON.stringify(cuerpo),
       cache: 'no-store',

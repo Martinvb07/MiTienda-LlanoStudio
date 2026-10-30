@@ -86,6 +86,7 @@ import {
 } from '../controladores/contacto.controlador.js'
 import { eliminarResena, esquemaModerarResena, listarResenasPanel, moderarResena } from '../controladores/resenas.controlador.js'
 import { actualizarCarrito, esquemaActualizarCarrito, listarCarritos, listarClientes } from '../controladores/clientes.controlador.js'
+import { limites } from '../middlewares/limiteIntentos.js'
 
 const enrutador = Router()
 
@@ -95,8 +96,8 @@ const enrutador = Router()
  *
  * Pendiente: pedidos y dominios propios.
  */
-enrutador.post('/registro', validar(esquemaRegistro), registrar)
-enrutador.post('/ingreso', validar(esquemaIngreso), ingresar)
+enrutador.post('/registro', limites.registro, validar(esquemaRegistro), registrar)
+enrutador.post('/ingreso', limites.ingresoPorIp, limites.ingresoPorCorreo, validar(esquemaIngreso), ingresar)
 
 enrutador.use(exigirSesion)
 

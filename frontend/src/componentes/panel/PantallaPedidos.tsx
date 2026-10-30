@@ -15,6 +15,7 @@ import { useSesion } from './SesionPanel'
 import { Aviso, BotonPanel, CURVA, Etiqueta } from './ui/basicos'
 import { Aparecer, Contador } from './ui/movimiento'
 import { confirmar } from './ui/confirmar'
+import { descargarCsv } from '@/utilidades/csv'
 
 export const ESTADOS: { valor: EstadoPedido; etiqueta: string; tono: 'neutro' | 'verde' | 'ambar' | 'azul' }[] = [
   { valor: 'PENDIENTE', etiqueta: 'Nuevo', tono: 'ambar' },
@@ -70,12 +71,7 @@ function exportarCsv(pedidos: Pedido[]) {
       pedido.total,
     ]),
   ]
-  const csv = filas.map((fila) => fila.map((celda) => `"${String(celda).replace(/"/g, '""')}"`).join(',')).join('\n')
-  const enlace = document.createElement('a')
-  enlace.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }))
-  enlace.download = `pedidos-${new Date().toISOString().slice(0, 10)}.csv`
-  enlace.click()
-  URL.revokeObjectURL(enlace.href)
+  descargarCsv('pedidos', filas)
 }
 
 /** Pedidos de la tienda: cifras del mes, filtros, búsqueda y el detalle de cada uno. */

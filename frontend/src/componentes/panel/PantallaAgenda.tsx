@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowUpRight, CalendarDays, Check, Clock, MessageCircle, MoreHorizontal, Phone, Plus, UserX, X } from 'lucide-react'
+import { ArrowUpRight, CalendarDays, Check, Clock, Download, MessageCircle, MoreHorizontal, Phone, Plus, UserX, X } from 'lucide-react'
 import { ErrorPanel, actualizarCita, crearCita, listarCitas } from '@/servicios/panel'
 import type { AgendaPanel, Cita, EstadoCita } from '@/tipos/citas'
 import { enlaceWhatsapp } from '@/utilidades/whatsapp'
 import { cn } from '@/utilidades/clases'
+import { descargarCsv } from '@/utilidades/csv'
 import { CabeceraPanel } from './CabeceraPanel'
 import { useSesion } from './SesionPanel'
 import { Aviso, BotonPanel, CURVA, Campo, CampoArea, Etiqueta, Interruptor, Segmentado } from './ui/basicos'
@@ -28,6 +29,28 @@ const ZONA = { timeZone: 'America/Bogota' } as const
 const diaDe = (iso: string) => new Date(new Date(iso).getTime() - 5 * 3_600_000).toISOString().slice(0, 10)
 const horaDe = (iso: string) => new Date(iso).toLocaleTimeString('es-CO', { ...ZONA, hour: 'numeric', minute: '2-digit' })
 const hoyLocal = () => diaDe(new Date().toISOString())
+
+function exportarCitas(citas: Cita[]) {
+  descargarCsv('citas', [
+    ['Fecha', 'Hora', 'Servicio', 'Minutos', 'Precio', 'Cliente', 'Teléfono', 'Correo', 'Estado', 'Notas del cliente', 'Código'],
+    ...citas.map((cita) => {
+      const inicio = new Date(cita.inicio)
+      return [
+        inicio.toLocaleDateString('es-CO'),
+        inicio.toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' }),
+        cita.servicio,
+        cita.duracion,
+        cita.precio ?? '',
+        cita.clienteNombre,
+        cita.clienteTelefono,
+        cita.clienteEmail ?? '',
+        ESTADO[cita.estado].etiqueta,
+        cita.notas ?? '',
+        cita.codigo,
+      ]
+    }),
+  ])
+}
 
 function tituloDia(dia: string) {
   const hoy = hoyLocal()
@@ -124,10 +147,18 @@ export function PantallaAgenda() {
                 .join(' · ')
         }
         accion={
-          <BotonPanel variante="primario" disabled={!agenda?.activas} onClick={() => setNueva(true)} className="h-10 px-5">
-            <Plus aria-hidden="true" className="h-3.5 w-3.5" />
-            Nueva cita
-          </BotonPanel>
+          <div className="flex flex-wrap gap-2">
+            {citas.length > 0 && (
+              <BotonPanel onClick={() => exportarCitas(citas)} className="h-10 px-3.5" title="Exportar a Excel">
+                <Download aria-hidden="true" className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Exportar</span>
+              </BotonPanel>
+            )}
+            <BotonPanel variante="primario" disabled={!agenda?.activas} onClick={() => setNueva(true)} className="h-10 px-5">
+              <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+              Nueva cita
+            </BotonPanel>
+          </div>
         }
       />
 

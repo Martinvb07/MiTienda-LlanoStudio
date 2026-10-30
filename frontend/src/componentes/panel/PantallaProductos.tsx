@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'motion/react'
-import { Check, CheckSquare, Copy, Eye, EyeOff, FileUp, Folders, MoreHorizontal, Pencil, Plus, Search, Star, Trash2, X } from 'lucide-react'
+import { Check, CheckSquare, Copy, Download, Eye, EyeOff, FileUp, Folders, MoreHorizontal, Pencil, Plus, Search, Star, Trash2, X } from 'lucide-react'
 import {
   actualizarProducto,
   crearProducto,
@@ -25,6 +25,25 @@ import { MenuAcciones } from './ui/flotantes'
 import { BarraSeleccion, ModalCategorias, ModalImportar } from './HerramientasCatalogo'
 import { Aparecer } from './ui/movimiento'
 import { confirmar } from './ui/confirmar'
+import { descargarCsv } from '@/utilidades/csv'
+
+/** El catálogo con las mismas columnas que acepta Importar: se puede editar en Excel y volver a subir. */
+function exportarCatalogo(productos: ProductoPanel[]) {
+  descargarCsv('productos', [
+    ['nombre', 'precio', 'precio_antes', 'stock', 'categoria', 'presentacion', 'descripcion', 'fotos', 'visible'],
+    ...productos.map((producto) => [
+      producto.nombre,
+      Number(producto.precio),
+      producto.precioComparacion ? Number(producto.precioComparacion) : '',
+      producto.stock,
+      producto.categoria ?? '',
+      producto.presentacion ?? '',
+      producto.descripcion ?? '',
+      producto.fotos.join('|'),
+      producto.activo ? 'sí' : 'no',
+    ]),
+  ])
+}
 
 const FILTROS = [
   { valor: 'todos', etiqueta: 'Todos', cumple: () => true },
@@ -200,6 +219,10 @@ export function PantallaProductos() {
             >
               <FileUp aria-hidden="true" className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Importar</span>
+            </BotonPanel>
+            <BotonPanel onClick={() => productos && exportarCatalogo(productos)} disabled={!productos?.length} className="h-10 px-3.5" title="Exportar a Excel">
+              <Download aria-hidden="true" className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Exportar</span>
             </BotonPanel>
             <BotonPanel onClick={() => setHerramienta('categorias')} disabled={!productos?.length} className="h-10 px-3.5" title="Categorías">
               <Folders aria-hidden="true" className="h-3.5 w-3.5" />

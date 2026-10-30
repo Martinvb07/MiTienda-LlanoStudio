@@ -23,6 +23,7 @@ import { useSesion } from './SesionPanel'
 import { Aviso, BotonPanel, CLASES_ENTRADA, CURVA, Etiqueta, Segmentado } from './ui/basicos'
 import { ModalPanel } from './ui/flotantes'
 import { Aparecer } from './ui/movimiento'
+import { descargarCsv } from '@/utilidades/csv'
 
 type Orden = 'recientes' | 'gasto' | 'pedidos'
 
@@ -50,12 +51,7 @@ function exportarCsv(clientes: ClientePanel[]) {
       cliente.ultimaVez.slice(0, 10),
     ]),
   ]
-  const csv = filas.map((fila) => fila.map((celda) => `"${String(celda).replace(/"/g, '""')}"`).join(',')).join('\n')
-  const enlace = document.createElement('a')
-  enlace.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }))
-  enlace.download = `clientes-${new Date().toISOString().slice(0, 10)}.csv`
-  enlace.click()
-  URL.revokeObjectURL(enlace.href)
+  descargarCsv('clientes', filas)
 }
 
 /**

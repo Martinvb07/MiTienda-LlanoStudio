@@ -59,6 +59,22 @@ Cada compra queda registrada con los datos del cliente, los productos, el estado
 
 Los datos de cada negocio están aislados de los demás. Un cliente nunca puede ver ni tocar la información de otro, aunque compartan la misma plataforma.
 
+### <img src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9fe.svg" width="20" align="top"> Factura electrónica DIAN
+
+Conectás tu cuenta de Alegra y cada pedido se factura con un clic, o solo cuando queda pagado. El cliente puede pedirla con su cédula o NIT al comprar.
+
+### <img src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e3.svg" width="20" align="top"> Vender más sin hacer más
+
+- El cliente recibe un correo cuando su pedido se confirma, se paga, sale (con el número de guía) y llega.
+- A quien deja el carrito a medias le llega un enlace que se lo vuelve a armar, por correo o por WhatsApp.
+- «Avísame cuando llegue» en los productos agotados y favoritos guardados en el navegador.
+- Pixel de Meta, Google Analytics y catálogo para Instagram y Facebook (`/catalogo.xml`).
+- Cada tienda tiene su `sitemap.xml` y su `robots.txt` para que Google encuentre todos sus productos.
+
+### <img src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4f1.svg" width="20" align="top"> El panel en tu celular
+
+El panel se instala como app y avisa con cada pedido, cita o mensaje nuevo, aunque esté cerrado. Si un producto se está agotando, te llega un correo.
+
 ---
 
 ## ¿Para quién es?

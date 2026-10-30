@@ -152,6 +152,9 @@ const esquemaAjustes = z.object({
   soloZonas: z.boolean().optional(),
   recogerEnTienda: z.boolean().optional(),
   recordarCarritos: z.boolean().optional(),
+  correosPedido: z.boolean().optional(),
+  alertasStock: z.boolean().optional(),
+  stockMinimo: z.coerce.number().int().min(0).max(1000).optional(),
   direccionRecogida: z.string().trim().max(200).optional(),
   // Cabecera
   cabeceraFija: z.boolean().optional(),

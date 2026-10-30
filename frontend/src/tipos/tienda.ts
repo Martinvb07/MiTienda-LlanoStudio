@@ -155,6 +155,12 @@ export interface AjustesTienda {
   direccionRecogida?: string
   /** Correo automático a quien deja el carrito con su correo. */
   recordarCarritos?: boolean
+  /** false = no escribirle al comprador cuando cambia su pedido. Por defecto, sí. */
+  correosPedido?: boolean
+  /** false = no avisar por correo cuando un producto baja del mínimo. Por defecto, sí. */
+  alertasStock?: boolean
+  /** Unidades desde las que un producto cuenta como "por agotarse" (por defecto 3). */
+  stockMinimo?: number
   /** ID del pixel de Meta (sólo números). */
   pixelMeta?: string
   /** ID de medición de Google Analytics 4 (G-XXXX). */

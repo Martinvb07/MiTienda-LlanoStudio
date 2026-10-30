@@ -8,6 +8,7 @@ import { armarCheckout, leerSecretos, nuevaReferenciaPago } from '../servicios/p
 import { calcularEnvio, type AjustesEnvio } from '../utilidades/envios.js'
 import { marcarCarritosRecuperados } from './clientes.controlador.js'
 import { registro } from '../utilidades/registro.js'
+import { avisarComprador, esEstadoAvisado, revisarStockTrasVenta } from '../servicios/avisosPedido.servicio.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Esquemas
@@ -58,6 +59,10 @@ const ESTADOS = ['PENDIENTE', 'PAGADO', 'PREPARANDO', 'ENVIADO', 'ENTREGADO', 'C
 export const esquemaActualizarPedido = z.object({
   estado: z.enum(ESTADOS).optional(),
   notaInterna: z.string().trim().max(1000).nullable().optional(),
+  transportadora: z.string().trim().max(60).nullable().optional(),
+  guia: z.string().trim().max(60).nullable().optional(),
+  /** false = cambiar el estado sin escribirle al comprador. */
+  avisar: z.boolean().optional(),
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -82,6 +87,8 @@ const camposPedido = {
   metodoPago: true,
   cupon: true,
   notaInterna: true,
+  transportadora: true,
+  guia: true,
   estado: true,
   subtotal: true,
   descuento: true,
@@ -326,6 +333,8 @@ export async function crearPedidoPublico(req: Request, res: Response): Promise<v
         })
       })
 
+      avisarComprador(pedido.id, 'PENDIENTE').catch((error: unknown) => registro.warn({ err: error }, 'No se pudo confirmar el pedido al comprador'))
+      revisarStockTrasVenta(tiendaId, pedido.items).catch((error: unknown) => registro.warn({ err: error }, 'No se pudo revisar el inventario'))
       marcarCarritosRecuperados(tiendaId, pedido.clienteEmail, pedido.clienteTelefono).catch((error: unknown) =>
         registro.error({ err: error }, 'No se pudo marcar el carrito como recuperado'),
       )
@@ -441,10 +450,16 @@ export async function actualizarPedidoPanel(req: Request, res: Response): Promis
       data: {
         ...(datos.estado ? { estado: datos.estado } : {}),
         ...(datos.notaInterna !== undefined ? { notaInterna: datos.notaInterna || null } : {}),
+        ...(datos.transportadora !== undefined ? { transportadora: datos.transportadora || null } : {}),
+        ...(datos.guia !== undefined ? { guia: datos.guia || null } : {}),
       },
       select: camposPedido,
-    })
+    }).then((actualizado) => ({ actualizado, cambio: Boolean(datos.estado && datos.estado !== actual.estado) }))
   })
 
-  res.json({ pedido: serializarPedido(pedido) })
+  if (pedido.cambio && datos.avisar !== false && esEstadoAvisado(pedido.actualizado.estado)) {
+    avisarComprador(id, pedido.actualizado.estado).catch((error: unknown) => registro.warn({ err: error }, 'No se pudo avisar el cambio al comprador'))
+  }
+
+  res.json({ pedido: serializarPedido(pedido.actualizado) })
 }

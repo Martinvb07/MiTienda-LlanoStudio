@@ -4,6 +4,7 @@ import type { Prisma } from '../generado/prisma/client.js'
 import { cifrar, descifrar } from '../utilidades/cifrado.js'
 import { registro } from '../utilidades/registro.js'
 import { urlPanel } from './suscripciones.servicio.js'
+import { avisarComprador } from './avisosPedido.servicio.js'
 
 /**
  * Pasarelas de pago de las tiendas: Wompi, ePayco y Bold. Cada tienda pone
@@ -278,15 +279,18 @@ export async function aplicarResultado(referencia: string, resultado: Omit<Aviso
     estado = 'ERROR'
   }
 
-  await prisma.$transaction(async (tx) => {
+  const pagado = await prisma.$transaction(async (tx) => {
     const { count } = await tx.pago.updateMany({
       where: { id: pago.id, estado: { not: 'APROBADO' } },
       data: { estado, datosProveedor: resultado.datos as Prisma.InputJsonValue },
     })
-    if (count > 0 && estado === 'APROBADO') {
-      await tx.pedido.updateMany({ where: { id: pago.pedidoId, estado: 'PENDIENTE' }, data: { estado: 'PAGADO' } })
-    }
+    if (count === 0 || estado !== 'APROBADO') return false
+    const pedido = await tx.pedido.updateMany({ where: { id: pago.pedidoId, estado: 'PENDIENTE' }, data: { estado: 'PAGADO' } })
+    return pedido.count > 0
   })
+  if (pagado) {
+    avisarComprador(pago.pedidoId, 'PAGADO').catch((error: unknown) => registro.warn({ err: error, referencia }, 'No se pudo avisar el pago al comprador'))
+  }
   registro.info({ referencia, estado }, 'Pago de pedido actualizado')
   return estado
 }

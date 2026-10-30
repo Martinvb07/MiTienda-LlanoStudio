@@ -284,6 +284,7 @@ export async function recordarCarritos() {
           'Te lo guardamos por si quieres terminar la compra.',
         ],
         { texto: 'Volver a la tienda', url: `https://${host}/productos/${items[0]?.slug ?? ''}` },
+        carrito.tienda.nombre,
       ),
     )
     if (!enviado) return

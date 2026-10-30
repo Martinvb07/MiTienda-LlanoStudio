@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Check, Download, Mail, MapPin, MessageCircle, Phone, Search, X } from 'lucide-react'
-import { actualizarPedido, listarPedidos } from '@/servicios/panel'
+import { actualizarPedido, listarPedidos, type CambiosPedido } from '@/servicios/panel'
 import { ETIQUETAS_PAGO, type EstadoPedido, type Pedido } from '@/tipos/pedidos'
 import { formatearPrecio } from '@/utilidades/formato'
 import { limitesDe, planMinimo } from '@/utilidades/planes'
@@ -299,6 +299,8 @@ function DetallePedido({
   const { sesion } = useSesion()
   const [guardando, setGuardando] = useState(false)
   const [nota, setNota] = useState(pedido.notaInterna ?? '')
+  const [transportadora, setTransportadora] = useState(pedido.transportadora ?? '')
+  const [guia, setGuia] = useState(pedido.guia ?? '')
   const indice = FLUJO.indexOf(pedido.estado)
   const siguiente = indice >= 0 && indice < FLUJO.length - 1 ? FLUJO[indice + 1] : null
   const tienda = sesion.tienda?.nombre ?? 'la tienda'
@@ -309,7 +311,7 @@ function DetallePedido({
     return () => window.removeEventListener('keydown', alTeclear)
   }, [alCerrar])
 
-  async function cambiar(cambios: { estado?: EstadoPedido; notaInterna?: string | null }) {
+  async function cambiar(cambios: CambiosPedido) {
     setGuardando(true)
     try {
       alCambiar(await actualizarPedido(pedido.id, cambios))
@@ -323,7 +325,7 @@ function DetallePedido({
   const mensajeCliente: Partial<Record<EstadoPedido, string>> = {
     PENDIENTE: `Hola ${pedido.clienteNombre.split(' ')[0]}, recibimos tu pedido #${pedido.numero} en ${tienda}. ¡Gracias por tu compra!`,
     PAGADO: `Hola ${pedido.clienteNombre.split(' ')[0]}, confirmamos el pago de tu pedido #${pedido.numero}. Ya lo estamos preparando.`,
-    ENVIADO: `Hola ${pedido.clienteNombre.split(' ')[0]}, tu pedido #${pedido.numero} ya va en camino.`,
+    ENVIADO: `Hola ${pedido.clienteNombre.split(' ')[0]}, tu pedido #${pedido.numero} ya va en camino.${pedido.guia ? ` ${pedido.transportadora ? `Va por ${pedido.transportadora}, ` : ''}guía ${pedido.guia}.` : ''}`,
     ENTREGADO: `Hola ${pedido.clienteNombre.split(' ')[0]}, ¿te llegó bien tu pedido #${pedido.numero}? Gracias por comprar en ${tienda}.`,
   }
 
@@ -489,6 +491,39 @@ function DetallePedido({
             </div>
           </dl>
 
+          {pedido.direccionEnvio?.entrega !== 'recoger' && (
+            <>
+              <h3 className="mt-8 text-[11px] tracking-[0.14em] text-sitio-tenue uppercase">Envío</h3>
+              <div className="mt-3 grid grid-cols-2 gap-2.5">
+                <input
+                  value={transportadora}
+                  onChange={(evento) => setTransportadora(evento.target.value)}
+                  onBlur={() => transportadora !== (pedido.transportadora ?? '') && void cambiar({ transportadora })}
+                  list="transportadoras"
+                  maxLength={60}
+                  placeholder="Transportadora"
+                  className="w-full rounded-lg border border-sitio-borde bg-sitio-campo px-3 py-2.5 text-[13px] outline-none placeholder:text-sitio-tenue focus:border-white/40"
+                />
+                <input
+                  value={guia}
+                  onChange={(evento) => setGuia(evento.target.value)}
+                  onBlur={() => guia !== (pedido.guia ?? '') && void cambiar({ guia })}
+                  maxLength={60}
+                  placeholder="Número de guía"
+                  className="w-full rounded-lg border border-sitio-borde bg-sitio-campo px-3 py-2.5 text-[13px] outline-none placeholder:text-sitio-tenue focus:border-white/40"
+                />
+                <datalist id="transportadoras">
+                  {['Servientrega', 'Coordinadora', 'Interrapidísimo', 'Envía', 'TCC', 'Deprisa', 'Mensajero propio'].map((nombre) => (
+                    <option key={nombre} value={nombre} />
+                  ))}
+                </datalist>
+              </div>
+              <p className="mt-2 text-[11.5px] leading-relaxed text-sitio-tenue">
+                Escríbela antes de marcarlo como enviado: le llega al cliente en el correo de «tu pedido va en camino».
+              </p>
+            </>
+          )}
+
           <h3 className="mt-8 text-[11px] tracking-[0.14em] text-sitio-tenue uppercase">Nota interna</h3>
           <textarea
             value={nota}
@@ -496,7 +531,7 @@ function DetallePedido({
             onBlur={() => nota !== (pedido.notaInterna ?? '') && void cambiar({ notaInterna: nota })}
             rows={3}
             maxLength={1000}
-            placeholder="Sólo la ves tú: número de guía, acuerdos con el cliente…"
+            placeholder="Sólo la ves tú: acuerdos con el cliente, recordatorios…"
             className="mt-3 w-full resize-y rounded-lg border border-sitio-borde bg-sitio-campo px-3 py-2.5 text-[13px] outline-none placeholder:text-sitio-tenue focus:border-white/40"
           />
         </div>

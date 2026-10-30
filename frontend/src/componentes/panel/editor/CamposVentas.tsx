@@ -118,6 +118,30 @@ export function CamposVentas({ ajustes, alCambiar }: Props) {
         </small>
       </Interruptor>
 
+      <Interruptor activo={ajustes.correosPedido ?? true} alCambiar={(correosPedido) => alCambiar({ correosPedido })}>
+        Avisar al cliente por correo
+        <small className="block text-[11.5px] text-sitio-tenue">
+          Cuando recibes su pedido, lo cobras, lo envías (con la guía) y lo entregas.
+        </small>
+      </Interruptor>
+
+      <Interruptor activo={ajustes.alertasStock ?? true} alCambiar={(alertasStock) => alCambiar({ alertasStock })}>
+        Avisarme cuando algo se esté agotando
+        <small className="block text-[11.5px] text-sitio-tenue">Te llega un correo cuando una venta deja un producto en el mínimo.</small>
+      </Interruptor>
+      {(ajustes.alertasStock ?? true) && (
+        <Campo
+          etiqueta="Mínimo de unidades"
+          valor={ajustes.stockMinimo ?? ''}
+          alCambiar={(valor) => {
+            const limpio = valor.replace(/\D/g, '')
+            alCambiar({ stockMinimo: limpio === '' ? undefined : Math.min(1000, Number(limpio)) })
+          }}
+          marcador="3"
+          ayuda="Con estas unidades o menos, el producto sale como «por agotarse»."
+        />
+      )}
+
       <span className="mt-1 text-[11.5px] text-sitio-suave">Cómo te pagan</span>
       <Interruptor activo={ajustes.pagoContraEntrega ?? false} alCambiar={(pagoContraEntrega) => alCambiar({ pagoContraEntrega })}>
         Pago contra entrega

@@ -221,7 +221,14 @@ export const eliminarProducto = (id: string) =>
 export const listarPedidos = () =>
   pedir<{ pedidos: Pedido[] }>('/pedidos').then((respuesta) => respuesta.pedidos)
 
-export const actualizarPedido = (id: string, cambios: { estado?: EstadoPedido; notaInterna?: string | null }) =>
+export interface CambiosPedido {
+  estado?: EstadoPedido
+  notaInterna?: string | null
+  transportadora?: string | null
+  guia?: string | null
+}
+
+export const actualizarPedido = (id: string, cambios: CambiosPedido) =>
   pedir<{ pedido: Pedido }>(`/pedidos/${id}`, { method: 'PATCH', body: JSON.stringify(cambios) }).then(
     (respuesta) => respuesta.pedido,
   )

@@ -29,18 +29,21 @@ function transportador() {
 const escapar = (texto: string) =>
   texto.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!)
 
-/** Plantilla común: sobria, blanco y negro como la web. */
-export function plantillaCorreo(titulo: string, parrafos: string[], boton?: { texto: string; url: string }) {
+/**
+ * Plantilla común: sobria, blanco y negro como la web. `marca` es lo que va
+ * arriba: Mi Sitio para las dueñas, el nombre de la tienda para sus clientes.
+ */
+export function plantillaCorreo(titulo: string, parrafos: string[], boton?: { texto: string; url: string }, marca = 'Mi Sitio') {
   return `<!doctype html><html><body style="margin:0;background:#f6f6f3;font-family:Helvetica,Arial,sans-serif;color:#0b0b0c">
 <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 16px">
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#fff;border:1px solid #e6e6e3;border-radius:14px">
 <tr><td style="padding:36px 32px">
-<p style="margin:0 0 24px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8a8e">Mi Sitio</p>
+<p style="margin:0 0 24px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8a8e">${escapar(marca)}</p>
 <h1 style="margin:0 0 16px;font-size:26px;font-weight:400;letter-spacing:-.03em">${escapar(titulo)}</h1>
 ${parrafos.map((p) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#4f4f52">${escapar(p)}</p>`).join('')}
 ${boton ? `<a href="${boton.url}" style="display:inline-block;margin-top:12px;background:#0b0b0c;color:#fff;text-decoration:none;font-size:12px;letter-spacing:.09em;text-transform:uppercase;padding:14px 22px;border-radius:3px">${escapar(boton.texto)}</a>` : ''}
 </td></tr></table>
-<p style="margin:20px 0 0;font-size:12px;color:#8a8a8e">Llano Studio · Hecho en Colombia</p>
+<p style="margin:20px 0 0;font-size:12px;color:#8a8a8e">${marca === 'Mi Sitio' ? 'Llano Studio · Hecho en Colombia' : `Tienda creada con Mi Sitio`}</p>
 </td></tr></table></body></html>`
 }
 

@@ -275,6 +275,9 @@ model Pedido {
   cupon       String?
   /// Nota interna de la tienda; el cliente no la ve.
   notaInterna String?
+  /// Seguimiento del envío: con qué transportadora salió y su número de guía.
+  transportadora String?
+  guia           String?
 
   estado    EstadoPedido @default(PENDIENTE)
   subtotal  Decimal      @db.Decimal(12, 2)

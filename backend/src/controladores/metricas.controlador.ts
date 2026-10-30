@@ -4,6 +4,7 @@ import { prisma } from '../config/prisma.js'
 import { contarCarritosAbandonados } from './clientes.controlador.js'
 import { Prisma } from '../generado/prisma/client.js'
 import { planDeLaSesion, tiendaDeLaSesion } from '../servicios/sesion.servicio.js'
+import { STOCK_MINIMO_POR_DEFECTO } from '../servicios/avisosPedido.servicio.js'
 
 /** Los días se cuentan en hora de Colombia: una venta a las 11 p. m. es de ese día. */
 const HOY_COLOMBIA = Prisma.sql`(now() AT TIME ZONE 'America/Bogota')::date`
@@ -156,6 +157,8 @@ export async function obtenerMetricas(req: Request, res: Response): Promise<void
  */
 export async function obtenerAvisos(req: Request, res: Response): Promise<void> {
   const tiendaId = await tiendaDeLaSesion(req)
+  const ajustes = (await prisma.tienda.findUnique({ where: { id: tiendaId }, select: { ajustes: true } }))?.ajustes as { stockMinimo?: number } | null
+  const stockMinimo = ajustes?.stockMinimo ?? STOCK_MINIMO_POR_DEFECTO
   const enTresDias = new Date(Date.now() + 3 * 86_400_000)
 
   const [pedidosNuevos, ultimos, agotados, stockBajo, cuponesPorVencer, mensajesNuevos, citasPorConfirmar, resenasPendientes, carritosAbandonados] = await Promise.all([
@@ -168,7 +171,7 @@ export async function obtenerAvisos(req: Request, res: Response): Promise<void> 
     }),
     prisma.producto.count({ where: { tiendaId, activo: true, stock: 0 } }),
     prisma.producto.findMany({
-      where: { tiendaId, activo: true, stock: { gt: 0, lte: 3 } },
+      where: { tiendaId, activo: true, stock: { gt: 0, lte: stockMinimo } },
       select: { id: true, nombre: true, stock: true },
       take: 5,
     }),

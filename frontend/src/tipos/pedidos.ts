@@ -53,6 +53,9 @@ export interface Pedido {
   metodoPago: MetodoPago
   cupon: string | null
   notaInterna: string | null
+  /** Seguimiento del envío; le llega al comprador en el correo de "va en camino". */
+  transportadora?: string | null
+  guia?: string | null
   estado: EstadoPedido
   subtotal: string
   descuento: string

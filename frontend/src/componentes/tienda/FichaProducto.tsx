@@ -100,6 +100,9 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
             <Avisame productoId={producto.id} />
           </div>
         )}
+        <div className="mt-4">
+          <BotonFavorito productoId={producto.id} />
+        </div>
       </div>
     ),
     beneficios: <Beneficios beneficios={plantilla.beneficios} />,
@@ -140,12 +143,7 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
           ))}
         </div>
       ) : null,
-    compartir: (
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-        <Compartir nombre={producto.nombre} />
-        <BotonFavorito productoId={producto.id} />
-      </div>
-    ),
+    compartir: <Compartir nombre={producto.nombre} />,
   }
 
   return (

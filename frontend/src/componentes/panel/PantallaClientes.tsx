@@ -123,7 +123,7 @@ export function PantallaClientes() {
   function mensajeCarrito(carrito: CarritoPanel) {
     const nombre = carrito.nombre?.split(' ')[0]
     const lista = carrito.items.map((item) => `• ${item.cantidad} × ${item.nombre}${item.variante ? ` (${item.variante})` : ''}`).join('\n')
-    return `Hola${nombre ? ` ${nombre}` : ''}, te escribo de ${sesion.tienda?.nombre ?? 'la tienda'}. Vimos que dejaste esto en el carrito:\n${lista}\n¿Te ayudo a terminar el pedido? ${urlTienda(sesion.tenant.subdominio)}`
+    return `Hola${nombre ? ` ${nombre}` : ''}, te escribo de ${sesion.tienda?.nombre ?? 'la tienda'}. Vimos que dejaste esto en el carrito:\n${lista}\n¿Te ayudo a terminar el pedido? Aquí lo tienes listo: ${urlTienda(sesion.tenant.subdominio)}/carrito?recuperar=${carrito.id}`
   }
 
   return (

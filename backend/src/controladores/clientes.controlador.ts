@@ -193,6 +193,51 @@ export async function listarClientes(req: Request, res: Response): Promise<void>
   })
 }
 
+/**
+ * Las líneas de un carrito guardado, con precio y stock de hoy, para volver a
+ * cargarlo desde el enlace que le llega al cliente (correo o WhatsApp). El id
+ * es largo y aleatorio: quien lo tiene es quien recibió el enlace.
+ */
+export async function recuperarCarritoPublico(req: Request, res: Response): Promise<void> {
+  const { tiendaId } = req.tenant!
+  const carrito = await prisma.carritoAbandonado.findFirst({
+    where: { id: String(req.params.id), tiendaId, estado: { not: 'DESCARTADO' } },
+    select: { items: true },
+  })
+  if (!carrito) throw noEncontrado('Ese carrito ya no está disponible')
+
+  const items = carrito.items as unknown as ItemGuardado[]
+  const productos = await prisma.producto.findMany({
+    where: { tiendaId, activo: true, id: { in: items.map((item) => item.productoId) } },
+    select: { id: true, nombre: true, slug: true, precio: true, stock: true, fotos: true, variantes: true },
+  })
+  const porId = new Map(productos.map((producto) => [producto.id, producto]))
+
+  const lineas = items.flatMap((item) => {
+    const producto = porId.get(item.productoId)
+    if (!producto) return []
+    const variantes = Array.isArray(producto.variantes) ? (producto.variantes as { id: string; nombre: string; precio?: number | string | null; stock: number }[]) : []
+    // Se guardó el nombre de la variante ("M / Rojo"): se busca la de hoy con ese nombre.
+    const variante = item.variante ? variantes.find((otra) => otra.nombre === item.variante) : undefined
+    if (item.variante && !variante) return []
+    const stock = variante ? variante.stock : producto.stock
+    if (stock <= 0) return []
+    return [
+      {
+        productoId: producto.id,
+        slug: producto.slug,
+        nombre: producto.nombre,
+        precio: String(variante?.precio ?? producto.precio.toString()),
+        foto: producto.fotos[0],
+        cantidad: Math.min(item.cantidad, stock),
+        stock,
+        ...(variante ? { variante: variante.id, varianteNombre: variante.nombre } : {}),
+      },
+    ]
+  })
+  res.json({ lineas })
+}
+
 /** Carritos que se quedaron a medias hace más de una hora. */
 export async function listarCarritos(req: Request, res: Response): Promise<void> {
   const tiendaId = await tiendaDeLaSesion(req)
@@ -283,7 +328,7 @@ export async function recordarCarritos() {
           `Dejaste esto en ${carrito.tienda.nombre}: ${items.map((item) => `${item.cantidad} × ${item.nombre}`).join(', ')}.`,
           'Te lo guardamos por si quieres terminar la compra.',
         ],
-        { texto: 'Volver a la tienda', url: `https://${host}/productos/${items[0]?.slug ?? ''}` },
+        { texto: 'Terminar mi compra', url: `https://${host}/carrito?recuperar=${carrito.id}` },
         carrito.tienda.nombre,
       ),
     )

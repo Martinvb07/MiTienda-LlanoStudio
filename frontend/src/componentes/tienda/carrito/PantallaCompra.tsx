@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
 import { CheckCircle2, CreditCard, MessageCircle, Store, Truck } from 'lucide-react'
 import { crearPedido, validarCupon, type CuponAplicado } from '@/app/(tienda)/[subdominio]/carrito/acciones'
-import { guardarCarrito } from '@/app/(tienda)/[subdominio]/acciones-sitio'
+import { guardarCarrito, recuperarCarrito } from '@/app/(tienda)/[subdominio]/acciones-sitio'
 import { ETIQUETAS_PAGO, type CheckoutPago, type MetodoPago, type PedidoCreado } from '@/tipos/pedidos'
 import { abrirCheckout } from './abrirCheckout'
 import { formatearPrecio } from '@/utilidades/formato'
@@ -151,6 +151,28 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
     const espera = setTimeout(guardar, 1500)
     return () => clearTimeout(espera)
   }, [guardar])
+
+  // Enlace del recordatorio (correo o WhatsApp): /carrito?recuperar=<id> vuelve
+  // a cargar lo que había elegido, con precios y stock de hoy.
+  const reemplazar = carrito?.reemplazar
+  useEffect(() => {
+    if (!reemplazar) return
+    const parametros = new URLSearchParams(window.location.search)
+    const id = parametros.get('recuperar')
+    if (!id) return
+    let vigente = true
+    void recuperarCarrito(id).then((lineas) => {
+      if (!vigente) return
+      if (lineas?.length) reemplazar(lineas)
+      else setError('Ese carrito ya no está disponible, pero puedes armarlo de nuevo en la tienda.')
+      parametros.delete('recuperar')
+      window.history.replaceState(null, '', `${window.location.pathname}${parametros.size ? `?${parametros}` : ''}`)
+    })
+    return () => {
+      vigente = false
+    }
+  }, [reemplazar])
+
   const subtotalActual = carrito?.subtotal ?? 0
 
   // Si cambia el carrito, el descuento ya no es el mismo: se vuelve a pedir.

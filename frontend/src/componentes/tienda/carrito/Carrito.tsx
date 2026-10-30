@@ -43,6 +43,8 @@ interface ContextoCarrito {
   cambiarCantidad: (productoId: string, variante: string | undefined, cantidad: number) => void
   quitar: (productoId: string, variante: string | undefined) => void
   vaciar: () => void
+  /** Cambia todo el carrito de una vez (al recuperar uno guardado). */
+  reemplazar: (lineas: LineaCarrito[]) => void
 }
 
 const Contexto = createContext<ContextoCarrito | null>(null)
@@ -174,6 +176,7 @@ export function ProveedorCarrito({
       cambiarCantidad,
       quitar,
       vaciar: () => setLineas([]),
+      reemplazar: setLineas,
     }),
     [lineas, moneda, ajustes, abierto, agregar, tema?.agregarRapido, golpe, cambiarCantidad, quitar],
   )

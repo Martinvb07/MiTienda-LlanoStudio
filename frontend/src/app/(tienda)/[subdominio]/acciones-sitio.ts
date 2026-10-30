@@ -3,6 +3,7 @@
 import { headers } from 'next/headers'
 import { enviarApi } from '@/servicios/api'
 import { CABECERA_HOST } from '@/middleware'
+import type { LineaCarrito } from '@/componentes/tienda/carrito/Carrito'
 
 /*
  * Lo que el visitante hace en las secciones del sitio (reservar, escribir,
@@ -117,6 +118,13 @@ export async function enviarResena(datos: {
 // ── Carritos abandonados ──
 
 /** Guarda el carrito de quien dejó su contacto en el checkout. No avisa errores: es en segundo plano. */
+/** Lo que había en un carrito guardado, con precios y stock de hoy (enlace del correo o del WhatsApp). */
+export async function recuperarCarrito(id: string) {
+  if (!/^[a-z0-9]{10,40}$/i.test(id)) return null
+  const respuesta = await consultar<{ lineas: LineaCarrito[] }>(`/api/carritos/${id}`)
+  return respuesta?.lineas ?? null
+}
+
 export async function guardarCarrito(datos: {
   token: string
   nombre?: string

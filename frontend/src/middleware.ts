@@ -67,7 +67,8 @@ export function middleware(peticion: NextRequest) {
 export const config = {
   /*
    * Se excluyen las rutas internas de Next y cualquier archivo con extensión,
-   * para no reescribir estáticos ni imágenes.
+   * para no reescribir estáticos ni imágenes. Salvo los archivos que cada
+   * tienda sirve como propios: su mapa del sitio, su robots.txt y su catálogo.
    */
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)', '/sitemap.xml', '/robots.txt', '/catalogo.xml'],
 }

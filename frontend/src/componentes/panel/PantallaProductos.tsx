@@ -433,6 +433,11 @@ export function PantallaProductos() {
                     <Etiqueta tono={producto.stock === 0 ? 'ambar' : 'neutro'}>
                       {producto.stock === 0 ? 'Agotado' : `${producto.stock} en stock`}
                     </Etiqueta>
+                    {producto.stock === 0 && (producto.esperando ?? 0) > 0 && (
+                      <Etiqueta tono="azul">
+                        {producto.esperando === 1 ? '1 persona lo espera' : `${producto.esperando} personas lo esperan`}
+                      </Etiqueta>
+                    )}
                     {producto.categoria && (
                       <span className="hidden truncate text-[11px] text-sitio-tenue sm:inline">{producto.categoria}</span>
                     )}

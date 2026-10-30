@@ -192,7 +192,7 @@ model Tienda {
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
 
-  tenant    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   productos Producto[]
   pedidos   Pedido[]
   cupones   Cupon[]
@@ -202,6 +202,7 @@ model Tienda {
   mensajes  MensajeContacto[]
   resenas   Resena[]
   carritos  CarritoAbandonado[]
+  avisos    AvisoDisponible[]
 
   @@map("tiendas")
 }
@@ -239,9 +240,10 @@ model Producto {
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
 
-  tienda      Tienda       @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+  tienda      Tienda            @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
   itemsPedido ItemPedido[]
   resenas     Resena[]
+  avisos      AvisoDisponible[]
 
   @@unique([tiendaId, slug])
   @@index([tiendaId, activo])
@@ -268,13 +270,13 @@ model Pedido {
   notas           String?
 
   /// Por dónde llegó: "web" (confirmó en la tienda) o "whatsapp" (lo mandó por chat).
-  canal       String  @default("web")
+  canal          String  @default("web")
   /// "contra-entrega", "transferencia" o "acordar". Wompi/PSE llegan con Pago.
-  metodoPago  String  @default("acordar")
+  metodoPago     String  @default("acordar")
   /// Código del cupón aplicado, guardado tal cual para el histórico.
-  cupon       String?
+  cupon          String?
   /// Nota interna de la tienda; el cliente no la ve.
-  notaInterna String?
+  notaInterna    String?
   /// Seguimiento del envío: con qué transportadora salió y su número de guía.
   transportadora String?
   guia           String?
@@ -908,4 +910,24 @@ model CarritoAbandonado {
   @@unique([tiendaId, token])
   @@index([tiendaId, estado, actualizadoEn])
   @@map("carritos_abandonados")
+}
+
+/// "Avísame cuando llegue": quien quiere un producto agotado deja su correo y
+/// le escribimos una sola vez cuando vuelve a haber.
+model AvisoDisponible {
+  id         String @id @default(cuid())
+  tiendaId   String
+  productoId String
+  email      String
+
+  creadoEn  DateTime  @default(now())
+  /// Cuándo se le avisó. null = sigue esperando.
+  avisadoEn DateTime?
+
+  tienda   Tienda   @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+
+  @@unique([productoId, email])
+  @@index([productoId, avisadoEn])
+  @@map("avisos_disponible")
 }

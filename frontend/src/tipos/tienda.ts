@@ -276,4 +276,6 @@ export interface VarianteProducto {
 export interface ProductoPanel extends Producto {
   activo: boolean
   actualizadoEn: string
+  /** Cuántas personas pidieron «Avísame cuando llegue» y siguen esperando. */
+  esperando?: number
 }

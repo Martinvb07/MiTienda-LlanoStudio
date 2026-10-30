@@ -9,6 +9,8 @@ import { BarraCompraFija } from './ficha/BarraCompraFija'
 import { Beneficios } from './ficha/Beneficios'
 import { BotonComprar } from './ficha/BotonComprar'
 import { Compartir } from './ficha/Compartir'
+import { Avisame } from './ficha/Avisame'
+import { BotonFavorito } from './ficha/BotonFavorito'
 import { GaleriaFicha } from './ficha/GaleriaFicha'
 import { Opiniones } from './ficha/Opiniones'
 import { Estrellas } from './Estrellas'
@@ -93,6 +95,11 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
     comprar: (
       <div data-boton-comprar>
         <BotonComprar producto={producto} moneda={moneda} />
+        {producto.stock === 0 && (
+          <div className="mt-4">
+            <Avisame productoId={producto.id} />
+          </div>
+        )}
       </div>
     ),
     beneficios: <Beneficios beneficios={plantilla.beneficios} />,
@@ -133,7 +140,12 @@ export function FichaProducto({ producto, nombreTienda, moneda, ajustes = {}, ca
           ))}
         </div>
       ) : null,
-    compartir: <Compartir nombre={producto.nombre} />,
+    compartir: (
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <Compartir nombre={producto.nombre} />
+        <BotonFavorito productoId={producto.id} />
+      </div>
+    ),
   }
 
   return (

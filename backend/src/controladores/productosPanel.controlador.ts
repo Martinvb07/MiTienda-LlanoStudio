@@ -7,6 +7,8 @@ import { fueraDelPlan } from '../utilidades/planes.js'
 import type { esquemaProducto } from './panel.esquemas.js';
 import { conStockDeVariantes } from './panel.esquemas.js'
 import { planDeLaSesion, tiendaDeLaSesion } from './tiendaPanel.controlador.js'
+import { avisarDisponibles, contarEsperando } from './avisos.controlador.js'
+import { registro } from '../utilidades/registro.js'
 
 /** Productos de la tienda desde el panel. */
 
@@ -43,12 +45,15 @@ function serializar<T extends ProductoBd>(producto: T) {
 
 export async function listarProductosPanel(req: Request, res: Response): Promise<void> {
   const tiendaId = await tiendaDeLaSesion(req)
-  const productos = await prisma.producto.findMany({
-    where: { tiendaId },
-    select: camposProducto,
-    orderBy: [{ destacado: 'desc' }, { creadoEn: 'desc' }],
-  })
-  res.json({ productos: productos.map(serializar) })
+  const [productos, esperando] = await Promise.all([
+    prisma.producto.findMany({
+      where: { tiendaId },
+      select: camposProducto,
+      orderBy: [{ destacado: 'desc' }, { creadoEn: 'desc' }],
+    }),
+    contarEsperando(tiendaId),
+  ])
+  res.json({ productos: productos.map((producto) => ({ ...serializar(producto), esperando: esperando[producto.id] ?? 0 })) })
 }
 
 async function slugLibre(tiendaId: string, slug: string, excepto?: string): Promise<void> {
@@ -131,6 +136,9 @@ export async function actualizarProductoPanel(req: Request, res: Response): Prom
     },
     select: camposProducto,
   })
+  if (producto.stock > 0) {
+    avisarDisponibles(producto.id).catch((error: unknown) => registro.warn({ err: error }, 'No se pudo avisar a quienes esperaban el producto'))
+  }
   res.json({ producto: serializar(producto) })
 }
 

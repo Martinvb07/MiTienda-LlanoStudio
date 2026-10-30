@@ -101,6 +101,12 @@ export async function enviarMensaje(datos: {
   return enviar<{ ok: true }>('/api/mensajes', datos)
 }
 
+// ── Avísame cuando llegue ──
+
+export async function pedirAviso(productoId: string, email: string) {
+  return enviar<{ ok: true }>(`/api/productos/${encodeURIComponent(productoId)}/avisame`, { email })
+}
+
 // ── Opiniones de productos ──
 
 export async function enviarResena(datos: {

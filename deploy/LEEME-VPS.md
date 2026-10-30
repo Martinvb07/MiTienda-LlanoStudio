@@ -230,6 +230,29 @@ npx prisma migrate deploy && pm2 reload mitienda-api
 | Salud de la API | `curl -s 127.0.0.1:4201/api/salud/detallada` |
 | Respaldo de la base | `pg_dump -U mitienda -h localhost mitienda > respaldo.sql` |
 | Respaldo de fotos | `tar -czf medios.tgz -C backend .medios` |
+| Respaldo ahora (base + fotos) | `sudo bash deploy/respaldar.sh` |
+| Programar el respaldo diario | `sudo bash deploy/respaldar.sh --instalar` |
+| Reoptimizar fotos viejas a WebP | `cd backend && npm run medios:optimizar` |
+
+## Respaldos automáticos
+
+`deploy/actualizar-vps.sh` deja programado `deploy/respaldar.sh` todos los días a las 3:17 a. m.
+(`/etc/cron.d/mitienda-respaldos`). Guarda la base comprimida en `/var/backups/mitienda/diarios`
+(últimos 14 días) y cada domingo una copia en `/semanales` (8 semanas), con las fotos de
+`backend/.medios` si no se usa R2. El registro queda en `/var/log/mitienda-respaldos.log`.
+
+Para tener además una copia **fuera del VPS**, crea en Cloudflare un bucket R2 **privado** (no el de
+las fotos, que es público) y ponlo en `backend/.env` como `R2_BUCKET_RESPALDOS` (usa las mismas
+credenciales `R2_*`). Agrega en ese bucket una regla de ciclo de vida que borre `respaldos/` a los 60 días.
+
+Para restaurar: `gunzip -c bd-AAAAMMDD-HHMM.sql.gz | psql "$DATABASE_URL"` sobre una base vacía.
+
+## Alertas de errores
+
+Los errores 500 de la API y los que le pasan a alguien en el navegador quedan en el admin
+(*Sistema → Errores recientes*) y llegan por correo a `ALERTAS_CORREO` (o `ADMIN_CORREO`). Con
+`ALERTAS_WEBHOOK` llegan también a un canal de Slack, Discord o Google Chat. El mismo error no se
+repite más de una vez cada 15 minutos.
 
 ## Chat de soporte en vivo (websocket)
 

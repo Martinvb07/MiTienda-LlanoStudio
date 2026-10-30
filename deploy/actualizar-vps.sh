@@ -126,6 +126,10 @@ else
   rm -f "$ARCHIVO"
   falla "No se pudo sacar el respaldo; no migro sin respaldo."
 fi
+# Respaldo diario automático (deploy/respaldar.sh), si todavía no está programado.
+if [ ! -f /etc/cron.d/mitienda-respaldos ]; then
+  bash "$RAIZ/deploy/respaldar.sh" --instalar
+fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 paso "5/8 · Dependencias, migraciones y build"

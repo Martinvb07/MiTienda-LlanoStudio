@@ -60,12 +60,14 @@ const esquema = z.object({
   ALERTAS_CORREO: z.string().default(''),
   ALERTAS_WEBHOOK: z.string().default(''),
 
-  // Cloudflare R2 — opcionales mientras la subida de archivos no esté implementada.
+  // Cloudflare R2 — opcional: sin él las fotos se guardan en backend/.medios.
   R2_ACCOUNT_ID: z.string().default(''),
   R2_ACCESS_KEY_ID: z.string().default(''),
   R2_SECRET_ACCESS_KEY: z.string().default(''),
   R2_BUCKET: z.string().default(''),
   R2_URL_PUBLICA: z.string().default(''),
+  // Bucket PRIVADO para los respaldos de deploy/respaldar.sh. Vacío = sólo en el VPS.
+  R2_BUCKET_RESPALDOS: z.string().default(''),
 })
 
 const resultado = esquema.safeParse(process.env)

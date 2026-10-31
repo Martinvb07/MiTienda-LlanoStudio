@@ -157,6 +157,8 @@ export interface AjustesTienda {
   direccionRecogida?: string
   /** Correo automático a quien deja el carrito con su correo. */
   recordarCarritos?: boolean
+  /** % del cupón de un solo uso que va en el recordatorio del carrito (0 o vacío = sin cupón). */
+  cuponCarrito?: number
   /** false = no escribirle al comprador cuando cambia su pedido. Por defecto, sí. */
   correosPedido?: boolean
   /** false = no avisar por correo cuando un producto baja del mínimo. Por defecto, sí. */

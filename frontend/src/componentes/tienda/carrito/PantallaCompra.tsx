@@ -161,12 +161,20 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
     const parametros = new URLSearchParams(window.location.search)
     const id = parametros.get('recuperar')
     if (!id) return
+    // El recordatorio puede traer un cupón de regalo: se aplica solo.
+    const regalo = parametros.get('cupon')?.trim().toUpperCase()
     let vigente = true
     void recuperarCarrito(id).then((lineas) => {
       if (!vigente) return
-      if (lineas?.length) reemplazar(lineas)
-      else setError('Ese carrito ya no está disponible, pero puedes armarlo de nuevo en la tienda.')
+      if (lineas?.length) {
+        reemplazar(lineas)
+        if (regalo) {
+          setCodigo(regalo)
+          setCuponPendiente(regalo)
+        }
+      } else setError('Ese carrito ya no está disponible, pero puedes armarlo de nuevo en la tienda.')
       parametros.delete('recuperar')
+      parametros.delete('cupon')
       window.history.replaceState(null, '', `${window.location.pathname}${parametros.size ? `?${parametros}` : ''}`)
     })
     return () => {
@@ -175,6 +183,17 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
   }, [reemplazar])
 
   const subtotalActual = carrito?.subtotal ?? 0
+
+  // Cupón del enlace del recordatorio: se valida cuando el carrito ya cargó.
+  const [cuponPendiente, setCuponPendiente] = useState<string | null>(null)
+  useEffect(() => {
+    if (!cuponPendiente || subtotalActual <= 0) return
+    setCuponPendiente(null)
+    void validarCupon(cuponPendiente, subtotalActual).then((resultado) => {
+      if (resultado.ok) setCupon(resultado.cupon)
+      else setErrorCupon(resultado.mensaje)
+    })
+  }, [cuponPendiente, subtotalActual])
 
   // Si cambia el carrito, el descuento ya no es el mismo: se vuelve a pedir.
   useEffect(() => {

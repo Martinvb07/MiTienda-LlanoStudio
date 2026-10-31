@@ -140,6 +140,8 @@ const esquemaAjustes = z.object({
   soloZonas: z.boolean().optional(),
   recogerEnTienda: z.boolean().optional(),
   recordarCarritos: z.boolean().optional(),
+  /** Porcentaje del cupón de un solo uso que va en el recordatorio (0 = sin cupón). */
+  cuponCarrito: z.coerce.number().int().min(0).max(50).optional(),
   correosPedido: z.boolean().optional(),
   alertasStock: z.boolean().optional(),
   stockMinimo: z.coerce.number().int().min(0).max(1000).optional(),

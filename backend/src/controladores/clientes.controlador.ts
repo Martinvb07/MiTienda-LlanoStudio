@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import type { Request, Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../config/prisma.js'
@@ -307,6 +308,7 @@ export async function recordarCarritos() {
     },
     select: {
       id: true,
+      tiendaId: true,
       nombre: true,
       email: true,
       items: true,
@@ -315,10 +317,12 @@ export async function recordarCarritos() {
     take: 300,
   })
   for (const carrito of carritos) {
-    const ajustes = (carrito.tienda.ajustes ?? {}) as { recordarCarritos?: boolean }
+    const ajustes = (carrito.tienda.ajustes ?? {}) as { recordarCarritos?: boolean; cuponCarrito?: number }
     if (!ajustes.recordarCarritos || !carrito.tienda.publicada) continue
     const items = carrito.items as unknown as ItemGuardado[]
     const host = `${carrito.tienda.tenant.subdominio}.${entorno.DOMINIO_BASE}`
+    // Si la tienda lo activó, un descuento de un solo uso que vence en 3 días.
+    const cupon = ajustes.cuponCarrito ? await crearCuponCarrito(carrito.tiendaId, ajustes.cuponCarrito) : null
     const enviado = await enviarCorreoDirecto(
       carrito.email!,
       `Tu carrito en ${carrito.tienda.nombre} te espera`,
@@ -326,13 +330,35 @@ export async function recordarCarritos() {
         `${carrito.nombre ? `${carrito.nombre.split(' ')[0]}, ¿` : '¿'}seguimos con tu pedido?`,
         [
           `Dejaste esto en ${carrito.tienda.nombre}: ${items.map((item) => `${item.cantidad} × ${item.nombre}`).join(', ')}.`,
-          'Te lo guardamos por si quieres terminar la compra.',
+          cupon
+            ? `Te lo guardamos y te dejamos un ${ajustes.cuponCarrito}% de descuento con el código ${cupon}, válido por 3 días.`
+            : 'Te lo guardamos por si quieres terminar la compra.',
         ],
-        { texto: 'Terminar mi compra', url: `https://${host}/carrito?recuperar=${carrito.id}` },
+        { texto: 'Terminar mi compra', url: `https://${host}/carrito?recuperar=${carrito.id}${cupon ? `&cupon=${cupon}` : ''}` },
         carrito.tienda.nombre,
       ),
     )
-    if (!enviado) return
+    if (!enviado) {
+      if (cupon) await prisma.cupon.deleteMany({ where: { tiendaId: carrito.tiendaId, codigo: cupon } })
+      return
+    }
     await prisma.carritoAbandonado.update({ where: { id: carrito.id }, data: { recordatorioEnviado: true, contactadoEn: new Date() } })
   }
+}
+
+/** Cupón de un solo uso para quien dejó el carrito: VUELVE-XXXXXX, vence en 3 días. */
+async function crearCuponCarrito(tiendaId: string, porcentaje: number): Promise<string | null> {
+  const letras = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  for (let intento = 0; intento < 3; intento++) {
+    const codigo = `VUELVE-${Array.from(randomBytes(6), (byte) => letras[byte % letras.length]).join('')}`
+    try {
+      await prisma.cupon.create({
+        data: { tiendaId, codigo, tipo: 'PORCENTAJE', valor: Math.min(50, Math.max(1, porcentaje)), usosMaximos: 1, venceEn: new Date(Date.now() + 3 * 86_400_000) },
+      })
+      return codigo
+    } catch {
+      // Código repetido (muy raro): se prueba con otro.
+    }
+  }
+  return null
 }

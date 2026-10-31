@@ -117,6 +117,19 @@ export function CamposVentas({ ajustes, alCambiar }: Props) {
           A quien deja su correo y no termina, le llega un recordatorio unas horas después. Los ves en Clientes.
         </small>
       </Interruptor>
+      {ajustes.recordarCarritos && (
+        <Campo
+          etiqueta="Descuento en el recordatorio"
+          valor={ajustes.cuponCarrito ?? ''}
+          alCambiar={(valor) => {
+            const limpio = Number(valor.replace(/\D/g, ''))
+            alCambiar({ cuponCarrito: limpio > 0 ? Math.min(50, limpio) : undefined })
+          }}
+          prefijo="%"
+          marcador="Sin descuento"
+          ayuda="Un código de un solo uso que vence en 3 días y se aplica solo al volver. Ayuda a que terminen la compra."
+        />
+      )}
 
       <Interruptor activo={ajustes.correosPedido ?? true} alCambiar={(correosPedido) => alCambiar({ correosPedido })}>
         Avisar al cliente por correo

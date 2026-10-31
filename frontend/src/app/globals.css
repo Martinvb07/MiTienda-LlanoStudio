@@ -724,3 +724,17 @@ html[data-hoja-abierta] .chat-soporte {
 .bio-columna [class*='lg:grid-cols-'] {
   grid-template-columns: minmax(0, 1fr);
 }
+
+/*
+ * Quien pidió reducir el movimiento en su sistema ve el contenido quieto
+ * desde el principio: sin subir, sin desenfoque y sin esperar al scroll.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-revelar],
+  [data-animacion] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}

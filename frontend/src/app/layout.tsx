@@ -36,6 +36,10 @@ export default function LayoutRaiz({ children }: { children: React.ReactNode }) 
     <html lang="es" className={`${texto.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
+        {/* Sin JavaScript las animaciones de entrada nunca arrancan: el contenido se muestra quieto. */}
+        <noscript>
+          <style>{`[data-revelar],[data-animacion]{opacity:1!important;transform:none!important;filter:none!important}`}</style>
+        </noscript>
       </head>
       {/*
         suppressHydrationWarning por las extensiones del navegador: varias

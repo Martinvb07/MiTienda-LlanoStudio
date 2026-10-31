@@ -56,6 +56,7 @@ export function GaleriaPlantillas({ limite, pro, tipo = 'tienda' }: { limite?: n
             key={plantilla.clave}
             type="button"
             onClick={() => setAbierta(plantilla)}
+            data-revelar=""
             initial={{ opacity: 0, y: 34, filter: 'blur(6px)' }}
             whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             viewport={{ once: true, margin: '-60px' }}

@@ -18,6 +18,7 @@ interface Props {
 export function Revelar({ children, retardo = 0, className }: Props) {
   return (
     <motion.div
+      data-revelar=""
       className={className}
       initial={{ opacity: 0, y: 34, filter: 'blur(6px)' }}
       whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}

@@ -66,6 +66,7 @@ export function Hero() {
         ))}
 
         <motion.figure
+          data-revelar=""
           initial={{ opacity: 0, y: 80, filter: 'blur(8px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
           transition={{ duration: 1.5, delay: 0.25, ease: SALIDA }}
@@ -93,6 +94,7 @@ export function Hero() {
         {CIFRAS.map((cifra, indice) => (
           <motion.div
             key={cifra.etiqueta}
+            data-revelar=""
             initial={{ opacity: 0, y: 34, filter: 'blur(6px)' }}
             whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             viewport={{ once: true }}

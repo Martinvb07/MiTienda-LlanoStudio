@@ -29,7 +29,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: producto.nombre,
       description: producto.descripcion ?? undefined,
       type: 'website',
-      images: producto.fotos.map((foto) => ({ url: foto })),
+      // Sin foto, una tarjeta con el nombre y el precio en los colores de la tienda.
+      images: producto.fotos.length
+        ? producto.fotos.map((foto) => ({ url: foto.startsWith('/') ? `https://${host}${foto}` : foto }))
+        : [{ url: `https://${host}/productos/${producto.slug}/tarjeta`, width: 1200, height: 630 }],
     },
   }
 }

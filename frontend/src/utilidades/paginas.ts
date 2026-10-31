@@ -9,7 +9,7 @@ import { tipoSitio } from './sitio'
  */
 
 /** Direcciones que ya usa el sitio: una página extra no puede llamarse así (igual que en el backend). */
-export const RUTAS_RESERVADAS: ReadonlySet<string> = new Set(['buscar', 'carrito', 'categoria', 'pago', 'productos', 'panel', 'api', 'cita', 'favoritos'])
+export const RUTAS_RESERVADAS: ReadonlySet<string> = new Set(['buscar', 'carrito', 'categoria', 'pago', 'productos', 'panel', 'api', 'cita', 'favoritos', 'tarjeta'])
 
 /** Las páginas extra que se publican: sólo en la página para tu negocio (el plan ya las recortó). */
 export function paginasDe(tienda: Pick<Tienda, 'tipo' | 'ajustes'>): PaginaExtra[] {

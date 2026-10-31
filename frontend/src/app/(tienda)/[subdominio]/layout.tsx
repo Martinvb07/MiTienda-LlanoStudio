@@ -42,7 +42,7 @@ export async function generateMetadata({
       siteName: tienda.nombre,
       locale: 'es_CO',
       type: 'website',
-      images: tienda.logoUrl ? [{ url: tienda.logoUrl }] : undefined,
+      images: tienda.logoUrl ? [{ url: tienda.logoUrl }] : [{ url: `https://${host}/tarjeta`, width: 1200, height: 630 }],
     },
     icons: tienda.faviconUrl ? { icon: tienda.faviconUrl } : undefined,
   }

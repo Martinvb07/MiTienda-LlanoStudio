@@ -194,7 +194,7 @@ export const TEMAS_PREDEFINIDOS: Record<string, Record<string, string>> = {
 }
 
 /** Direcciones que ya usa el sitio: una página extra no puede llamarse así. */
-export const RUTAS_RESERVADAS: ReadonlySet<string> = new Set(['buscar', 'carrito', 'categoria', 'pago', 'productos', 'panel', 'api', 'cita', 'favoritos'])
+export const RUTAS_RESERVADAS: ReadonlySet<string> = new Set(['buscar', 'carrito', 'categoria', 'pago', 'productos', 'panel', 'api', 'cita', 'favoritos', 'tarjeta'])
 
 /** Error 403 con el código que el panel reconoce para ofrecer subir de plan. */
 export function fueraDelPlan(mensaje: string) {

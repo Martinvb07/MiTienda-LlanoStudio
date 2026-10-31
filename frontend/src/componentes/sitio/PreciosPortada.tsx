@@ -15,7 +15,7 @@ export async function PreciosPortada() {
   const ofertas = await Promise.all(MENU_PRECIOS.map((producto) => obtenerPlanes(producto.clave)))
 
   return (
-    <section id="precios" className="py-[110px] md:py-[150px]">
+    <section id="precios" className="py-[72px] md:py-[112px]">
       <Contenedor>
         <Revelar className="mb-14 grid gap-6 md:grid-cols-[1.2fr_1fr] md:items-end">
           <div>

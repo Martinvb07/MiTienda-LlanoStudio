@@ -99,7 +99,7 @@ export default async function PaginaArticulo({ params }: Props) {
         </Contenedor>
       </article>
 
-      <section className="py-[110px] md:py-[150px]">
+      <section className="py-[72px] md:py-[112px]">
         <Contenedor>
           <h2 className="titulo-3 mb-10">Sigue leyendo</h2>
           <div className="grid gap-x-6 gap-y-12 md:grid-cols-3">

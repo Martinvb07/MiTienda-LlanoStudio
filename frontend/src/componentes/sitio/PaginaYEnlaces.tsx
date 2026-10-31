@@ -67,7 +67,7 @@ function Cabecera({ rotulo, titulo, texto, href, accion }: { rotulo: string; tit
 /** La página para tu negocio a fondo, con el mismo mosaico de la tienda. */
 export function SeccionPagina() {
   return (
-    <section id="pagina" className="py-[110px] md:py-[150px]">
+    <section id="pagina" className="py-[72px] md:py-[112px]">
       <Contenedor>
         <Cabecera
           rotulo="Página para tu negocio"
@@ -109,7 +109,7 @@ export function SeccionPagina() {
 /** Los enlaces para la bio a fondo, con capturas reales y lo que se arma solo. */
 export function SeccionEnlaces() {
   return (
-    <section id="enlaces" className="py-[110px] md:py-[150px]">
+    <section id="enlaces" className="py-[72px] md:py-[112px]">
       <Contenedor>
         <Cabecera
           rotulo="Enlaces para tu bio"

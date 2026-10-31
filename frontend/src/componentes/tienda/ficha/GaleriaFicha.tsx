@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { esMedioLocal } from '@/utilidades/medios'
+import { FotoSegura } from '../FotoSegura'
 
 /** Fotos del producto: grande con miniaturas, en cuadrícula o una debajo de otra. */
 export function GaleriaFicha({
@@ -40,7 +41,8 @@ export function GaleriaFicha({
       }
       className={`relative overflow-hidden rounded-(--radius-marca) bg-tinta/5 ${zoom ? 'group/zoom cursor-zoom-in' : ''} ${clases}`}
     >
-      <Image
+      <FotoSegura
+        respaldo={<span className="flex h-full items-center justify-center text-sm text-tinta/30">Sin foto</span>}
         src={src}
         alt={indice === 0 ? nombre : ''}
         fill

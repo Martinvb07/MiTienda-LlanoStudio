@@ -1,9 +1,9 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import type { OpcionesTarjeta } from '@/tipos/bloques'
 import type { Producto } from '@/tipos/tienda'
 import { formatearPrecio } from '@/utilidades/formato'
 import { esMedioLocal } from '@/utilidades/medios'
+import { FotoSegura } from './FotoSegura'
 import { AgregarRapido } from './carrito/AgregarRapido'
 import { Estrellas } from './Estrellas'
 
@@ -37,7 +37,7 @@ export function TarjetaProducto({
   const segunda = producto.fotos[1]
   // Sólo se ve si el tema lo activa (data-segunda-foto en el marco de la tienda).
   const fotoAlterna = segunda ? (
-    <Image
+    <FotoSegura
       src={segunda}
       alt=""
       fill
@@ -56,7 +56,15 @@ export function TarjetaProducto({
       >
         <div className="tarjeta-foto relative aspect-square overflow-hidden rounded-[calc(var(--radio)*0.6)] bg-tinta/5">
           {foto ? (
-            <Image src={foto} alt={producto.nombre} fill sizes="(max-width: 640px) 50vw, 20vw" unoptimized={esMedioLocal(foto)} className="object-cover transition duration-500 group-hover:scale-105" />
+            <FotoSegura
+              src={foto}
+              alt={producto.nombre}
+              fill
+              sizes="(max-width: 640px) 50vw, 20vw"
+              unoptimized={esMedioLocal(foto)}
+              className="object-cover transition duration-500 group-hover:scale-105"
+              respaldo={<span className="flex h-full items-center justify-center text-xs text-tinta/30">Sin foto</span>}
+            />
           ) : (
             <span className="flex h-full items-center justify-center text-xs text-tinta/30">Sin foto</span>
           )}
@@ -96,7 +104,15 @@ export function TarjetaProducto({
     <Link href={`/productos/${producto.slug}`} className="tarjeta-producto group block">
       <div className="tarjeta-foto relative aspect-square overflow-hidden rounded-(--radius-marca) bg-tinta/5">
         {foto ? (
-          <Image src={foto} alt={producto.nombre} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" unoptimized={esMedioLocal(foto)} className="object-cover transition duration-300 group-hover:scale-105" />
+          <FotoSegura
+            src={foto}
+            alt={producto.nombre}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            unoptimized={esMedioLocal(foto)}
+            className="object-cover transition duration-300 group-hover:scale-105"
+            respaldo={<div className="flex h-full items-center justify-center text-sm text-tinta/30">Sin foto</div>}
+          />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-tinta/30">Sin foto</div>
         )}

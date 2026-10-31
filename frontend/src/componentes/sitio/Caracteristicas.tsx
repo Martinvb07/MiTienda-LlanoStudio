@@ -74,7 +74,7 @@ const OTROS_PAGOS = [
  */
 export function Caracteristicas({ rotulo = 'Tienda en línea' }: { rotulo?: string }) {
   return (
-    <section id="tienda" className="py-[110px] md:py-[150px]">
+    <section id="tienda" className="py-[72px] md:py-[112px]">
       <Contenedor>
         <Revelar className="mb-14 grid gap-6 md:grid-cols-[1.2fr_1fr] md:items-end">
           <div>
@@ -212,7 +212,7 @@ export function ComoFunciona({
   pasos?: Paso[]
 }) {
   return (
-    <section className="py-[110px] md:py-[150px]">
+    <section className="py-[72px] md:py-[112px]">
       <Contenedor className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
         <Revelar>
           <span className="antetitulo mb-[22px]">Cómo funciona</span>

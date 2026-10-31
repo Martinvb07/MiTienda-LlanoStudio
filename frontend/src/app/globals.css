@@ -616,7 +616,8 @@ html[data-tema='claro']:has(.marco-oscuro) {
     opacity 0.3s ease,
     transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
-html[data-hoja-abierta] .chat-soporte {
+html[data-hoja-abierta] .chat-soporte,
+.chat-soporte[data-apartado] {
   opacity: 0;
   transform: translateY(12px) scale(0.92);
   pointer-events: none;

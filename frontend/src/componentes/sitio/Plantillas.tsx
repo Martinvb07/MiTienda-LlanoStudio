@@ -49,7 +49,7 @@ export function Plantillas() {
   const opcion = MENU_PLANTILLAS.find((otra) => otra.clave === actual)!
 
   return (
-    <section id="plantillas" className="py-[110px] md:py-[150px]">
+    <section id="plantillas" className="py-[72px] md:py-[112px]">
       <Contenedor>
         <Revelar className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>

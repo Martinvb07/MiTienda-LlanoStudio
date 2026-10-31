@@ -60,8 +60,8 @@ export function Pie({
 
   if (!completo) {
     return (
-      <footer className="mt-16 border-t border-tinta/10 px-6 py-10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 sm:flex-row sm:justify-between">
+      <footer className="mt-16 border-t border-tinta/10 py-10">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 sm:flex-row sm:justify-between">
           <p className="text-sm text-tinta/60">{texto}</p>
           {redes}
         </div>
@@ -72,8 +72,8 @@ export function Pie({
 
   // Pie oscuro en columnas, con el color de la barra de la cabecera si la hay.
   return (
-    <footer style={{ background: ajustes.colorBarra ?? '#0b0b0c' }} className="mt-16 px-6 pt-14 pb-8 text-white">
-      <div className="mx-auto grid max-w-6xl gap-10 sm:grid-cols-2 lg:grid-cols-4">
+    <footer style={{ background: ajustes.colorBarra ?? '#0b0b0c' }} className="mt-16 pt-14 pb-8 text-white">
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <h3 className="font-semibold">Contáctanos</h3>
           <ul className="mt-4 space-y-2.5 text-sm opacity-80">

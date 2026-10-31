@@ -211,9 +211,29 @@ export function ChatSoporte({ modo }: { modo: 'web' | 'panel' }) {
 
   const lista = mensajes
 
+  // En el celular, al bajar por la página el botón se aparta para no tapar
+  // texto; vuelve apenas la persona sube un poco o llega al final.
+  const [apartado, setApartado] = useState(false)
+  useEffect(() => {
+    if (modo !== 'web') return
+    let anterior = window.scrollY
+    const alDesplazar = () => {
+      const actual = window.scrollY
+      const alFinal = window.innerHeight + actual >= document.documentElement.scrollHeight - 80
+      if (window.innerWidth >= 640 || alFinal || actual < 200) setApartado(false)
+      else if (Math.abs(actual - anterior) > 12) setApartado(actual > anterior)
+      anterior = actual
+    }
+    window.addEventListener('scroll', alDesplazar, { passive: true })
+    return () => window.removeEventListener('scroll', alDesplazar)
+  }, [modo])
+
   return (
     <MotionConfig reducedMotion="user">
-      <div className={cn('chat-soporte fixed right-4 z-[200] flex flex-col items-end gap-3 sm:right-6', modo === 'panel' ? 'bottom-24 md:bottom-6' : 'bottom-5 sm:bottom-6')}>
+      <div
+        data-apartado={apartado && !abierto ? '' : undefined}
+        className={cn('chat-soporte fixed right-4 z-[200] flex flex-col items-end gap-3 sm:right-6', modo === 'panel' ? 'bottom-24 md:bottom-6' : 'bottom-5 sm:bottom-6')}
+      >
         <AnimatePresence>
           {abierto && (
             <motion.section

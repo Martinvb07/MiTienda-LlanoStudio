@@ -13,7 +13,7 @@ interface Testimonio {
 export function Testimonios({ testimonios }: { testimonios: Testimonio[] }) {
   if (testimonios.length === 0) return null
   return (
-    <section className="py-[110px] md:py-[150px]">
+    <section className="py-[72px] md:py-[112px]">
       <Contenedor>
         <Revelar>
           <span className="antetitulo mb-[22px]">Tiendas reales</span>

@@ -28,7 +28,7 @@ export default function PaginaSobreNosotros() {
         descripcion="Mi Sitio es un producto de Llano Studio."
       />
 
-      <section className="py-[110px] md:py-[150px]">
+      <section className="py-[72px] md:py-[112px]">
         <Contenedor className="grid gap-12 lg:grid-cols-[1.3fr_1fr] lg:gap-20">
           <Revelar>
             <div className="space-y-6 text-[clamp(20px,2vw,26px)] leading-[1.35] tracking-[-0.02em] text-white/60 text-pretty">

@@ -42,7 +42,7 @@ export default function PaginaContacto() {
         descripcion="Si la plataforma ya lo resuelve, te lo decimos derecho."
       />
 
-      <section className="py-[110px] md:py-[150px]">
+      <section className="py-[72px] md:py-[112px]">
         <Contenedor className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <Revelar>
             <span className="antetitulo mb-[22px]">Canales</span>

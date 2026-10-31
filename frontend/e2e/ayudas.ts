@@ -60,7 +60,7 @@ export async function crearTiendaPrueba(productos: { nombre: string; slug: strin
 }
 
 export const pedidosDe = (token: string) =>
-  api<{ pedidos: { numero: number; estado: string; total: string; items: { cantidad: number }[] }[] }>('/panel/pedidos', { token }).then((r) => r.pedidos)
+  api<{ pedidos: { id: string; numero: number; estado: string; total: string; items: { cantidad: number }[] }[] }>('/panel/pedidos', { token }).then((r) => r.pedidos)
 
 export const productosDe = (token: string) =>
   api<{ productos: { slug: string; stock: number; esperando?: number }[] }>('/panel/productos', { token }).then((r) => r.productos)

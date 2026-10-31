@@ -34,6 +34,25 @@ test('un cliente compra: ficha → carrito → pedido, y el stock baja', async (
   expect(gorra?.stock).toBe(4)
 })
 
+test('el comprador ve cómo va su pedido en /pedido/<id>', async ({ page }) => {
+  const [pedido] = await pedidosDe(tienda.token)
+  await page.goto(urlTienda(tienda.subdominio, `/pedido/${pedido!.id}`))
+  await expect(page.getByRole('heading', { name: /así va tu pedido/ })).toBeVisible()
+  await expect(page.getByText(`Pedido #${pedido!.numero}`)).toBeVisible()
+  await expect(page.getByText('1 × Gorra llanera')).toBeVisible()
+})
+
+test('la ficha le cuenta a Google el precio y el stock (JSON-LD)', async ({ page }) => {
+  await page.goto(urlTienda(tienda.subdominio, '/productos/gorra-llanera'))
+  const datos = await page.locator('script[type="application/ld+json"]').allTextContents()
+  const producto = datos.map((texto) => JSON.parse(texto) as unknown).flat().find((dato) => (dato as { '@type'?: string })['@type'] === 'Product') as
+    | { name: string; offers: { price: number; availability: string } }
+    | undefined
+  expect(producto?.name).toBe('Gorra llanera')
+  expect(producto?.offers.price).toBe(45000)
+  expect(producto?.offers.availability).toContain('InStock')
+})
+
 test('un producto agotado no se puede comprar y ofrece «Avísame cuando llegue»', async ({ page }) => {
   await page.goto(urlTienda(tienda.subdominio, '/productos/ruana-de-lana'))
   await expect(page.getByRole('button', { name: 'Agotado' })).toBeDisabled()

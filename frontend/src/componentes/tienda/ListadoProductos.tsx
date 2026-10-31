@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import type { Producto } from '@/tipos/tienda'
 import { generarSlug } from '@/utilidades/formato'
-import { CLASES_COLUMNAS } from './bloques/GrillaProductos'
-import { TarjetaProducto } from './TarjetaProducto'
+import { GrillaOrdenable } from './GrillaOrdenable'
 
 interface Props {
   titulo: string
@@ -41,15 +40,7 @@ export function ListadoProductos({ titulo, subtitulo, productos, moneda, categor
         </nav>
       )}
 
-      {productos.length === 0 ? (
-        <p className="mt-16 text-center text-tinta/50">No encontramos productos.</p>
-      ) : (
-        <div className={`mt-10 grid gap-4 sm:gap-6 ${CLASES_COLUMNAS[4]}`}>
-          {productos.map((producto) => (
-            <TarjetaProducto key={producto.id} producto={producto} moneda={moneda} estilo="tarjeta" />
-          ))}
-        </div>
-      )}
+      <GrillaOrdenable productos={productos} moneda={moneda} />
     </main>
   )
 }

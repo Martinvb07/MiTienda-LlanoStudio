@@ -96,7 +96,7 @@ export function bloquesIniciales(nombreTienda: string, tipo: 'tienda' | 'pagina'
       tipo: 'hero',
       props: {
         titulo: nombreTienda,
-        subtitulo: 'Bienvenido a nuestra tienda',
+        subtitulo: 'Descubre lo nuevo y compra en línea, fácil y seguro.',
         textoBoton: 'Ver productos',
         enlaceBoton: '#productos',
       },

@@ -86,7 +86,7 @@ export async function enviarCorreo(tipo: TipoCorreo, tenantId: string, clave = '
   const plan = PLANES[tenant.plan as keyof typeof PLANES]?.nombre ?? tenant.plan
   const contenido = {
     bienvenida: {
-      asunto: `Bienvenido a Mi Sitio, ${nombre}`,
+      asunto: `Te damos la bienvenida a Mi Sitio, ${nombre}`,
       html: plantillaCorreo(
         `Tu tienda ${tenant.nombre} ya existe`,
         [

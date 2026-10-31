@@ -22,7 +22,7 @@ import {
   Sparkles,
   Ticket,
 } from 'lucide-react'
-import { listarPedidos, listarProductos, obtenerTienda } from '@/servicios/panel'
+import { listarPasarelas, listarPedidos, listarProductos, obtenerTienda } from '@/servicios/panel'
 import type { Pedido } from '@/tipos/pedidos'
 import type { ProductoPanel } from '@/tipos/tienda'
 import { urlTienda } from '@/utilidades/dominios'
@@ -67,6 +67,7 @@ export function PantallaResumen() {
   const vende = vendeEnLinea(sesion.tienda?.tipo)
   const textos = textosSitio(sesion.tienda?.tipo)
   const [conWhatsapp, setConWhatsapp] = useState(false)
+  const [conPagos, setConPagos] = useState(false)
 
   useEffect(() => {
     if (!vende) {
@@ -79,6 +80,14 @@ export function PantallaResumen() {
     listarProductos()
       .then(setProductos)
       .catch(() => setProductos([]))
+    // Cobrar: contra entrega, transferencia o una pasarela conectada.
+    obtenerTienda()
+      .then(({ tienda }) => {
+        if (tienda.ajustes.pagoContraEntrega || tienda.ajustes.pagoTransferencia) return true
+        return listarPasarelas().then((lista) => lista.some((pasarela) => pasarela.activa))
+      })
+      .then(setConPagos)
+      .catch(() => setConPagos(false))
     listarPedidos()
       .then(setPedidos)
       .catch(() => setPedidos([]))
@@ -124,6 +133,13 @@ export function PantallaResumen() {
       texto: 'Nombre, fotos y precio. Puedes ocultarlos mientras los terminas.',
       href: '/panel/productos?nuevo=1',
       accion: 'Agregar',
+    },
+    {
+      hecho: conPagos,
+      titulo: 'Elige cómo te pagan',
+      texto: 'Contra entrega, transferencia o Nequi, o conecta Wompi, ePayco o Bold para cobrar en línea.',
+      href: '/panel/configuracion',
+      accion: 'Configurar',
     },
     {
       hecho: publicada,

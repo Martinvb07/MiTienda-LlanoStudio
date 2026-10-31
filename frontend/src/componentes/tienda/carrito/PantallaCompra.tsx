@@ -283,6 +283,9 @@ export function PantallaCompra({ nombreTienda }: { nombreTienda: string }) {
           <strong className="text-tinta">{formatearPrecio(creado.total, moneda)}</strong>. Te escribiremos a {creado.clienteEmail} y por
           teléfono para coordinar la entrega.
         </p>
+        <Link href={`/pedido/${creado.id}`} className="mt-4 inline-block text-sm underline underline-offset-4">
+          Ver cómo va mi pedido
+        </Link>
         {creado.direccionEnvio?.entrega === 'recoger' && (
           <div className="mt-8 rounded-(--radius-marca) border border-tinta/15 p-5 text-left">
             <p className="font-medium">Dónde recogerlo</p>

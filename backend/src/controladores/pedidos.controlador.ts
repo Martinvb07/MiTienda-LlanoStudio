@@ -489,3 +489,59 @@ export async function actualizarPedidoPanel(req: Request, res: Response): Promis
 
   res.json({ pedido: serializarPedido(pedido.actualizado) })
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Seguimiento público
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Cómo va un pedido, para la página /pedido/<id> que le llega al comprador.
+ * El id es largo y aleatorio: quien lo tiene es quien recibió el enlace. No
+ * devuelve correo, teléfono ni dirección completa, sólo lo necesario.
+ */
+export async function seguimientoPedido(req: Request, res: Response): Promise<void> {
+  const { tiendaId } = req.tenant!
+  const pedido = await prisma.pedido.findFirst({
+    where: { id: String(req.params.id), tiendaId },
+    select: {
+      numero: true,
+      estado: true,
+      clienteNombre: true,
+      direccionEnvio: true,
+      metodoPago: true,
+      transportadora: true,
+      guia: true,
+      facturaNumero: true,
+      subtotal: true,
+      descuento: true,
+      envio: true,
+      total: true,
+      creadoEn: true,
+      actualizadoEn: true,
+      items: { select: { nombreProducto: true, variante: true, cantidad: true, subtotal: true, foto: true } },
+    },
+  })
+  if (!pedido) throw noEncontrado('No encontramos ese pedido')
+
+  const direccion = (pedido.direccionEnvio ?? {}) as { entrega?: string; ciudad?: string }
+  res.json({
+    pedido: {
+      numero: pedido.numero,
+      estado: pedido.estado,
+      nombre: pedido.clienteNombre.split(' ')[0],
+      entrega: direccion.entrega === 'recoger' ? 'recoger' : 'domicilio',
+      ciudad: direccion.ciudad ?? null,
+      metodoPago: pedido.metodoPago,
+      transportadora: pedido.transportadora,
+      guia: pedido.guia,
+      factura: pedido.facturaNumero,
+      subtotal: pedido.subtotal.toString(),
+      descuento: pedido.descuento.toString(),
+      envio: pedido.envio.toString(),
+      total: pedido.total.toString(),
+      creadoEn: pedido.creadoEn,
+      actualizadoEn: pedido.actualizadoEn,
+      items: pedido.items.map((item) => ({ ...item, subtotal: item.subtotal.toString() })),
+    },
+  })
+}

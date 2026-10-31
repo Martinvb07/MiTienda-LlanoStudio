@@ -101,6 +101,32 @@ export async function enviarMensaje(datos: {
   return enviar<{ ok: true }>('/api/mensajes', datos)
 }
 
+// ── Seguimiento del pedido ──
+
+export interface SeguimientoPedido {
+  numero: number
+  estado: 'PENDIENTE' | 'PAGADO' | 'PREPARANDO' | 'ENVIADO' | 'ENTREGADO' | 'CANCELADO' | 'REEMBOLSADO'
+  nombre: string
+  entrega: 'domicilio' | 'recoger'
+  ciudad: string | null
+  metodoPago: string
+  transportadora: string | null
+  guia: string | null
+  factura: string | null
+  subtotal: string
+  descuento: string
+  envio: string
+  total: string
+  creadoEn: string
+  actualizadoEn: string
+  items: { nombreProducto: string; variante: string | null; cantidad: number; subtotal: string; foto: string | null }[]
+}
+
+export async function verPedido(id: string) {
+  if (!/^[a-z0-9]{10,40}$/i.test(id)) return null
+  return (await consultar<{ pedido: SeguimientoPedido }>(`/api/pedidos/seguimiento/${id}`))?.pedido ?? null
+}
+
 // ── Avísame cuando llegue ──
 
 export async function pedirAviso(productoId: string, email: string) {

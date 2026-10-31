@@ -94,7 +94,12 @@ export async function avisarComprador(pedidoId: string, estado: EstadoAvisado): 
   await enviarCorreoDirecto(
     pedido.clienteEmail,
     `${textos.asunto(pedido.numero)} · ${pedido.tienda.nombre}`,
-    plantillaCorreo(textos.titulo, parrafos, { texto: 'Ir a la tienda', url: `https://${host}` }, pedido.tienda.nombre),
+    plantillaCorreo(
+      textos.titulo,
+      parrafos,
+      estado === 'CANCELADO' ? { texto: 'Ir a la tienda', url: `https://${host}` } : { texto: 'Ver mi pedido', url: `https://${host}/pedido/${pedidoId}` },
+      pedido.tienda.nombre,
+    ),
   )
 }
 

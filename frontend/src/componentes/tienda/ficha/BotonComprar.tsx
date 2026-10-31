@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Producto } from '@/tipos/tienda'
 import { formatearPrecio } from '@/utilidades/formato'
 import { SelectorCantidad, useCarrito } from '../carrito/Carrito'
+import { EVENTO_FOTO_VARIANTE } from './GaleriaFicha'
 
 /** Opciones (talla, color…), cantidad, "Agregar al carrito" y "Comprar ahora". */
 export function BotonComprar({ producto, moneda = 'COP' }: { producto: Producto; moneda?: string }) {
@@ -25,6 +26,12 @@ export function BotonComprar({ producto, moneda = 'COP' }: { producto: Producto;
   const precio = String(variante?.precio ?? producto.precio)
   const agotado = stock === 0
 
+  // La variante elegida con foto propia cambia la foto grande de la galería.
+  const fotoVariante = variante?.foto
+  useEffect(() => {
+    if (fotoVariante) window.dispatchEvent(new CustomEvent(EVENTO_FOTO_VARIANTE, { detail: fotoVariante }))
+  }, [fotoVariante])
+
   /** Si con ese valor no existe ninguna combinación con stock, se marca tachado. */
   const disponible = (nombre: string, valor: string) =>
     variantes.some(
@@ -42,7 +49,7 @@ export function BotonComprar({ producto, moneda = 'COP' }: { producto: Producto;
         slug: producto.slug,
         nombre: producto.nombre,
         precio,
-        foto: producto.fotos[0],
+        foto: variante?.foto ?? producto.fotos[0],
         cantidad,
         stock,
         variante: variante?.id,

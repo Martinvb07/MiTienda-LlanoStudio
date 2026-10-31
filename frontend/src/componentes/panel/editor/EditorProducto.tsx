@@ -358,6 +358,7 @@ export function EditorProducto({ producto, tienda, catalogo, alGuardar, alCerrar
                   opciones={borrador.opciones}
                   variantes={borrador.variantes}
                   precioBase={borrador.precio}
+                  fotos={borrador.fotos}
                   maximo={limites.opcionesVariantes}
                   alCambiar={(opciones, variantes) => cambiar({ opciones, variantes })}
                 />

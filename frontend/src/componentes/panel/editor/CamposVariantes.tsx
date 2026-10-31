@@ -80,12 +80,15 @@ export function CamposVariantes({
   opciones,
   variantes,
   precioBase,
+  fotos = [],
   maximo,
   alCambiar,
 }: {
   opciones: OpcionProducto[]
   variantes: VarianteProducto[]
   precioBase: string
+  /** Fotos del producto: cada variante puede elegir cuál se muestra al escogerla. */
+  fotos?: string[]
   /** Opciones que admite el plan. */
   maximo: number
   alCambiar: (opciones: OpcionProducto[], variantes: VarianteProducto[]) => void
@@ -96,6 +99,10 @@ export function CamposVariantes({
       opciones,
       variantes.map((variante) => (variante.id === id ? { ...variante, ...cambios } : variante)),
     )
+
+  // Con dos fotos o más, cada variante puede elegir la suya (la roja muestra la foto roja).
+  const conFotos = fotos.length > 1
+  const columnas = conFotos ? 'grid-cols-[1fr_78px_88px_64px]' : 'grid-cols-[1fr_96px_72px]'
 
   return (
     <div className="flex flex-col gap-3">
@@ -140,15 +147,31 @@ export function CamposVariantes({
 
       {variantes.length > 0 && (
         <div className="overflow-hidden rounded-[10px] border border-sitio-borde">
-          <div className="grid grid-cols-[1fr_96px_72px] gap-2 border-b border-sitio-borde bg-white/[0.03] px-3 py-2 text-[10.5px] tracking-[0.1em] text-sitio-tenue uppercase">
+          <div className={cn('grid gap-2 border-b border-sitio-borde bg-white/[0.03] px-3 py-2 text-[10.5px] tracking-[0.1em] text-sitio-tenue uppercase', columnas)}>
             <span>Variante</span>
+            {conFotos && <span>Foto</span>}
             <span>Precio</span>
             <span>Stock</span>
           </div>
           <ul className="max-h-72 divide-y divide-sitio-borde overflow-y-auto">
             {variantes.map((variante) => (
-              <li key={variante.id} className="grid grid-cols-[1fr_96px_72px] items-center gap-2 px-3 py-1.5">
+              <li key={variante.id} className={cn('grid items-center gap-2 px-3 py-1.5', columnas)}>
                 <span className="truncate text-[13px]">{variante.nombre}</span>
+                {conFotos && (
+                  <select
+                    value={variante.foto && fotos.includes(variante.foto) ? variante.foto : ''}
+                    onChange={(evento) => cambiarVariante(variante.id, { foto: evento.target.value || null })}
+                    aria-label={`Foto de ${variante.nombre}`}
+                    className={cn(CLASES_ENTRADA, '!px-1.5 !py-1.5 text-[12px]')}
+                  >
+                    <option value="">—</option>
+                    {fotos.map((foto, indice) => (
+                      <option key={foto} value={foto}>
+                        Foto {indice + 1}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <input
                   value={variante.precio ?? ''}
                   onChange={(evento) => {
@@ -171,6 +194,7 @@ export function CamposVariantes({
           </ul>
           <p className="border-t border-sitio-borde px-3 py-2 text-[11.5px] text-sitio-tenue">
             {variantes.reduce((suma, variante) => suma + variante.stock, 0)} unidades en total. Precio vacío = el del producto.
+            {conFotos && ' La foto elegida se muestra cuando el cliente escoge esa variante.'}
           </p>
         </div>
       )}

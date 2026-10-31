@@ -1,6 +1,7 @@
 import { Worker, type Job } from 'bullmq'
 import { crearConexionRedis } from '../../config/redis.js'
 import { prisma } from '../../config/prisma.js'
+import type { Prisma } from '../../generado/prisma/client.js'
 import { registro } from '../../utilidades/registro.js'
 import { guardarObjeto, leerMedio, RUTA_MEDIOS_LOCALES } from '../../almacenamiento/medios.js'
 import { r2Configurado, urlPublica } from '../../almacenamiento/r2.js'
@@ -41,11 +42,15 @@ async function procesar(trabajo: Job<TrabajoOptimizarImagen>): Promise<{ url: st
 
   if (productoId) {
     const urlVieja = urlDe(claveOriginal)
-    const producto = await prisma.producto.findFirst({ where: { id: productoId, tiendaId }, select: { fotos: true } })
+    const producto = await prisma.producto.findFirst({ where: { id: productoId, tiendaId }, select: { fotos: true, variantes: true } })
     if (producto?.fotos.includes(urlVieja)) {
+      // La foto también puede estar elegida como la de alguna variante.
+      const variantes = Array.isArray(producto.variantes)
+        ? (producto.variantes as { foto?: string | null }[]).map((variante) => (variante.foto === urlVieja ? { ...variante, foto: url } : variante))
+        : producto.variantes
       await prisma.producto.update({
         where: { id: productoId },
-        data: { fotos: producto.fotos.map((foto) => (foto === urlVieja ? url : foto)) },
+        data: { fotos: producto.fotos.map((foto) => (foto === urlVieja ? url : foto)), variantes: variantes as Prisma.InputJsonValue },
       })
     }
   }

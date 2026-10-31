@@ -272,6 +272,8 @@ export interface VarianteProducto {
   /** null o ausente = el precio del producto. */
   precio?: string | number | null
   stock: number
+  /** Una de las fotos del producto, la que se muestra al elegir esta variante. */
+  foto?: string | null
 }
 
 /** Producto tal como lo ve el panel: incluye los que están ocultos. */

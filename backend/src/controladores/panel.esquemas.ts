@@ -252,6 +252,7 @@ export const esquemaProducto = z.object({
         valores: z.record(z.string(), z.string()),
         precio: precio.nullable().optional(),
         stock: z.coerce.number().int().min(0).max(1_000_000),
+        foto: urlMedio.nullable().optional(),
       }),
     )
     .max(150)

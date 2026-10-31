@@ -5,6 +5,8 @@ import { limitesDe } from '@/utilidades/planes'
 import { listarProductos, obtenerTienda } from '@/servicios/tiendas.servicio'
 import { hostDesdeIdentificador } from '@/utilidades/dominios'
 import { vendeEnLinea } from '@/utilidades/sitio'
+import { DatosEstructurados } from '@/componentes/comunes/DatosEstructurados'
+import { datosNegocio } from '@/utilidades/datosEstructurados'
 
 export const revalidate = 60
 
@@ -28,6 +30,7 @@ export default async function PaginaTienda({ params }: Props) {
 
   return (
     <main>
+      <DatosEstructurados datos={datosNegocio(tienda, host)} />
       <RenderizadorBloques
         bloques={tienda.configuracionBloques}
         productos={productos}

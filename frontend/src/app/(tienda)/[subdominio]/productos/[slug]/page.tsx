@@ -5,6 +5,8 @@ import { vendeEnLinea } from '@/utilidades/sitio'
 import { hostDesdeIdentificador } from '@/utilidades/dominios'
 import { FichaProducto } from '@/componentes/tienda/FichaProducto'
 import { CabeceraTienda } from '@/componentes/tienda/CabeceraTienda'
+import { DatosEstructurados } from '@/componentes/comunes/DatosEstructurados'
+import { datosProducto } from '@/utilidades/datosEstructurados'
 
 export const revalidate = 60
 
@@ -47,6 +49,7 @@ export default async function PaginaProducto({ params }: Props) {
 
   return (
     <>
+      <DatosEstructurados datos={datosProducto(producto, tienda, host, resenas)} />
       <CabeceraTienda nombre={tienda.nombre} logoUrl={tienda.logoUrl} ajustes={tienda.ajustes} />
       <FichaProducto producto={producto} nombreTienda={tienda.nombre} moneda={tienda.moneda} ajustes={tienda.ajustes} catalogo={catalogo} resenas={resenas} />
     </>

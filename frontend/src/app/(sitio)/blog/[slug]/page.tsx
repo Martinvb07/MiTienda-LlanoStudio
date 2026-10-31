@@ -8,6 +8,7 @@ import { LlamadoFinal } from '@/componentes/sitio/LlamadoFinal'
 import { Revelar } from '@/componentes/sitio/Revelar'
 import { fechaLarga } from '@/contenido/articulos'
 import { obtenerArticulo, obtenerArticulos } from '@/servicios/contenido.servicio'
+import { DatosEstructurados } from '@/componentes/comunes/DatosEstructurados'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -39,6 +40,20 @@ export default async function PaginaArticulo({ params }: Props) {
 
   return (
     <>
+      <DatosEstructurados
+        datos={{
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: articulo.titulo,
+          description: articulo.resumen,
+          image: articulo.portada.startsWith('http') ? articulo.portada : `https://misitio.llanostudio.co${articulo.portada}`,
+          datePublished: articulo.fecha,
+          inLanguage: 'es-CO',
+          author: { '@type': 'Organization', name: 'Llano Studio' },
+          publisher: { '@type': 'Organization', name: 'Llano Studio', logo: { '@type': 'ImageObject', url: 'https://misitio.llanostudio.co/llanostudio-logo.png' } },
+          mainEntityOfPage: `https://misitio.llanostudio.co/blog/${articulo.slug}`,
+        }}
+      />
       <article className="pt-[130px] md:pt-[170px]">
         <Contenedor>
           <div className="entrada mx-auto max-w-[760px]">
